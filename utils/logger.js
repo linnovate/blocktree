@@ -20,8 +20,8 @@ export async function Logger({ LOG_SERVICE_NAME } = {}) {
   }
 
   // imports
-  const winston = await import('winston').catch(err => {
-    throw console.error('Logger [missing module]: winston');
+  const winston = await import('winston').catch(error => {
+    console.error('Logger [missing module]: winston');
   });
 
   // envs

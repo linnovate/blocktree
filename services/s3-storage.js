@@ -22,8 +22,8 @@ export async function S3Storage({ S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET
   }
 
   // imports
-  const { S3Client } = await import('@aws-sdk/client-s3').catch(err => {
-    throw logger.error('S3Storage [missing module]: @aws-sdk/client-s3');
+  const { S3Client } = await import('@aws-sdk/client-s3').catch(error => {
+    logger.error('S3Storage [missing module]: @aws-sdk/client-s3');
   });
 
   // envs
@@ -33,7 +33,7 @@ export async function S3Storage({ S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET
   S3_SECRET_KEY ??= process.env.S3_SECRET_KEY;
 
   if (!REDIS_URI) {
-    throw logger.error('S3Storage [missing env]: S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY');
+    logger.error('S3Storage [missing env]: S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY');
   }
 
   // instance

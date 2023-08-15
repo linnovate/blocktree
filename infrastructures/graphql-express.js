@@ -65,14 +65,14 @@ export function GraphqlExpress(app, schemas, { serverWS, yogaOptions } = {}) {
     /*
      * Imports
      */
-    const { createYoga, createPubSub, createSchema } = await import('graphql-yoga').catch(err => {
-      throw logger.error('GraphqlExpress [missing module]: graphql-yoga');
+    const { createYoga, createPubSub, createSchema } = await import('graphql-yoga').catch(error => {
+      logger.error('GraphqlExpress [missing module]: graphql-yoga');
     });
-    const { WebSocketServer } = await import('ws').catch(err => {
-      throw logger.error('GraphqlExpress [missing module]: ws');
+    const { WebSocketServer } = await import('ws').catch(error => {
+      logger.error('GraphqlExpress [missing module]: ws');
     });
-    const { useServer } = await import('graphql-ws/lib/use/ws').catch(err => {
-      throw logger.error('GraphqlExpress [missing module]: graphql-ws');
+    const { useServer } = await import('graphql-ws/lib/use/ws').catch(error => {
+      logger.error('GraphqlExpress [missing module]: graphql-ws');
     });
 
     /*

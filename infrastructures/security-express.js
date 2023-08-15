@@ -20,15 +20,14 @@ export function SecurityExpress(app, { corsOptions, helmetOptions } = {}) {
 
     const logger = await Logger();
 
-    const { default: compression } = await import('compression').catch(err => {
-      throw logger.error('GraphqlExpress [missing module]: compression');
-      ;
+    const { default: compression } = await import('compression').catch(error => {
+      logger.error('GraphqlExpress [missing module]: compression');
     });
-    const { default: helmet } = await import('helmet').catch(err => {
-      throw logger.error('GraphqlExpress [missing module]: helmet');
+    const { default: helmet } = await import('helmet').catch(error => {
+      logger.error('GraphqlExpress [missing module]: helmet');
     });
-    const { default: cors } = await import('cors').catch(err => {
-      throw logger.error('GraphqlExpress [missing module]: cors');
+    const { default: cors } = await import('cors').catch(error => {
+      logger.error('GraphqlExpress [missing module]: cors');
     });
 
     app.use(compression());

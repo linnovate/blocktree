@@ -24,22 +24,22 @@ export async function MongoClient(MONGO_URI, mongoClientOptions) {
   }
 
   // imports
-  const { MongoClient } = await import('mongodb').catch(err => {
-    throw logger.error('MongoClient [missing module]: mongodb');
+  const { MongoClient } = await import('mongodb').catch(error => {
+    logger.error('MongoClient [missing module]: mongodb');
   });
 
   // envs
   MONGO_URI ??= process.env.MONGO_URI;
 
   if (!MONGO_URI) {
-    throw logger.error('MongoClient [missing env]: MONGO_URI');
+    logger.error('MongoClient [missing env]: MONGO_URI');
   }
 
   // instance 
   $instance = new MongoClient(MONGO_URI, mongoClientOptions);
   await $instance.connect()
     .catch(error => {
-      throw logger.error('MongoClient [connect]', { error });
+      logger.error('MongoClient [connect]', { error });
     });;
 
   return $instance;

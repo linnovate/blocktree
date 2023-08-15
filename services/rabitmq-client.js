@@ -22,15 +22,15 @@ export async function RabitmqClient({ REBITMQ_URI } = {}) {
   }
 
   // imports
-  const amqplib = await import('amqplib').catch(err => {
-    throw logger.error('RabitmqClient [missing module]: amqplib');
+  const amqplib = await import('amqplib').catch(error => {
+    logger.error('RabitmqClient [missing module]: amqplib');
   });
 
   // envs
   REBITMQ_URI ??= process.env.REBITMQ_URI;
 
   if (!REBITMQ_URI) {
-    throw logger.error('RabitmqClient [missing env]: REBITMQ_URI');
+    logger.error('RabitmqClient [missing env]: REBITMQ_URI');
   }
 
   // instance

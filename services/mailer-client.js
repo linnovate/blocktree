@@ -21,8 +21,8 @@ export async function MailerClient({ MAILER_HOST, MAILER_USER, MAILER_PESS } = {
     return $instance;
   }
 
-  const { createClient } = await import('nodemailer').catch(err => {
-    throw logger.error('MailerClient [missing module]: nodemailer');
+  const { createClient } = await import('nodemailer').catch(error => {
+    logger.error('MailerClient [missing module]: nodemailer');
   });
 
   // envs
@@ -31,7 +31,7 @@ export async function MailerClient({ MAILER_HOST, MAILER_USER, MAILER_PESS } = {
   MAILER_PESS ??= process.env.MAILER_PESS;
 
   if (!MAILER_HOST || !MAILER_USER || !MAILER_PESS) {
-    throw logger.error('MailerClient [missing env]: MAILER_HOST, MAILER_USER, MAILER_PESS');
+    logger.error('MailerClient [missing env]: MAILER_HOST, MAILER_USER, MAILER_PESS');
   }
 
   // instance

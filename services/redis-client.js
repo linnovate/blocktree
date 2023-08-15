@@ -22,15 +22,15 @@ export async function RedisClient({ REDIS_URI } = {}) {
   }
 
   // imports
-  const { createClient } = await import('redis').catch(err => {
-    throw logger.error('RedisClient [missing module]: redis');
+  const { createClient } = await import('redis').catch(error => {
+    logger.error('RedisClient [missing module]: redis');
   });
 
   // envs
   REDIS_URI ??= process.env.REDIS_URI;
 
   if (!REDIS_URI) {
-    throw logger.error('RabitmqClient [missing env]: REDIS_URI');
+    logger.error('RabitmqClient [missing env]: REDIS_URI');
   }
 
   // instance

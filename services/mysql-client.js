@@ -22,8 +22,8 @@ export async function MySqlClient({ MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB
   }
 
   // imports
-  const Mysql = await import('mysql2').catch(err => {
-    throw logger.error('MySqlClient [missing module]: mysql2');
+  const Mysql = await import('mysql2').catch(error => {
+    logger.error('MySqlClient [missing module]: mysql2');
   });
 
   // envs
@@ -33,7 +33,7 @@ export async function MySqlClient({ MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB
   MYSQL_DB ??= process.env.MYSQL_DB;
 
   if (!MYSQL_HOST || !MYSQL_USER || !MYSQL_PASS || !MYSQL_DB) {
-    throw logger.error('MySqlClient [missing env]: MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB');
+    logger.error('MySqlClient [missing env]: MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB');
   }
 
   // instance

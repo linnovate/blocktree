@@ -22,7 +22,7 @@ export async function ElasticClient({ ELASTICSEARCH_URL } = {}) {
   }
 
   // imports
-  const { Client } = await import('@elastic/elasticsearch').catch(err => {
+  const { Client } = await import('@elastic/elasticsearch').catch(error => {
     logger.error('ElasticClient [missing module]: @elastic/elasticsearch');
   });
 

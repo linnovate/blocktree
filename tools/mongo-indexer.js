@@ -25,8 +25,8 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
      */
     if (config.usingMongoose) {
 
-      mongoose = await import('mongoose').catch(err => {
-        throw logger.error('MongoIndexer [missing module]: mongoose');
+      mongoose = await import('mongoose').catch(error => {
+        logger.error('MongoIndexer [missing module]: mongoose');
       });
 
       const MONGO_URI = config.MONGO_URI || process.env.MONGO_URI;
@@ -37,7 +37,7 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
         serverSelectionTimeoutMS: 3000,
         ...config.mongooseClientOptions,
       }).catch(error => {
-        throw logger.error('MongoIndexer [connect]', { MONGO_URI, error });
+        logger.error('MongoIndexer [connect]', { MONGO_URI, error });
       });
 
     }
@@ -46,8 +46,6 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
      * Create data 
      */
     const offset = await insertData(config, batchCallback);
-
-    logger.info('MongoIndexer [batch] succeeded', { ...config, count: offset });
 
     // disconnect mongo service
     if (config.disconnectMongo) {
@@ -187,9 +185,7 @@ async function insertData(config, batchCallback, offset = 0) {
   /*
    * Logs
    */
-  if (logs) {
-    logger.info('MongoIndexer [batch inserting] succeeded', { ...config, logs });
-  }
+  logger.info('MongoIndexer [batch inserting] succeeded', { ...config, logs });
 
   /*
    * Run Next batch

@@ -22,8 +22,8 @@ export async function GoogleStorage({ GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAG
   }
 
   // imports
-  const { Storage } = await import('@google-cloud/storage').catch(err => {
-    throw logger.error('GoogleStorage [missing module]: @google-cloud/storage');
+  const { Storage } = await import('@google-cloud/storage').catch(error => {
+    logger.error('GoogleStorage [missing module]: @google-cloud/storage');
   });
 
   // envs
@@ -31,7 +31,7 @@ export async function GoogleStorage({ GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAG
   GOOGLE_STORAGE_PRIVATE_KEY ??= process.env.GOOGLE_STORAGE_PRIVATE_KEY;
 
   if (!GOOGLE_STORAGE_CLIENT_EMAIL || !GOOGLE_STORAGE_PRIVATE_KEY) {
-    throw logger.error('GoogleStorage [missing env]: GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY');
+    logger.error('GoogleStorage [missing env]: GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY');
   }
 
   // decode base64

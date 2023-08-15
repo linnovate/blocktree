@@ -19,14 +19,14 @@ export async function JWTParser(token, JWT_SECRET_KEY, algorithms = ['RS256']) {
 
   // imports
   const { default: jwt } = await import('jsonwebtoken').catch(error => {
-    throw logger.error('JWTParser [missing module]: jsonwebtoken');
+    logger.error('JWTParser [missing module]: jsonwebtoken');
   });
 
   // envs
   JWT_SECRET_KEY ??= process.env.JWT_SECRET_KEY;
 
   if (!JWT_SECRET_KEY) {
-    throw logger.error('JWTParser [missing env]: JWT_SECRET_KEY');
+    logger.error('JWTParser [missing env]: JWT_SECRET_KEY');
   }
 
   // decode base64
@@ -38,7 +38,7 @@ export async function JWTParser(token, JWT_SECRET_KEY, algorithms = ['RS256']) {
   try {
     return jwt.verify(token, key, { algorithms });
   } catch (error) {
-    throw logger.error('JWTParser [verify]', { error });
+    logger.error('JWTParser [verify]', { error });
   }
 
 };
