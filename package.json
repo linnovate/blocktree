@@ -1,0 +1,28 @@
+{
+  "name": "@linnovate/blocktree",
+  "version": "1.0.0",
+  "description": "Tools for developers, to build services with a uniform standard (node_modules/envs/logs).",
+  "main": "index.js",
+  "type": "module",
+  "author": "Aron Stein",
+  "license": "MIT",
+  "homepage": "https://github.com/linnovate/blocktree",
+  "bugs": "https://github.com/linnovate/blocktree/issues",
+  "scripts": {
+    "eslint": "eslint --fix .eslintrc.cjs",
+    "test": "mocha './test/**/*.js'"
+  },
+  "keywords": [
+    "blocktree-core",
+    "blocktree"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/linnovate/blocktree.git"
+  },
+  "devDependencies": {
+    "eslint": ">=5.16.0",
+    "eslint-config-google": "^0.14.0",
+    "mocha": "^10.2.0"
+  }
+}
