@@ -4,17 +4,8 @@ Tools for developers, to build services with a uniform standard (node_modules/en
 ---
 
 ## Install module
-#### add the gitlab.linnovate.net registry (only for npm):
 ```bash
-echo @blocktree:registry=https://gitlab.linnovate.net/api/v4/packages/npm/ >> .npmrc
-echo //gitlab.linnovate.net/api/v4/packages/npm/:_authToken=\${AUTH_TOKEN} >> .npmrc
-# or
-echo //gitlab.linnovate.net/api/v4/packages/npm/:_authToken=z2sxyDnmiaX1qYJxszm6 >> .npmrc 
-```
-#### add gitlab token: https://gitlab.linnovate.net/groups/blocktree/-/settings/access_tokens
-```bash
-export AUTH_TOKEN=[your_token]
-npm install @blocktree/core
+npm install @linnovate/blocktree
 ```
 
 ---
