@@ -32,7 +32,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     const client = await ElasticClient({ ELASTICSEARCH_URL: config.ELASTICSEARCH_URL });
 
     /*
-     * Create index 
+     * Create index (step 1)
      */
     // create name
     const timeFormat = new Date().toLocaleString("en-GB")
@@ -71,12 +71,12 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     }
 
     /*
-     * Create data 
+     * Insert data (step 2)
      */
     const offset = await insertData(config, batchCallback);
 
     /*
-     * Test callback
+     * Test callback (step 3)
      */
     if (testCallback) {
       if (testCallback(config)) {
@@ -91,7 +91,14 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     }
 
     /*
-     * Update alias
+     * Skip aliases (syncOnly mode)
+     */
+    if (lastIndex && config.syncOnly) {
+      return true;
+    }
+    
+    /*
+     * Update alias (step 4)
      */
 
     // load indices of the alias
@@ -111,7 +118,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     logger.info('ElasticIndexer [aliases] succeeded', { alias: config.index, index: config.indexName, removeAliases: Object.keys(removeAliases) });
 
     /*
-     * Remove old indices
+     * Remove old indices (step 5)
      */
 
     // load indices of the alias
@@ -159,7 +166,7 @@ async function insertData(config, batchCallback, offset = 0) {
   const logger = await Logger();
 
   /*
-   * Load items
+   * Load items (step 1)
    */
   const items = await batchCallback(offset, config)
     .then((items) => {
@@ -176,7 +183,7 @@ async function insertData(config, batchCallback, offset = 0) {
   }
 
   /*
-   * Insert items
+   * Insert items (step 2)
    */
   const operations = items.flatMap(item => [{
     [item.delete ? 'delete' : 'index']: { // set create/update/delete
@@ -192,7 +199,7 @@ async function insertData(config, batchCallback, offset = 0) {
   const response = await client.bulk({ operations, refresh: true });
 
   /*
-   * Logs
+   * Print Logs (step 3)
    */
   if (response.errors) {
     const errors = response.items.map(i => i.index.error)
@@ -207,7 +214,7 @@ async function insertData(config, batchCallback, offset = 0) {
   }
 
   /*
-   * Run Next batch
+   * Run Next batch (step 4)
    */
   return await insertData(config, batchCallback, offset + items.length);
 
