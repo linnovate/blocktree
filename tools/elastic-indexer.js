@@ -124,6 +124,9 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     // load indices of the alias
     const indicesData = await client.indices.get({ index: `${config.index}*` }).catch(data => ({}));
 
+    // ignore active index
+    delete indicesData[config.indexName];
+
     // sort by name date
     const indicesList = Object.keys(indicesData).sort((a, b) => getIndexTime(b) - getIndexTime(a));
 
