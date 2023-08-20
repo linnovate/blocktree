@@ -45,7 +45,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     // get aliases
     const indexAliases = await client.indices.getAlias({ name: config.index }).catch(() => ({}));
 
-    const lastIndex = Object.keys(indexAliases).sort((a, b) => getIndexTime(b) - getIndexTime(a))?.[0];
+    const lastIndex = Object.keys(indexAliases).sort((a, b) => getIndexTime(b) - getIndexTime(a)).reverse()[0];
 
     // sync mode
     if (lastIndex && config.syncOnly) {
@@ -128,11 +128,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     delete indicesData[config.indexName];
 
     // sort by name date
-    const indicesList = Object.keys(indicesData).sort((a, b) => getIndexTime(b) - getIndexTime(a));
-
-    // remove last indexName
-    const i = indicesList.indexOf(config.indexName);
-    (i != -1) && indicesList.splice(i, 1);
+    const indicesList = Object.keys(indicesData).sort((a, b) => getIndexTime(b) - getIndexTime(a)).reverse();
 
     // split the list of keep & remove indices
     const keepIndices = indicesList;
