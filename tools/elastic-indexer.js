@@ -4,9 +4,19 @@ import { Logger } from '../utils/logger.js';
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules []
- * @envs []
- * @param {object} { ELASTICSEARCH_URL, index, mappings, settings, keyId, updateOnly, syncOnly, keepAliasesCount }
+ * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
+ * @param {object} {
+     ELASTICSEARCH_URL, // the elastic host
+     index,      // {string} the elastic alias name
+     mappings,   // {null|object} the elastic mappings (neets for create/clone index)
+     settings,   // {null|object} the elastic settings (neets for create/clone index)
+     bulk,       // {null|object} the elastic bulk options (neets for routing and more)
+     keyId,      // {null|string} the elastic doc key (neets for update a doc)
+     updateOnly, // {bool} update parts of items (using a clone index)
+     syncOnly,   // {bool} update parts of items (using the same index)
+     keepAliasesCount,  // {null|number} how many elastic index passes to save
+   }
  * @param {function} async batchCallback(offset, config)
  * @param {function} async testCallback(config)
  * @return {bool} is done
@@ -18,7 +28,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
 
   function getIndexTime(indexName) {
     indexName = indexName
-      .replace(`${config.index.toLowerCase()}-`, '')
+      .replace(`${config.index}---`, '')
       .replaceAll("_", " ")
       .replaceAll("-", ":")
     return new Date(indexName).getTime()
@@ -40,7 +50,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
       .replaceAll(", ", "_")
       .replaceAll(":", "-");
 
-    config.indexName = `${config.index.toLowerCase()}-${timeFormat}`;
+    config.indexName = `${config.index}---${timeFormat}`;
 
     // get aliases
     const indexAliases = await client.indices.getAlias({ name: config.index }).catch(() => ({}));
@@ -122,7 +132,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
      */
 
     // load indices of the alias
-    const indicesData = await client.indices.get({ index: `${config.index}*` }).catch(data => ({}));
+    const indicesData = await client.indices.get({ index: `${config.index}---*` }).catch(data => ({}));
 
     // ignore active index
     delete indicesData[config.indexName];
@@ -188,6 +198,7 @@ async function insertData(config, batchCallback, offset = 0) {
     [item.delete ? 'delete' : 'index']: { // set create/update/delete
       _index: config.indexName,
       _id: item[config.keyId || 'id'], // create/update
+      ...config.bulk,
     }
   }, item]);
 
@@ -223,9 +234,13 @@ async function insertData(config, batchCallback, offset = 0) {
 /**
  * Restore Elastic Indexer.
  * @function RestoreElasticIndexer
- * @modules []
- * @envs []
- * @param {object} { ELASTICSEARCH_URL, aliasName, indexName }
+ * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
+ * @param {object} {
+     ELASTICSEARCH_URL, // the elastic host
+     aliasName,      // {string} the elastic alias name
+     indexName,      // {string} the elastic index name
+   }
  * @param {function} async testCallback(config)
  * @return {bool} is done
  * @example const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, indexName }, async (config) => true);

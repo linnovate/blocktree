@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.js';
 /**
  * Mailer Client singleton.
  * @function MailerClient
- * @modules nodemailer@^6
- * @envs MAILER_HOST, MAILER_USER, MAILER_PESS
+ * @modules [nodemailer@^6 winston@^3]
+ * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance
  * @docs https://nodemailer.com/about;

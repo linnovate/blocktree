@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Security Express
  * @function SecurityExpress
- * @modules compression helmet cors
+ * @modules [compression helmet cors]
  * @envs []
  * @param {object} the express app
  * @param {object} {

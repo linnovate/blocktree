@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.js';
 /**
  * Google Storage singleton.
  * @function GoogleStorage
- * @modules @google-cloud/storage@^6
- * @envs GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY
+ * @modules [@google-cloud/storage@^7 winston@^3]
+ * @envs [GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, LOG_SERVICE_NAME]
  * @param {object} { GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/@google-cloud/storage

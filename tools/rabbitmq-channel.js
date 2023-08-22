@@ -6,7 +6,7 @@ let channel;
 /**
  * Assert Queue
  * @function AssertQueue
- * @modules amqplib winston
+ * @modules [amqplib@^0.10 winston@^3]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
@@ -20,7 +20,7 @@ export async function AssertQueue(queue, handler, { REBITMQ_URI } = {}) {
 
   // create channel
   if (!channel) {
-    channel = await await (await RabitmqClient({ REBITMQ_URI })).createChannel();
+    channel = await (await RabitmqClient({ REBITMQ_URI })).createChannel();
     logger.info('AssertQueue - [channel] create', { REBITMQ_URI });
   }
 
@@ -53,13 +53,15 @@ export async function AssertQueue(queue, handler, { REBITMQ_URI } = {}) {
 
   }, { noAck: false });
 
+  return true;
+
 }
 
 /**
  * Send to queue
  * @function SendToQueue
- * @modules amqplib winston
- * @envs [REBITMQ_URI]
+ * @modules [amqplib@^0.10 winston@^3]
+ * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
  * @param {object} options { REBITMQ_URI }
@@ -72,12 +74,14 @@ export async function SendToQueue(queue, data, { REBITMQ_URI } = {}) {
 
   // create channel
   if (!channel) {
-    channel = await await (await RabitmqClient({ REBITMQ_URI })).createChannel();
+    channel = await (await RabitmqClient({ REBITMQ_URI })).createChannel();
     logger.info('AssertQueue - [channel] create', { REBITMQ_URI });
   }
 
-  channel.sendToQueue(queue, Buffer.from(JSON.stringify(data)));
+  await channel.sendToQueue(queue, Buffer.from(JSON.stringify(data)));
 
   logger.info('SendToQueue [send] new queue.', { queue, data });
+
+  return true;
 
 }

@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.js';
 /**
  * S3 Storage singleton.
  * @function S3Storage
- * @modules @aws-sdk/client-s3@^3
- * @envs S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY
+ * @modules [@aws-sdk/client-s3@^3 winston@^3]
+ * @envs [S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {object} { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/@aws-sdk/client-s3

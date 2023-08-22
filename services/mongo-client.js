@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.js';
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules mongodb@^4
- * @envs MONGO_URI
+ * @modules [mongodb@^5 winston@^3]
+ * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {string} MONGO_URI
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance

@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.js';
 /**
  * Redis Client singleton.
  * @function RedisClient
- * @modules redis@^4
- * @envs REDIS_URI
+ * @modules [redis@^4 winston@^3]
+ * @envs [REDIS_URI, LOG_SERVICE_NAME]
  * @param {object} { REDIS_URI }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/redis

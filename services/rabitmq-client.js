@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.js';
 /**
  * Rabitmq Client singleton.
  * @function RabitmqClient
- * @modules amqplib@^0.10
- * @envs REBITMQ_URI
+ * @modules [amqplib@^0.10 winston@^3]
+ * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {object} { REBITMQ_URI: "amqp://test:password@<IP>:5672" }
  * @return {promise} the singleton instance
  * @docs https://github.com/amqp-node/amqplib

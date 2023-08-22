@@ -1,8 +1,8 @@
 /**
  * Logger.
  * @function Logger
- * @modules winston@^3
- * @envs LOG_SERVICE_NAME
+ * @modules [winston@^3]
+ * @envs [LOG_SERVICE_NAME]
  * @param {object} { LOG_SERVICE_NAME }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/winston

@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Graphql Express
  * @function GraphqlExpress
- * @modules graphql graphql-yoga ws graphql-ws
+ * @modules [graphql graphql-yoga ws graphql-ws]
  * @envs []
  * @param {object} the express app
  * @param {array} [{
