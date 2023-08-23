@@ -1,13 +1,13 @@
 /**
  * Logger.
  * @function Logger
- * @modules [winston@^3]
+ * @modules [pino@^8]
  * @envs [LOG_SERVICE_NAME]
  * @param {object} { LOG_SERVICE_NAME }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/winston
  * @example (await Logger()).log('...', '...');
- * @example Logger().then(logger => logger.log('...', '...'));
+ * @example Logger().then(logger => { logger.log('...', '...'); });
  * @example const logger = await Logger(); logger.log('...', '...');
  */
 
@@ -20,8 +20,8 @@ export async function Logger({ LOG_SERVICE_NAME } = {}) {
   }
 
   // imports
-  const winston = await import('winston').catch(error => {
-    console.error('Logger [missing module]: winston');
+  const pino = await import('pino').catch(error => {
+    console.error('Logger [missing module]: pino');
   });
 
   // envs
@@ -32,18 +32,7 @@ export async function Logger({ LOG_SERVICE_NAME } = {}) {
   }
 
   // instance
-  $instance = winston.createLogger({
-    defaultMeta: { service: LOG_SERVICE_NAME },
-    transports: [
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.colorize(),
-          winston.format.simple()
-        )
-      })
-    ]
-  });
+  $instance = pino().child({ service: LOG_SERVICE_NAME });
 
   return $instance;
 

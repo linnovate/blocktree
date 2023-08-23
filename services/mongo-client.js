@@ -3,13 +3,14 @@ import { Logger } from '../utils/logger.js';
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules [mongodb@^5 winston@^3]
+ * @modules [mongodb@^5 pino@^8]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {string} MONGO_URI
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb
  * @example const data = await (await MongoClient()).db('...');
+ * @example const mongo = await MongoClient(); const data = await mongo.db('...');
  */
 
 let $instance;

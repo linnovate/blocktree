@@ -4,7 +4,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
@@ -234,7 +234,7 @@ async function insertData(config, batchCallback, offset = 0) {
 /**
  * Restore Elastic Indexer.
  * @function RestoreElasticIndexer
- * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host

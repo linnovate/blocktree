@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Google Storage singleton.
  * @function GoogleStorage
- * @modules [@google-cloud/storage@^7 winston@^3]
+ * @modules [@google-cloud/storage@^7 pino@^8]
  * @envs [GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, LOG_SERVICE_NAME]
  * @param {object} { GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY }
  * @return {promise} the singleton instance
