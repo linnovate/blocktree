@@ -1,7 +1,7 @@
 /**
  * Logger.
  * @function Logger
- * @modules [winston@^3]
+ * @modules [pino@^8]
  * @envs [LOG_SERVICE_NAME]
  * @param {object} { LOG_SERVICE_NAME }
  * @return {promise} the singleton instance
@@ -20,8 +20,8 @@ export async function Logger({ LOG_SERVICE_NAME } = {}) {
   }
 
   // imports
-  const winston = await import('winston').catch(error => {
-    console.error('Logger [missing module]: winston');
+  const { default: pino } = await import('pino').catch(error => {
+    console.error('Logger [missing module]: pino');
   });
 
   // envs
@@ -32,17 +32,18 @@ export async function Logger({ LOG_SERVICE_NAME } = {}) {
   }
 
   // instance
-  $instance = winston.createLogger({
-    defaultMeta: { service: LOG_SERVICE_NAME },
-    transports: [
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.colorize(),
-          winston.format.simple()
-        )
-      })
-    ]
+  $instance = pino({
+    name: LOG_SERVICE_NAME,
+    hooks: {
+      logMethod(inputArgs, method, level) {
+        if (inputArgs.length >= 2) {
+          const arg1 = inputArgs.shift()
+          const arg2 = inputArgs.shift()
+          return method.apply(this, [arg2, arg1, ...inputArgs])
+        }
+        return method.apply(this, inputArgs)
+      }
+    }
   });
 
   return $instance;

@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} { ELASTICSEARCH_URL }
  * @return {promise} the singleton instance

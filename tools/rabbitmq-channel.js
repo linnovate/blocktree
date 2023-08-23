@@ -6,7 +6,7 @@ let channel;
 /**
  * Assert Queue
  * @function AssertQueue
- * @modules [amqplib@^0.10 winston@^3]
+ * @modules [amqplib@^0.10 pino@^8]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
@@ -60,7 +60,7 @@ export async function AssertQueue(queue, handler, { REBITMQ_URI } = {}) {
 /**
  * Send to queue
  * @function SendToQueue
- * @modules [amqplib@^0.10 winston@^3]
+ * @modules [amqplib@^0.10 pino@^8]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data

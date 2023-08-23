@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * JWT Parser
  * @function JWTParser
- * @modules [jsonwebtoken@^8 winston@^3]
+ * @modules [jsonwebtoken@^8 pino@^8]
  * @envs [JWT_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {string} token
  * @param {string} JWT_SECRET_KEY
