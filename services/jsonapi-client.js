@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * JsonApi client
  * @function JsonApiClient
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -41,7 +41,7 @@ export async function JsonApiClient(url, { filters, includes, offset, limit, aut
 /**
  * JsonApi client action
  * @function JsonApiClientAction
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {

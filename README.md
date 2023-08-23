@@ -141,7 +141,7 @@ GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaO
 /**
  * JWT Parser
  * @function JWTParser
- * @modules [jsonwebtoken@^8 pino@^8]
+ * @modules [jsonwebtoken@^8 winston@^3]
  * @envs [JWT_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {string} token
  * @param {string} JWT_SECRET_KEY
@@ -172,7 +172,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 winston@^3]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
@@ -195,7 +195,7 @@ const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: 
 /**
  * Restore Elastic Indexer.
  * @function RestoreElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 winston@^3]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
@@ -213,7 +213,7 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
 /**
  * Mongo Indexer.
  * @function MongoIndexer
- * @modules [mongodb@^5 mongoose@^7 pino@^8]
+ * @modules [mongodb@^5 mongoose@^7 winston@^3]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} { MONGO_URI, usingMongoose, modelName, collectionName, keyId, disconnectMongo }
  * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]
@@ -228,7 +228,7 @@ const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "
 /**
  * Assert Queue
  * @function AssertQueue
- * @modules [amqplib@^0.10 pino@^8]
+ * @modules [amqplib@^0.10 winston@^3]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
@@ -240,7 +240,7 @@ AssertQueue('update_item', (data) => { console.log(data) });
 /**
  * Send to queue
  * @function SendToQueue
- * @modules [amqplib@^0.10 pino@^8]
+ * @modules [amqplib@^0.10 winston@^3]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
@@ -258,7 +258,7 @@ SendToQueue('update_item', {});
 /**
  * Logger.
  * @function Logger
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {object} { LOG_SERVICE_NAME }
  * @return {promise} the singleton instance
@@ -278,7 +278,7 @@ logger.log('...', '...');
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 winston@^3]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} { ELASTICSEARCH_URL }
  * @return {promise} the singleton instance
@@ -294,7 +294,7 @@ const data = await client.search({ ... });
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules [mongodb@^5 pino@^8]
+ * @modules [mongodb@^5 winston@^3]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {string} MONGO_URI
  * @param {object} MongoClientOptions
@@ -311,7 +311,7 @@ const data = await mongo.db('...');
 /**
  * MySql Client singleton.
  * @function MySqlClient
- * @modules [mysql2@^3 pino@^8]
+ * @modules [mysql2@^3 winston@^3]
  * @envs [MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, LOG_SERVICE_NAME]
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance
@@ -325,7 +325,7 @@ const data = await (await MySqlClient()).query('...', () => {});
 /**
  * Redis Client singleton.
  * @function RedisClient
- * @modules [redis@^4 pino@^8]
+ * @modules [redis@^4 winston@^3]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
  * @param {object} { REDIS_URI }
  * @return {promise} the singleton instance
@@ -342,7 +342,7 @@ const data = await (await RedisClient()).set('key', 'value');
 /**
  * JsonApi client
  * @function JsonApiClient
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -359,7 +359,7 @@ const data = await JsonApiClient("[host]/jsonapi/node/article", { filters: { tit
 /**
  * JsonApi client action
  * @function JsonApiClientAction
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -377,7 +377,7 @@ const data = await JsonApiClientAction("[host]/jsonapi/node/article", { method =
 /**
  * GraphqlClient
  * @function GraphqlClient
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -397,7 +397,7 @@ const data = await GraphqlClient("[host]/graphql", { query = "", variables = {},
 /**
  * Google Storage singleton.
  * @function GoogleStorage
- * @modules [@google-cloud/storage@^7 pino@^8]
+ * @modules [@google-cloud/storage@^7 winston@^3]
  * @envs [GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, LOG_SERVICE_NAME]
  * @param {object} { GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY }
  * @return {promise} the singleton instance
@@ -411,7 +411,7 @@ const data = await (await GoogleStorage()).bucket({ ... });
 /**
  * S3 Storage singleton.
  * @function S3Storage
- * @modules [@aws-sdk/client-s3@^3 pino@^8]
+ * @modules [@aws-sdk/client-s3@^3 winston@^3]
  * @envs [S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {object} { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY }
  * @return {promise} the singleton instance
@@ -428,7 +428,7 @@ const data = await (await S3Storage()).send(command);
 /**
  * Rabitmq Client singleton.
  * @function RabitmqClient
- * @modules [amqplib@^0.10 pino@^8]
+ * @modules [amqplib@^0.10 winston@^3]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {object} { REBITMQ_URI: "amqp://test:password@<IP>:5672" }
  * @return {promise} the singleton instance
@@ -442,7 +442,7 @@ const data = await (await RabitmqClient()).createChannel();
 /**
  * Mailer Client singleton.
  * @function MailerClient
- * @modules [nodemailer@^6 pino@^8]
+ * @modules [nodemailer@^6 winston@^3]
  * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance

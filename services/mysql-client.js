@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * MySql Client singleton.
  * @function MySqlClient
- * @modules [mysql2@^3 pino@^8]
+ * @modules [mysql2@^3 winston@^3]
  * @envs [MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, LOG_SERVICE_NAME]
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance

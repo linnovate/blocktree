@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules [mongodb@^5 pino@^8]
+ * @modules [mongodb@^5 winston@^3]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {string} MONGO_URI
  * @param {object} MongoClientOptions

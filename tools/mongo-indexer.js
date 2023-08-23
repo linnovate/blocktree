@@ -4,7 +4,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Mongo Indexer.
  * @function MongoIndexer
- * @modules [mongodb@^5 mongoose@^7 pino@^8]
+ * @modules [mongodb@^5 mongoose@^7 winston@^3]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} { MONGO_URI, usingMongoose, modelName, collectionName, keyId, disconnectMongo }
  * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]

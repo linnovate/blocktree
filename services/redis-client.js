@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Redis Client singleton.
  * @function RedisClient
- * @modules [redis@^4 pino@^8]
+ * @modules [redis@^4 winston@^3]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
  * @param {object} { REDIS_URI }
  * @return {promise} the singleton instance

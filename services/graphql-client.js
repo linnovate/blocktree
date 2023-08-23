@@ -3,7 +3,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * GraphqlClient
  * @function GraphqlClient
- * @modules [pino@^8]
+ * @modules [winston@^3]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
