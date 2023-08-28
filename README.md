@@ -23,8 +23,8 @@ npm install @linnovate/blocktree
  - [AutoLoad](#autoLoad)
  - [Elastic Indexer](#elastic-indexer)
  - [Mongo Indexer](#mongo-indexer)
- - [RabitmqChannel](#rabitmq-channel)
- - [RedisProxy](#redis-proxy)
+ - [Rabitmq Channel](#rabitmq-channel)
+ - [Redis Proxy](#redis-proxy)
 
 > [Utils](#utils)
  - [Logger](#logger)
@@ -266,15 +266,14 @@ SendToQueue('update_item', {});
  * @param {string} the fetch url
  * @param {null|object} the fetch options
  * @param {null|object} {
-     REDIS_URI,      // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
-     noCache,        // {null|bool} is skip cache
-     debug,          // {null|bool} is show logs
-     remoteOptions,   // {null|object} the fetch remote options
-     sourceCallback, // {null|function} get remote data
+     REDIS_URI, // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
+     noCache,   // {null|bool} is skip cache
+     debug,     // {null|bool} is show logs
+     callback,  // {null|function} get remote data (default: FetchClient)
    }
  * @return {promise} the data
  */
-const data = await RedisProxy("[host]/api", { debug: true });
+const data = await RedisProxy("[host]/api", {}, { debug: true });
 ```
 
 ### Utils

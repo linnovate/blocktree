@@ -10,16 +10,15 @@ import { Logger } from '../utils/logger.js';
  * @param {string} the fetch url
  * @param {null|object} the fetch options
  * @param {null|object} {
-     REDIS_URI,      // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
-     noCache,        // {null|bool} is skip cache
-     debug,          // {null|bool} is show logs
-     remoteOptions,   // {null|object} the fetch remote options
-     sourceCallback, // {null|function} get remote data
+     REDIS_URI, // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
+     noCache,   // {null|bool} is skip cache
+     debug,     // {null|bool} is show logs
+     callback,  // {null|function} get remote data (default: FetchClient)
    }
  * @return {promise} the data
- * @example const data = await RedisProxy("[host]/api", { debug: true });
+ * @example const data = await RedisProxy("[host]/api", {}, { debug: true });
  */
-export async function RedisProxy(url, { REDIS_URI, noCache, debug, remoteOptions, sourceCallback } = {}) {
+export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug, callback } = {}) {
 
   const logger = await Logger();
 
@@ -42,12 +41,11 @@ export async function RedisProxy(url, { REDIS_URI, noCache, debug, remoteOptions
   // load from remote
   if (data == null) {
 
-
-    if (sourceCallback) {
-      data = await sourceCallback(url, remoteOptions);
+    if (callback) {
+      data = await callback(url, fetchOptions);
     }
     else {
-      const res = await FetchClient(url, remoteOptions);
+      const res = await FetchClient(url, fetchOptions);
       data = res.data;
     }
 
