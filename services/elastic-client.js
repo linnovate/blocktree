@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} { ELASTICSEARCH_URL }
  * @return {promise} the singleton instance
@@ -23,9 +24,7 @@ export async function ElasticClient({ ELASTICSEARCH_URL } = {}) {
   }
 
   // imports
-  const { Client } = await import('@elastic/elasticsearch').catch(error => {
-    logger.error('ElasticClient [missing module]: @elastic/elasticsearch');
-  });
+  const { Client } = await DynamicImport('@elastic/elasticsearch@^8');
 
   // envs
   ELASTICSEARCH_URL ??= process.env.ELASTICSEARCH_URL;

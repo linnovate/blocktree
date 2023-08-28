@@ -24,6 +24,7 @@ npm install @linnovate/blocktree
  - [Elastic Indexer](#elastic-indexer)
  - [Mongo Indexer](#mongo-indexer)
  - [RabitmqChannel](#rabitmq-channel)
+ - [RedisProxy](#redis-proxy)
 
 > [Utils](#utils)
  - [Logger](#logger)
@@ -35,8 +36,9 @@ npm install @linnovate/blocktree
  - [Redis Client](#redis-client)
 
 > [Services: Api](#services-api)
- - [JsonApi Client](#jsonapi-client)
+ - [Fetch Client](#fetch-client)
  - [Graphql Client](#graphql-client)
+ - [JsonApi Client](#jsonapi-client)
  - [Google Storage](#google-storage)
  - [S3 Storage](#s3-storage)
 
@@ -61,7 +63,7 @@ const server = app.listen(5000, () => console.log(`Example app listening on port
 /**
  * Security Express
  * @function SecurityExpress
- * @modules [compression helmet cors]
+ * @modules [compression@^1 helmet@^7 cors@^2]
  * @envs []
  * @param {object} the express app
  * @param {object} {
@@ -78,7 +80,7 @@ SecurityExpress(app, { corsOptions, helmetOptions } = {});
 /**
  * Graphql Express
  * @function GraphqlExpress
- * @modules [graphql graphql-yoga ws graphql-ws]
+ * @modules [graphql graphql-yoga@^4 ws@^8 graphql-ws@^5]
  * @envs []
  * @param {object} the express app
  * @param {array} [{
@@ -131,6 +133,10 @@ SecurityExpress(app, { corsOptions, helmetOptions } = {});
    });
 */
 GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaOptions: {} });
+// using AutoLoad
+AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
+  GraphqlExpress(app, schemas, { serverWS: server, yogaOptions: {} });
+});
 ```
 
 ### Tools
@@ -141,7 +147,7 @@ GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaO
 /**
  * JWT Parser
  * @function JWTParser
- * @modules [jsonwebtoken@^8 pino@^8]
+ * @modules [jsonwebtoken@^8 pino@^8 pino-pretty@^10]
  * @envs [JWT_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {string} token
  * @param {string} JWT_SECRET_KEY
@@ -172,7 +178,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
@@ -195,7 +201,7 @@ const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: 
 /**
  * Restore Elastic Indexer.
  * @function RestoreElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
@@ -213,7 +219,7 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
 /**
  * Mongo Indexer.
  * @function MongoIndexer
- * @modules [mongodb@^5 mongoose@^7 pino@^8]
+ * @modules [mongodb@^5 mongoose@^7 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} { MONGO_URI, usingMongoose, modelName, collectionName, keyId, disconnectMongo }
  * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]
@@ -228,7 +234,7 @@ const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "
 /**
  * Assert Queue
  * @function AssertQueue
- * @modules [amqplib@^0.10 pino@^8]
+ * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
@@ -240,7 +246,7 @@ AssertQueue('update_item', (data) => { console.log(data) });
 /**
  * Send to queue
  * @function SendToQueue
- * @modules [amqplib@^0.10 pino@^8]
+ * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
@@ -248,6 +254,27 @@ AssertQueue('update_item', (data) => { console.log(data) });
  * @return 
  */
 SendToQueue('update_item', {});
+```
+
+#### Redis Proxy
+```js
+/**
+ * Redis Proxy
+ * @function RedisProxy
+ * @modules [redis@^4 pino@^8 pino-pretty@^10]
+ * @envs [REDIS_URI, LOG_SERVICE_NAME]
+ * @param {string} the fetch url
+ * @param {null|object} the fetch options
+ * @param {null|object} {
+     REDIS_URI,      // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
+     noCache,        // {null|bool} is skip cache
+     debug,          // {null|bool} is show logs
+     remoteOptions,   // {null|object} the fetch remote options
+     sourceCallback, // {null|function} get remote data
+   }
+ * @return {promise} the data
+ */
+const data = await RedisProxy("[host]/api", { debug: true });
 ```
 
 ### Utils
@@ -258,11 +285,11 @@ SendToQueue('update_item', {});
 /**
  * Logger.
  * @function Logger
- * @modules [pino@^8]
+ * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {object} { LOG_SERVICE_NAME }
  * @return {promise} the singleton instance
- * @docs https://www.npmjs.com/package/winston
+ * @docs https://www.npmjs.com/package/pino
  */
 (await Logger()).log('...', '...');
 Logger().then(logger => { logger.log('...', '...'); });
@@ -278,7 +305,7 @@ logger.log('...', '...');
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} { ELASTICSEARCH_URL }
  * @return {promise} the singleton instance
@@ -294,7 +321,7 @@ const data = await client.search({ ... });
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules [mongodb@^5 pino@^8]
+ * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {string} MONGO_URI
  * @param {object} MongoClientOptions
@@ -311,7 +338,7 @@ const data = await mongo.db('...');
 /**
  * MySql Client singleton.
  * @function MySqlClient
- * @modules [mysql2@^3 pino@^8]
+ * @modules [mysql2@^3 pino@^8 pino-pretty@^10]
  * @envs [MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, LOG_SERVICE_NAME]
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance
@@ -325,7 +352,7 @@ const data = await (await MySqlClient()).query('...', () => {});
 /**
  * Redis Client singleton.
  * @function RedisClient
- * @modules [redis@^4 pino@^8]
+ * @modules [redis@^4 pino@^8 pino-pretty@^10]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
  * @param {object} { REDIS_URI }
  * @return {promise} the singleton instance
@@ -337,12 +364,45 @@ const data = await (await RedisClient()).set('key', 'value');
 ### Services: Apis
 ---
 
+#### Fetch Client
+```js
+/**
+ * Fetch Client
+ * @function FetchClient
+ * @modules [pino@^8 pino-pretty@^10]
+ * @envs [LOG_SERVICE_NAME]
+ * @param {string} the fetch url
+ * @param {null|object} the fetch options
+ * @return {promise} the Response with parse data
+ * @example const { ok, status, data } = await FetchClient("[host]/api", {});
+ */
+const { ok, status, data } = await FetchClient("[host]/api", {});
+```
+
+#### Graphql Client
+```js
+/**
+ * GraphqlClient
+ * @function GraphqlClient
+ * @modules [pino@^8 pino-pretty@^10]
+ * @envs [LOG_SERVICE_NAME]
+ * @param {string} url // see: https://jsonapi.org
+ * @param {object} {
+ *   query,  // {object} see: https://graphql.org/learn/queries/
+ *   variables, // {object}  see: https://graphql.org/learn/queries/#variables
+ *   authToken,    // {string} see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization
+ * }
+ * @return {object} the data
+ */
+const data = await GraphqlClient("[host]/graphql", { query = "", variables = {}, authToken: "MY_TOKEN" });
+```
+
 #### JsonApi Client
 ```js
 /**
  * JsonApi client
  * @function JsonApiClient
- * @modules [pino@^8]
+ * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -359,7 +419,7 @@ const data = await JsonApiClient("[host]/jsonapi/node/article", { filters: { tit
 /**
  * JsonApi client action
  * @function JsonApiClientAction
- * @modules [pino@^8]
+ * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -372,32 +432,12 @@ const data = await JsonApiClient("[host]/jsonapi/node/article", { filters: { tit
 const data = await JsonApiClientAction("[host]/jsonapi/node/article", { method = "POST", body = {}, authToken = "MY_TOKEN" });
 ```
 
-#### Graphql Client
-```js
-/**
- * GraphqlClient
- * @function GraphqlClient
- * @modules [pino@^8]
- * @envs [LOG_SERVICE_NAME]
- * @param {string} url // see: https://jsonapi.org
- * @param {object} {
- *   query,  // {object} see: https://graphql.org/learn/queries/
- *   variables, // {object}  see: https://graphql.org/learn/queries/#variables
- *   authToken,    // {string} see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization
- * }
- * @return {object} the data
- */
-const data = await GraphqlClient("[host]/graphql", { query = "", variables = {}, authToken: "MY_TOKEN" });
-```
-
-
-
 #### Google Storage
 ```js
 /**
  * Google Storage singleton.
  * @function GoogleStorage
- * @modules [@google-cloud/storage@^7 pino@^8]
+ * @modules [@google-cloud/storage@^7 pino@^8 pino-pretty@^10]
  * @envs [GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, LOG_SERVICE_NAME]
  * @param {object} { GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY }
  * @return {promise} the singleton instance
@@ -411,7 +451,7 @@ const data = await (await GoogleStorage()).bucket({ ... });
 /**
  * S3 Storage singleton.
  * @function S3Storage
- * @modules [@aws-sdk/client-s3@^3 pino@^8]
+ * @modules [@aws-sdk/client-s3@^3 pino@^8 pino-pretty@^10]
  * @envs [S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {object} { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY }
  * @return {promise} the singleton instance
@@ -428,7 +468,7 @@ const data = await (await S3Storage()).send(command);
 /**
  * Rabitmq Client singleton.
  * @function RabitmqClient
- * @modules [amqplib@^0.10 pino@^8]
+ * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
  * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
  * @param {object} { REBITMQ_URI: "amqp://test:password@<IP>:5672" }
  * @return {promise} the singleton instance
@@ -442,7 +482,7 @@ const data = await (await RabitmqClient()).createChannel();
 /**
  * Mailer Client singleton.
  * @function MailerClient
- * @modules [nodemailer@^6 pino@^8]
+ * @modules [nodemailer@^6 pino@^8 pino-pretty@^10]
  * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance

@@ -1,44 +1,34 @@
-import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * Security Express
  * @function SecurityExpress
- * @modules [compression helmet cors]
+ * @modules [compression@^1 helmet@^7 cors@^2]
  * @envs []
  * @param {object} the express app
  * @param {object} {
  *   corsOptions,   // see: https://www.npmjs.com/package/cors#configuring-cors 
  *   helmetOptions, // see: https://www.npmjs.com/package/helmet
  * }
- * @return {object} express app.next()
+ * @return {promise} in done
  * @example SecurityExpress(app, { corsOptions, helmetOptions } = {});
  */
 
-export function SecurityExpress(app, { corsOptions, helmetOptions } = {}) {
+export async function SecurityExpress(app, { corsOptions, helmetOptions } = {}) {
 
-  (async function () {
+  const { default: compression } = await DynamicImport('compression@^1');
+  const { default: helmet } = await DynamicImport('helmet@^7');
+  const { default: cors } = await DynamicImport('cors@^2');
 
-    const logger = await Logger();
-
-    const { default: compression } = await import('compression').catch(error => {
-      logger.error('GraphqlExpress [missing module]: compression');
-    });
-    const { default: helmet } = await import('helmet').catch(error => {
-      logger.error('GraphqlExpress [missing module]: helmet');
-    });
-    const { default: cors } = await import('cors').catch(error => {
-      logger.error('GraphqlExpress [missing module]: cors');
-    });
-
-    app.use(compression());
-    app.use(cors(corsOptions));
-    app.use(helmet({
-      crossOriginEmbedderPolicy: { policy: "credentialless" },
-      contentSecurityPolicy: { reportOnly: true },
-      ...helmetOptions,
-    }));
-  }())
-
-  return (req, res, next) => next();
+  app.use(compression());
+  app.use(cors(corsOptions));
+  app.use(helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: true,
+      reportOnly: true,
+    },
+    ...helmetOptions,
+  }));
 
 };

@@ -4,7 +4,7 @@ import { Logger } from '../utils/logger.js';
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
@@ -13,8 +13,8 @@ import { Logger } from '../utils/logger.js';
      settings,   // {null|object} the elastic settings (neets for create/clone index)
      bulk,       // {null|object} the elastic bulk options (neets for routing and more)
      keyId,      // {null|string} the elastic doc key (neets for update a doc)
-     updateOnly, // {bool} update parts of items (using a clone index)
-     syncOnly,   // {bool} update parts of items (using the same index)
+     updateOnly, // {null|bool} update parts of items (using a clone index)
+     syncOnly,   // {null|bool} update parts of items (using the same index)
      keepAliasesCount,  // {null|number} how many elastic index passes to save
    }
  * @param {function} async batchCallback(offset, config)
@@ -234,21 +234,30 @@ async function insertData(config, batchCallback, offset = 0) {
 /**
  * Restore Elastic Indexer.
  * @function RestoreElasticIndexer
- * @modules [@elastic/elasticsearch@^8 winston@^3]
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host
      aliasName,      // {string} the elastic alias name
      indexName,      // {string} the elastic index name
+     lastIndexCount: // {number} the count of lasts elastic index
    }
  * @param {function} async testCallback(config)
  * @return {bool} is done
  * @example const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, indexName }, async (config) => true);
  */
-export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, indexName }) {
+export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, indexName, lastIndexCount }) {
 
   const logger = await Logger();
 
+  function getIndexTime(indexName) {
+    indexName = indexName
+      .replace(`${aliasName}---`, '')
+      .replaceAll("_", " ")
+      .replaceAll("-", ":")
+    return new Date(indexName).getTime()
+  }
+  
   try {
 
     /*
@@ -257,9 +266,23 @@ export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, inde
     const client = await ElasticClient({ ELASTICSEARCH_URL });
 
     /*
+     * Fine index
+     */
+    if (lastIndexCount) {
+      
+      // load indices of the alias
+      const indicesData = await client.indices.get({ index: `${aliasName}---*` }).catch(data => ({}));
+  
+      // sort by name date
+      const indicesList = Object.keys(indicesData).sort((a, b) => getIndexTime(b) - getIndexTime(a));
+  
+      indexName = indicesList[Math.hypot(lastIndexCount)];
+    }
+    
+    /*
      * Update alias
      */
-
+    
     // load indices of the alias
     const aliases = await client.indices.getAlias({ name: aliasName }).catch(data => ({}));
 

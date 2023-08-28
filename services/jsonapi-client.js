@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * JsonApi client
  * @function JsonApiClient
- * @modules [pino@^8]
+ * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -32,8 +33,43 @@ export async function JsonApiClient(url, { filters, includes, offset, limit, aut
       "Content-type": "application/vnd.api+json",
     },
   })
-    .then(res => res.json())
-    .then(res => InjectRelationships(res));
+    // server send
+    .then(async res => {
+
+      // add data from parse body
+      if (res.headers.get("Content-Type")?.includes('json')) {
+        res.data = await res.json();
+      } else {
+        res.data = await res.text();
+      }
+
+      // is error
+      if (!res.ok) {
+        logger.error('JsonApiClient [server send]', { url, filters, includes, offset, limit, status: res.status, statusText: res.statusText });
+      }
+
+      // inject relationships
+      if (res.data) {
+        res.data = InjectRelationships(res.data)
+      }
+
+      // return Response object 
+      return res;
+
+    })
+
+    // browser send
+    .catch(res => {
+
+      logger.error('JsonApiClient [browser send]: cors or network/server is offline.', { url, filters, includes, offset, limit, message: res.message });
+
+      return {
+        ok: false,
+        status: null,
+        statusText: res.message,
+      };
+
+    })
 
 };
 
@@ -41,7 +77,7 @@ export async function JsonApiClient(url, { filters, includes, offset, limit, aut
 /**
  * JsonApi client action
  * @function JsonApiClientAction
- * @modules [pino@^8]
+ * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -55,7 +91,7 @@ export async function JsonApiClient(url, { filters, includes, offset, limit, aut
 export async function JsonApiClientAction(url, { method, body, authToken } = {}) {
 
   const logger = await Logger();
-  
+
   // send
   return fetch(url, {
     method: method || "POST",
@@ -66,14 +102,43 @@ export async function JsonApiClientAction(url, { method, body, authToken } = {})
     },
     body: JSON.stringify(body || {}),
   })
-    .then(res => res.json())
-    .then(res => {
-      if (res.errors) {
-        logger.error(`JsonApiClientAction - ${res.errors[0].title}, ${res.errors[0].detail}`)
-        return new Error(res.errors[0].title + ", " + res.errors[0].detail);
+    // server send
+    .then(async res => {
+
+      // add data from parse body
+      if (res.headers.get("Content-Type")?.includes('json')) {
+        res.data = await res.json();
+      } else {
+        res.data = await res.text();
       }
-      return InjectRelationships(res)
-    });
+
+      // is error
+      if (!res.ok) {
+        Logger.error('JsonApiClientAction [server send]', { url, method, body, status: res.status, statusText: res.statusText });
+      }
+
+      // inject relationships
+      if (res.data) {
+        res.data = InjectRelationships(res.data)
+      }
+
+      // return Response object 
+      return res;
+
+    })
+
+    // browser send
+    .catch(res => {
+
+      Logger.error('JsonApiClientAction [browser send]: cors or network/server is offline.', { url, method, body, message: res.message });
+
+      return {
+        ok: false,
+        status: null,
+        statusText: res.message,
+      };
+
+    })
 
 };
 
@@ -166,6 +231,8 @@ export function InjectRelationships(data) {
     return data?.data.map(item => ({ ...item.attributes, ...getRealated(item) }));
   } else if (data?.data) {
     return ({ ...data?.data.attributes, ...getRealated(data?.data) });
+  } else {
+    return data;
   }
 
 }

@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * S3 Storage singleton.
  * @function S3Storage
- * @modules [@aws-sdk/client-s3@^3 pino@^8]
+ * @modules [@aws-sdk/client-s3@^3 pino@^8 pino-pretty@^10]
  * @envs [S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {object} { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY }
  * @return {promise} the singleton instance
@@ -22,10 +23,8 @@ export async function S3Storage({ S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET
   }
 
   // imports
-  const { S3Client } = await import('@aws-sdk/client-s3').catch(error => {
-    logger.error('S3Storage [missing module]: @aws-sdk/client-s3');
-  });
-
+  const { S3Client } = await DynamicImport('@aws-sdk/client-s3@^3');
+  
   // envs
   S3_BUCKET ??= process.env.S3_BUCKET;
   S3_REGION ??= process.env.S3_REGION;

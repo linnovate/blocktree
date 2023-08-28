@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * Mailer Client singleton.
  * @function MailerClient
- * @modules [nodemailer@^6 pino@^8]
+ * @modules [nodemailer@^6 pino@^8 pino-pretty@^10]
  * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance
@@ -21,10 +22,8 @@ export async function MailerClient({ MAILER_HOST, MAILER_USER, MAILER_PESS } = {
     return $instance;
   }
 
-  const { createClient } = await import('nodemailer').catch(error => {
-    logger.error('MailerClient [missing module]: nodemailer');
-  });
-
+  const { createClient } = await DynamicImport('nodemailer@^6');
+  
   // envs
   MAILER_HOST ??= process.env.MAILER_HOST;
   MAILER_USER ??= process.env.MAILER_USER;

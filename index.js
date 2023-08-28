@@ -20,8 +20,9 @@ export { RedisClient } from './services/redis-client.js';
 /**
  * Services: (Apis)
  */
-export { JsonApiClient, JsonApiClientAction, CreateUrlParams, InjectRelationships } from './services/jsonapi-client.js';
+export { FetchClient } from './services/fetch-client.js';
 export { GraphqlClient } from './services/graphql-client.js';
+export { JsonApiClient, JsonApiClientAction, CreateUrlParams, InjectRelationships } from './services/jsonapi-client.js';
 export { GoogleStorage } from './services/google-storage.js';
 export { S3Storage } from './services/s3-storage.js';
 
@@ -37,6 +38,7 @@ export { MailerClient } from './services/mailer-client.js';
 export { AssertQueue, SendToQueue } from './tools/rabbitmq-channel.js';
 export { JWTParser } from './tools/jwt-parser.js';
 export { AutoLoad } from './tools/autoload.js';
+export { RedisProxy } from './tools/redis-proxy.js';
 
 /**
  * Tools: (Indexers)

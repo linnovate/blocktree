@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules [mongodb@^5 pino@^8]
+ * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {string} MONGO_URI
  * @param {object} MongoClientOptions
@@ -25,9 +26,7 @@ export async function MongoClient(MONGO_URI, mongoClientOptions) {
   }
 
   // imports
-  const { MongoClient } = await import('mongodb').catch(error => {
-    logger.error('MongoClient [missing module]: mongodb');
-  });
+  const { MongoClient } = await DynamicImport('mongodb@^5');
 
   // envs
   MONGO_URI ??= process.env.MONGO_URI;
@@ -40,7 +39,7 @@ export async function MongoClient(MONGO_URI, mongoClientOptions) {
   $instance = new MongoClient(MONGO_URI, mongoClientOptions);
   await $instance.connect()
     .catch(error => {
-      logger.error('MongoClient [connect]', { error });
+      logger.error('MongoClient [error]', { error });
     });;
 
   return $instance;

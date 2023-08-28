@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * GraphqlClient
  * @function GraphqlClient
- * @modules [pino@^8]
+ * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -28,6 +29,37 @@ export async function GraphqlClient(url, { query = "", variables = {}, authToken
     },
     body: JSON.stringify({ query, variables })
   })
-    .then(res => res.json())
+    // server send
+    .then(async res => {
+
+      // add data from parse body
+      if (res.headers.get("Content-Type")?.includes('json')) {
+        res.data = await res.json();
+      } else {
+        res.data = await res.text();
+      }
+
+      // is error
+      if (!res.ok) {
+        logger.error('GraphqlClient [server send]', { url, query, variables, status: res.status, statusText: res.statusText });
+      }
+
+      // return Response object 
+      return res;
+
+    })
+
+    // browser send
+    .catch(res => {
+
+      logger.error('GraphqlClient [browser send]: cors or network/server is offline.', { url, message: res.message });
+
+      return {
+        ok: false,
+        status: null,
+        statusText: res.message,
+      };
+
+    })
 
 };

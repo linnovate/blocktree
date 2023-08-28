@@ -1,9 +1,9 @@
-import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * Graphql Express
  * @function GraphqlExpress
- * @modules [graphql graphql-yoga ws graphql-ws]
+ * @modules [graphql@^16 graphql-yoga@^4 ws@^8 graphql-ws@^5]
  * @envs []
  * @param {object} the express app
  * @param {array} [{
@@ -18,7 +18,7 @@ import { Logger } from '../utils/logger.js';
  *   serverWS,    // the express server
  *   yogaOptions, // see: https://the-guild.dev/graphql/yoga-server/docs
  * }
- * @return {object} express app.next()
+ * @return {promise} in done
  *
  * @example setup Graphql:
    ---------------
@@ -56,105 +56,95 @@ import { Logger } from '../utils/logger.js';
    });
 */
 
-export function GraphqlExpress(app, schemas, { serverWS, yogaOptions } = {}) {
+export async function GraphqlExpress(app, schemas, { serverWS, yogaOptions } = {}) {
 
-  (async function () {
+  /*
+   * Imports
+   */
+  const { createYoga, createPubSub, createSchema } = await DynamicImport('graphql-yoga@^4');
+  const { WebSocketServer } = await DynamicImport('ws@^8');
+  const { useServer } = await DynamicImport('graphql-ws/lib/use/ws');
+  await DynamicImport('graphql@^16');
 
-    const logger = await Logger();
 
-    /*
-     * Imports
-     */
-    const { createYoga, createPubSub, createSchema } = await import('graphql-yoga').catch(error => {
-      logger.error('GraphqlExpress [missing module]: graphql-yoga');
-    });
-    const { WebSocketServer } = await import('ws').catch(error => {
-      logger.error('GraphqlExpress [missing module]: ws');
-    });
-    const { useServer } = await import('graphql-ws/lib/use/ws').catch(error => {
-      logger.error('GraphqlExpress [missing module]: graphql-ws');
-    });
+  /*
+   * Create typeDefs 
+   */
+  // add default
+  const typeDefs = [`
+   scalar JSON
+   scalar File
+   type Query  {
+     health: String
+   }
+   type Mutation {
+     health: String
+   }
+   type Subscription {
+     health: String
+   }
+ `];
+  // add directives
+  typeDefs.push(
+    ...schemas.map(i => i.directives).flat().map(directive => directive?.typeDefs)
+  );
+  // add schemas
+  typeDefs.push(...schemas.map(i => i?.typeDefs).flat());
 
-    /*
-     * Create typeDefs 
-     */
-    // add default
-    const typeDefs = [`
-      scalar JSON
-      scalar File
-      type Query  {
-        health: String
+
+  /*
+   * Create resolvers 
+   */
+  const pubSub = createPubSub();
+  // add default
+  const resolvers = [{
+    Query: {
+      health: (root, args, context, info) => {
+        pubSub.publish("MY_HEALTH", { health: Date().toString() });
+        return true;
       }
-      type Mutation {
-        health: String
+    },
+    Mutation: {
+      health: (root, args, context, info) => {
+        pubSub.publish("MY_HEALTH", { health: Date().toString() });
+        return true;
       }
-      type Subscription {
-        health: String
+    },
+    Subscription: {
+      health: {
+        subscribe: (root, args, context, info) => {
+          return pubSub.subscribe("MY_HEALTH");
+        },
       }
-    `];
-    // add directives
-    typeDefs.push(
-      ...schemas.map(i => i.directives).flat().map(directive => directive?.typeDefs)
-    );
-    // add schemas
-    typeDefs.push(...schemas.map(i => i?.typeDefs).flat());
-
-
-    /*
-     * Create resolvers 
-     */
-    const pubSub = createPubSub();
-    // add default
-    const resolvers = [{
-      Query: {
-        health: (root, args, context, info) => {
-          pubSub.publish("MY_HEALTH", { health: Date().toString() });
-          return true;
-        }
-      },
-      Mutation: {
-        health: (root, args, context, info) => {
-          pubSub.publish("MY_HEALTH", { health: Date().toString() });
-          return true;
-        }
-      },
-      Subscription: {
-        health: {
-          subscribe: (root, args, context, info) => {
-            return pubSub.subscribe("MY_HEALTH");
-          },
-        }
-      }
-    }];
-    // add schemas
-    resolvers.push(...schemas.map(i => i?.resolvers).flat());
-
-
-    /*
-     * Create schema
-     */
-    let schema = createSchema({ typeDefs, resolvers });
-
-    // add directives transformers
-    const directives = schemas.map(i => i.directives).flat();
-    schema = directives.reduce((_schema, directive) => directive?.transformer(_schema) || _schema, schema);
-
-
-    /*
-     * Create graphql route
-     */
-    app.use('/graphql', createYoga({ schema, graphiql: true, ...yogaOptions }));
-
-
-    /*
-     * Create graphql WebSocket
-     */
-    if (serverWS) {
-      useServer({ schema }, new WebSocketServer({ server: serverWS, path: '/graphql' }));
     }
+  }];
+  // add schemas
+  resolvers.push(...schemas.map(i => i?.resolvers).flat());
 
-  }())
 
-  return (req, res, next) => next();
+  /*
+   * Create schema
+   */
+  let schema = createSchema({ typeDefs, resolvers });
+
+  // add directives transformers
+  const directives = schemas.map(i => i.directives).flat();
+  schema = directives.reduce((_schema, directive) => directive?.transformer(_schema) || _schema, schema);
+
+
+  /*
+   * Create graphql route
+   */
+  app.use('/graphql', createYoga({ schema, graphiql: true, ...yogaOptions }));
+
+
+  /*
+   * Create graphql WebSocket
+   */
+  if (serverWS) {
+    useServer({ schema }, new WebSocketServer({ server: serverWS, path: '/graphql' }));
+  }
+
+  return true;
 
 }

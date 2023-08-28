@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * Google Storage singleton.
  * @function GoogleStorage
- * @modules [@google-cloud/storage@^7 pino@^8]
+ * @modules [@google-cloud/storage@^7 pino@^8 pino-pretty@^10]
  * @envs [GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, LOG_SERVICE_NAME]
  * @param {object} { GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY }
  * @return {promise} the singleton instance
@@ -22,10 +23,8 @@ export async function GoogleStorage({ GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAG
   }
 
   // imports
-  const { Storage } = await import('@google-cloud/storage').catch(error => {
-    logger.error('GoogleStorage [missing module]: @google-cloud/storage');
-  });
-
+  const { Storage } = await DynamicImport('@google-cloud/storage@^7');
+  
   // envs
   GOOGLE_STORAGE_CLIENT_EMAIL ??= process.env.GOOGLE_STORAGE_CLIENT_EMAIL;
   GOOGLE_STORAGE_PRIVATE_KEY ??= process.env.GOOGLE_STORAGE_PRIVATE_KEY;

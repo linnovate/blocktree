@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger.js';
+import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * MySql Client singleton.
  * @function MySqlClient
- * @modules [mysql2@^3 pino@^8]
+ * @modules [mysql2@^3 pino@^8 pino-pretty@^10]
  * @envs [MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, LOG_SERVICE_NAME]
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance
@@ -22,10 +23,8 @@ export async function MySqlClient({ MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB
   }
 
   // imports
-  const Mysql = await import('mysql2').catch(error => {
-    logger.error('MySqlClient [missing module]: mysql2');
-  });
-
+  const Mysql = await DynamicImport('mysql2@^3');
+  
   // envs
   MYSQL_HOST ??= process.env.MYSQL_HOST;
   MYSQL_USER ??= process.env.MYSQL_USER;
