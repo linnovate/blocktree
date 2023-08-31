@@ -6,7 +6,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function MongoClient
  * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {string} MONGO_URI
+ * @param {string} MONGO_URI the mongo service uri (mongodb://[host]:[port])
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb

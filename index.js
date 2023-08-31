@@ -29,7 +29,7 @@ export { S3Storage } from './services/s3-storage.js';
 /**
  * Services: (Handlers)
  */
-export { RabitmqClient } from './services/rabitmq-client.js';
+export { RabbitmqClient } from './services/rabbitmq-client.js';
 export { MailerClient } from './services/mailer-client.js';
 
 /**

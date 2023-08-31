@@ -1,4 +1,4 @@
-import { RabitmqClient } from '../services/rabitmq-client.js';
+import { RabbitmqClient } from '../services/rabbitmq-client.js';
 import { Logger } from '../utils/logger.js';
 
 let channel;
@@ -10,7 +10,9 @@ let channel;
  * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
- * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
+ * @param {object} options {
+     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+   }
  * @return 
  * @example AssertQueue('update_item', (data) => { console.log(data) });
  * @dockerCompose
@@ -29,7 +31,7 @@ export async function AssertQueue(queue, handler, { REBBITMQ_URI } = {}) {
 
   // create channel
   if (!channel) {
-    channel = await (await RabitmqClient({ REBBITMQ_URI })).createChannel();
+    channel = await (await RabbitmqClient({ REBBITMQ_URI })).createChannel();
     logger.info('AssertQueue - [channel] create', { REBBITMQ_URI });
   }
 
@@ -73,7 +75,9 @@ export async function AssertQueue(queue, handler, { REBBITMQ_URI } = {}) {
  * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
- * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
+ * @param {object} options {
+     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+   }
  * @return 
  * @example SendToQueue('update_item', {});
  */
@@ -83,7 +87,7 @@ export async function SendToQueue(queue, data, { REBBITMQ_URI } = {}) {
 
   // create channel
   if (!channel) {
-    channel = await (await RabitmqClient({ REBBITMQ_URI })).createChannel();
+    channel = await (await RabbitmqClient({ REBBITMQ_URI })).createChannel();
     logger.info('AssertQueue - [channel] create', { REBBITMQ_URI });
   }
 

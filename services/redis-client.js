@@ -6,8 +6,10 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function RedisClient
  * @modules [redis@^4 pino@^8 pino-pretty@^10]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
- * @param {object} { REDIS_URI: "redis[s]://[[username][:password]@][host][:port][/db-number]" } redis host
- * @param {object} { options } the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
+ * @param {object} {
+    REDIS_URI,    // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
+    ...options,   // {null|object} the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
+   }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/redis
  * @example const data = await (await RedisClient()).set('key', 'value');
@@ -23,7 +25,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
 
 let $instance;
 
-export async function RedisClient({ REDIS_URI, options } = {}) {
+export async function RedisClient({ REDIS_URI, ...options } = {}) {
 
   const logger = await Logger();
 

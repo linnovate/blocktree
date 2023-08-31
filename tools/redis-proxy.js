@@ -10,11 +10,12 @@ import { Logger } from '../utils/logger.js';
  * @param {string} the fetch url
  * @param {null|object} the fetch options
  * @param {null|object} {
-     REDIS_URI, // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
-     noCache,   // {null|bool} is skip cache
-     debug,     // {null|bool} is show logs
-     callback,  // {null|function} get remote data (default: FetchClient)
-     setOptions, // {null|object} the redis client.set options (https://redis.io/commands/expire/)
+     REDIS_URI,    // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
+     noCache,      // {null|bool} is skip cache
+     debug,        // {null|bool} is show logs
+     callback,     // {null|function} get remote data (default: FetchClient)
+     setOptions,   // {null|object} the redis client.set options (https://redis.io/commands/expire/)
+     redisOptions, // {null|object} the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
    }
  * @return {promise} the data
  * @example const data = await RedisProxy("[host]/api", {}, { debug: true });
@@ -27,11 +28,11 @@ import { Logger } from '../utils/logger.js';
     ports:
       - 6379:6379
  */
-export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug, callback, setOptions } = {}) {
+export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug, callback, setOptions, redisOptions } = {}) {
 
   const logger = await Logger();
 
-  const client = await RedisClient({ REDIS_URI });
+  const client = await RedisClient({ REDIS_URI, ...redisOptions });
 
   let data;
 

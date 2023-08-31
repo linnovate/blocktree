@@ -1,6 +1,6 @@
 {
   "name": "@linnovate/blocktree",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Tools for developers, to build services with a uniform standard (node_modules/envs/logs).",
   "main": "index.js",
   "type": "module",

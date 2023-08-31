@@ -23,7 +23,7 @@ npm install @linnovate/blocktree
  - [AutoLoad](#autoLoad)
  - [Elastic Indexer](#elastic-indexer)
  - [Mongo Indexer](#mongo-indexer)
- - [Rabitmq Channel](#rabitmq-channel)
+ - [Rabbitmq Channel](#rabbitmq-channel)
  - [Redis Proxy](#redis-proxy)
 
 > [Utils](#utils)
@@ -34,6 +34,7 @@ npm install @linnovate/blocktree
  - [Mongo Client](#mongo-client)
  - [MySql Client](#mysql-client)
  - [Redis Client](#redis-client)
+ - [Rabbitmq Client](#rabbitmq-client)
 
 > [Services: Api](#services-api)
  - [Fetch Client](#fetch-client)
@@ -43,7 +44,6 @@ npm install @linnovate/blocktree
  - [S3 Storage](#s3-storage)
 
 > [Services: Handlers](#services-handlers)
- - [Rabitmq Client](#rabitmq-client)
  - [Mailer Client](#mailer-client)
 
 
@@ -181,7 +181,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
+     ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
      index,      // {string} the elastic alias name
      mappings,   // {null|object} the elastic mappings (neets for create/clone index)
      settings,   // {null|object} the elastic settings (neets for create/clone index)
@@ -217,7 +217,7 @@ const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: 
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
+     ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
      aliasName,      // {string} the elastic alias name
      indexName,      // {string} the elastic index name
    }
@@ -234,7 +234,14 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
  * @function MongoIndexer
  * @modules [mongodb@^5 mongoose@^7 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {object} { MONGO_URI, usingMongoose, modelName, collectionName, keyId, disconnectMongo }
+ * @param {object} {
+     MONGO_URI,       // the mongo service uri (mongodb://[host]:[port])
+     usingMongoose,   // {null|bool} is use mongoose schemas
+     modelName,       // {null|string} the mongoose model name
+     collectionName,  // {null|string} the mongo collection name
+     keyId,           // {null|string} the mongo doc key
+     disconnectMongo, // {null|bool} is disconnect mongo
+   }
  * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]
  * @param {function} async testCallback(config)
  * @return {promise} is done
@@ -253,7 +260,7 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
 const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "Article", collectionName: "articles" }, async (offset, config) => [], async (config) => true);
 ```
 
-#### Rabitmq Channel
+#### Rabbitmq Channel
 ```js
 /**
  * Assert Queue
@@ -262,7 +269,9 @@ const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "
  * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
- * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
+ * @param {object} options {
+     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+   }
  * @return 
  * @dockerCompose
   # Rabbitmq service
@@ -283,7 +292,9 @@ AssertQueue('update_item', (data) => { console.log(data) });
  * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
- * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
+ * @param {object} options {
+     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+   }
  * @return 
  */
 SendToQueue('update_item', {});
@@ -299,10 +310,11 @@ SendToQueue('update_item', {});
  * @param {string} the fetch url
  * @param {null|object} the fetch options
  * @param {null|object} {
-     REDIS_URI, // {string} redis host (redis[s]://[[username][:password]@][host][:port][/db-number])
+     REDIS_URI, // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
      noCache,   // {null|bool} is skip cache
      debug,     // {null|bool} is show logs
      callback,  // {null|function} get remote data (default: FetchClient)
+     setOptions, // {null|object} the redis client.set options (https://redis.io/commands/expire/)
    }
  * @return {promise} the data
  * @dockerCompose
@@ -347,7 +359,7 @@ logger.log('...', '...');
  * @function ElasticClient
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" }
+ * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" } // the elastic service url
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
  * @dockerCompose
@@ -376,7 +388,7 @@ const data = await client.search({ ... });
  * @function MongoClient
  * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {string} MONGO_URI
+ * @param {string} MONGO_URI the mongo service uri (mongodb://[host]:[port])
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb
@@ -429,7 +441,10 @@ const data = await (await MySqlClient()).query('...', () => {});
  * @function RedisClient
  * @modules [redis@^4 pino@^8 pino-pretty@^10]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
- * @param {object} { REDIS_URI }
+ * @param {object} {
+    REDIS_URI,    // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
+    ...options,   // {null|object} the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
+   }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/redis
  * @dockerCompose
@@ -546,14 +561,14 @@ const data = await (await S3Storage()).send(command);
 ### Services: Handlers
 ---
 
-#### Rabitmq Client
+#### Rabbitmq Client
 ```js
 /**
- * Rabitmq Client singleton.
- * @function RabitmqClient
+ * Rabbitmq Client singleton.
+ * @function RabbitmqClient
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
  * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
- * @param {object} { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
+ * @param {object} { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" } // the rabbitmq service url 
  * @return {promise} the singleton instance
  * @docs https://github.com/amqp-node/amqplib
  * @dockerCompose
@@ -566,7 +581,7 @@ const data = await (await S3Storage()).send(command);
     ports:
       - 5672:5672
  */
-const data = await (await RabitmqClient()).createChannel();
+const data = await (await RabbitmqClient()).createChannel();
 ```
 
 #### Mailer Client

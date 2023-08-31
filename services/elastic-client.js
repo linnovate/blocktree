@@ -6,7 +6,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function ElasticClient
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" }
+ * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" } // the elastic service url
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
  * @example const data = await (await ElasticClient()).search({ ... });

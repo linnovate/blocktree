@@ -6,7 +6,14 @@ import { Logger } from '../utils/logger.js';
  * @function MongoIndexer
  * @modules [mongodb@^5 mongoose@^7 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {object} { MONGO_URI, usingMongoose, modelName, collectionName, keyId, disconnectMongo }
+ * @param {object} {
+     MONGO_URI,       // the mongo service uri (mongodb://[host]:[port])
+     usingMongoose,   // {null|bool} is use mongoose schemas
+     modelName,       // {null|string} the mongoose model name
+     collectionName,  // {null|string} the mongo collection name
+     keyId,           // {null|string} the mongo doc key
+     disconnectMongo, // {null|bool} is disconnect mongo
+   }
  * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]
  * @param {function} async testCallback(config)
  * @return {promise} is done

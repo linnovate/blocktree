@@ -7,7 +7,7 @@ import { Logger } from '../utils/logger.js';
  * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
+     ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
      index,      // {string} the elastic alias name
      mappings,   // {null|object} the elastic mappings (neets for create/clone index)
      settings,   // {null|object} the elastic settings (neets for create/clone index)
