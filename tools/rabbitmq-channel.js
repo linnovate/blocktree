@@ -7,21 +7,30 @@ let channel;
  * Assert Queue
  * @function AssertQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
- * @param {object} options { REBITMQ_URI }
+ * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
  * @return 
  * @example AssertQueue('update_item', (data) => { console.log(data) });
+ * @dockerCompose
+  # Rabbitmq service
+  rabbitmq:
+    image: rabbitmq:alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: root
+    ports:
+      - 5672:5672
  */
-export async function AssertQueue(queue, handler, { REBITMQ_URI } = {}) {
+export async function AssertQueue(queue, handler, { REBBITMQ_URI } = {}) {
 
   const logger = await Logger();
 
   // create channel
   if (!channel) {
-    channel = await (await RabitmqClient({ REBITMQ_URI })).createChannel();
-    logger.info('AssertQueue - [channel] create', { REBITMQ_URI });
+    channel = await (await RabitmqClient({ REBBITMQ_URI })).createChannel();
+    logger.info('AssertQueue - [channel] create', { REBBITMQ_URI });
   }
 
   // create assert queue
@@ -61,21 +70,21 @@ export async function AssertQueue(queue, handler, { REBITMQ_URI } = {}) {
  * Send to queue
  * @function SendToQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
- * @param {object} options { REBITMQ_URI }
+ * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
  * @return 
  * @example SendToQueue('update_item', {});
  */
-export async function SendToQueue(queue, data, { REBITMQ_URI } = {}) {
+export async function SendToQueue(queue, data, { REBBITMQ_URI } = {}) {
 
   const logger = await Logger();
 
   // create channel
   if (!channel) {
-    channel = await (await RabitmqClient({ REBITMQ_URI })).createChannel();
-    logger.info('AssertQueue - [channel] create', { REBITMQ_URI });
+    channel = await (await RabitmqClient({ REBBITMQ_URI })).createChannel();
+    logger.info('AssertQueue - [channel] create', { REBBITMQ_URI });
   }
 
   await channel.sendToQueue(queue, Buffer.from(JSON.stringify(data)));

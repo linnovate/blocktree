@@ -6,11 +6,24 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function ElasticClient
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL }
+ * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" }
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
  * @example const data = await (await ElasticClient()).search({ ... });
  * @example const client = await ElasticClient(); const data = await client.search({ ... });
+ * @dockerCompose
+  # Elastic service
+  elastic:
+    image: elasticsearch:8.5.3
+    volumes:
+      - ./.elastic:/usr/share/elasticsearch/data
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+    ports:
+      - 9200:9200
+      - 9300:9300
  */
 
 let $instance;

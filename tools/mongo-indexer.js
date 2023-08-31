@@ -11,7 +11,19 @@ import { Logger } from '../utils/logger.js';
  * @param {function} async testCallback(config)
  * @return {promise} is done
  * @example const isDone = await MongoIndexer(config, async (offset, config) => [], async (config) => true);
- */
+ * @dockerCompose
+  # Mongo service
+  mongo:
+    image: mongo:alpine
+    volumes:
+      - ./.mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 6379:6379
+*/
+
 let mongoose;
 
 export async function MongoIndexer(config, batchCallback, testCallback) {

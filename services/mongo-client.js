@@ -12,6 +12,17 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @docs https://www.npmjs.com/package/mongodb
  * @example const data = await (await MongoClient()).db('...');
  * @example const mongo = await MongoClient(); const data = await mongo.db('...');
+ * @dockerCompose
+  # Mongo service
+  mongo:
+    image: mongo:alpine
+    volumes:
+      - ./.mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
  */
 
 let $instance;

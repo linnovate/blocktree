@@ -6,11 +6,19 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function RedisClient
  * @modules [redis@^4 pino@^8 pino-pretty@^10]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
- * @param {object} { REDIS_URI } redis[s]://[[username][:password]@][host][:port][/db-number]
+ * @param {object} { REDIS_URI: "redis[s]://[[username][:password]@][host][:port][/db-number]" } redis host
  * @param {object} { options } the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/redis
  * @example const data = await (await RedisClient()).set('key', 'value');
+ * @dockerCompose
+  # Redis service
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./.redis:/data
+    ports:
+      - 6379:6379
  */
 
 let $instance;

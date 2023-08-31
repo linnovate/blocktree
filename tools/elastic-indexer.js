@@ -7,7 +7,7 @@ import { Logger } from '../utils/logger.js';
  * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host
+     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
      index,      // {string} the elastic alias name
      mappings,   // {null|object} the elastic mappings (neets for create/clone index)
      settings,   // {null|object} the elastic settings (neets for create/clone index)
@@ -21,7 +21,20 @@ import { Logger } from '../utils/logger.js';
  * @param {function} async testCallback(config)
  * @return {bool} is done
  * @example const isDone = await ElasticIndexer(config, async (offset, config) => [], async (config) => true);
- */
+ * @dockerCompose
+  # Elastic service
+  elastic:
+    image: elasticsearch:8.5.3
+    volumes:
+      - ./.elastic:/usr/share/elasticsearch/data
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+    ports:
+      - 9200:9200
+      - 9300:9300
+  */
 export async function ElasticIndexer(config, batchCallback, testCallback) {
 
   const logger = await Logger();
@@ -237,7 +250,7 @@ async function insertData(config, batchCallback, offset = 0) {
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host
+     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
      aliasName,      // {string} the elastic alias name
      indexName,      // {string} the elastic index name
      lastIndexCount: // {number} the count of lasts elastic index

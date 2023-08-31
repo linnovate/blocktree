@@ -181,7 +181,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host
+     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
      index,      // {string} the elastic alias name
      mappings,   // {null|object} the elastic mappings (neets for create/clone index)
      settings,   // {null|object} the elastic settings (neets for create/clone index)
@@ -194,6 +194,19 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
  * @param {function} async batchCallback(offset, config)
  * @param {function} async testCallback(config)
  * @return {bool} is done
+ * @dockerCompose
+  # Elastic service
+  elastic:
+    image: elasticsearch:8.5.3
+    volumes:
+      - ./.elastic:/usr/share/elasticsearch/data
+    environment:
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    - "discovery.type=single-node"
+    - "xpack.security.enabled=false"
+    ports:
+      - 9200:9200
+      - 9300:9300
  */
 const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: {} }, (offset, config) => [], (config) => true);
 ```
@@ -204,7 +217,7 @@ const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: 
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
-     ELASTICSEARCH_URL, // the elastic host
+     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
      aliasName,      // {string} the elastic alias name
      indexName,      // {string} the elastic index name
    }
@@ -225,7 +238,18 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
  * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]
  * @param {function} async testCallback(config)
  * @return {promise} is done
- * @example  */
+ * @dockerCompose
+  # Mongo service
+  mongo:
+    image: mongo:alpine
+    volumes:
+      - ./.mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+ * */
 const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "Article", collectionName: "articles" }, async (offset, config) => [], async (config) => true);
 ```
 
@@ -235,11 +259,20 @@ const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "
  * Assert Queue
  * @function AssertQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
- * @param {object} options { REBITMQ_URI }
+ * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
  * @return 
+ * @dockerCompose
+  # Rabbitmq service
+  rabbitmq:
+    image: rabbitmq:alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: root
+    ports:
+      - 5672:5672
  */
 AssertQueue('update_item', (data) => { console.log(data) });
 
@@ -247,10 +280,10 @@ AssertQueue('update_item', (data) => { console.log(data) });
  * Send to queue
  * @function SendToQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
- * @param {object} options { REBITMQ_URI }
+ * @param {object} options { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
  * @return 
  */
 SendToQueue('update_item', {});
@@ -272,6 +305,14 @@ SendToQueue('update_item', {});
      callback,  // {null|function} get remote data (default: FetchClient)
    }
  * @return {promise} the data
+ * @dockerCompose
+  # Redis service
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./.redis:/data
+    ports:
+      - 6379:6379
  */
 const data = await RedisProxy("[host]/api", {}, { debug: true });
 ```
@@ -306,9 +347,22 @@ logger.log('...', '...');
  * @function ElasticClient
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL }
+ * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" }
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
+ * @dockerCompose
+  # Elastic service
+  elastic:
+    image: elasticsearch:8.5.3
+    volumes:
+      - ./.elastic:/usr/share/elasticsearch/data
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+    ports:
+      - 9200:9200
+      - 9300:9300
  */
 const data = await (await ElasticClient()).search({ ... });
 const client = await ElasticClient();
@@ -326,6 +380,17 @@ const data = await client.search({ ... });
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb
+ * @dockerCompose
+  # Mongo service
+  mongo:
+    image: mongo:alpine
+    volumes:
+      - ./.mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
  */
 const data = await (await MongoClient()).db('...');
 const mongo = await MongoClient();
@@ -342,6 +407,17 @@ const data = await mongo.db('...');
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mysql2
+ * @dockerCompose
+  # Mysql service
+  mysql:
+    image: mysql:8
+    volumes:
+      - ./.mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - 3306:3306
  */
 const data = await (await MySqlClient()).query('...', () => {});
 ```
@@ -356,6 +432,14 @@ const data = await (await MySqlClient()).query('...', () => {});
  * @param {object} { REDIS_URI }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/redis
+ * @dockerCompose
+  # Redis service
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./.redis:/data
+    ports:
+      - 6379:6379
  */
 const data = await (await RedisClient()).set('key', 'value');
 ```
@@ -468,10 +552,19 @@ const data = await (await S3Storage()).send(command);
  * Rabitmq Client singleton.
  * @function RabitmqClient
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBITMQ_URI, LOG_SERVICE_NAME]
- * @param {object} { REBITMQ_URI: "amqp://test:password@<IP>:5672" }
+ * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
+ * @param {object} { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" }
  * @return {promise} the singleton instance
  * @docs https://github.com/amqp-node/amqplib
+ * @dockerCompose
+  # Rabbitmq service
+  rabbitmq:
+    image: rabbitmq:alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: root
+    ports:
+      - 5672:5672
  */
 const data = await (await RabitmqClient()).createChannel();
 ```

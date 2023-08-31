@@ -14,11 +14,20 @@ import { Logger } from '../utils/logger.js';
      noCache,   // {null|bool} is skip cache
      debug,     // {null|bool} is show logs
      callback,  // {null|function} get remote data (default: FetchClient)
+     setOptions, // {null|object} the redis client.set options (https://redis.io/commands/expire/)
    }
  * @return {promise} the data
  * @example const data = await RedisProxy("[host]/api", {}, { debug: true });
+ * @dockerCompose
+  # Redis service
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./.redis:/data
+    ports:
+      - 6379:6379
  */
-export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug, callback } = {}) {
+export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug, callback, setOptions } = {}) {
 
   const logger = await Logger();
 
@@ -49,7 +58,7 @@ export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug,
       data = res.data;
     }
 
-    await client.set(url, JSON.stringify(data));
+    await client.set(url, JSON.stringify(data), setOptions);
 
     debug && logger.info('RedisProxy [from remote]', { url, REDIS_URI, noCache });
 

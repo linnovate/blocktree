@@ -10,6 +10,17 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mysql2
  * @example const data = await (await MySqlClient()).query('...', () => {});
+ * @dockerCompose
+  # Mysql service
+  mysql:
+    image: mysql:8
+    volumes:
+      - ./.mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - 3306:3306
  */
 
 let $instance;
