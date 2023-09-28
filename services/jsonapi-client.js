@@ -1,5 +1,4 @@
 import { Logger } from '../utils/logger.js';
-import { DynamicImport } from '../utils/dynamic-import.js';
 
 /**
  * JsonApi client

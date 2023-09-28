@@ -49,11 +49,29 @@ npm install @linnovate/blocktree
 
 ### Setup server
 ---
-
 ```js
+/**
+ * Server
+ * @modules [express]
+ * @envs [PORT]
+ * @dockerCompose
+  # Server service
+  server:
+    image: node:18.17
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    command:
+      - /bin/sh -c "yarn && yarn start"
+ */
 import express from 'express';
 const app = express();
-const server = app.listen(5000, () => console.log(`Example app listening on port 5000!`));
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
 ```
 
 ### Infrastructures
@@ -248,7 +266,7 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
  * @dockerCompose
   # Mongo service
   mongo:
-    image: mongo:alpine
+    image: mongo:7-jammy
     volumes:
       - ./.mongo:/data/db
     environment:
@@ -266,22 +284,25 @@ const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "
  * Assert Queue
  * @function AssertQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
  * @param {object} options {
-     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+     RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
    }
- * @return 
+ * @return {bool}
  * @dockerCompose
   # Rabbitmq service
   rabbitmq:
-    image: rabbitmq:alpine
+    image: rabbitmq:3.9.29
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: root
     ports:
       - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
  */
 AssertQueue('update_item', (data) => { console.log(data) });
 
@@ -289,15 +310,27 @@ AssertQueue('update_item', (data) => { console.log(data) });
  * Send to queue
  * @function SendToQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
  * @param {object} options {
-     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+     RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
    }
- * @return 
+ * @return {bool}
  */
 SendToQueue('update_item', {});
+
+/**
+ * Rabbitmq Channel
+ * @function RabbitmqChannel
+ * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
+ * @param {object} options {
+     RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+   }
+ * @return {object} channel
+ */
+RabbitmqChannel();
 ```
 
 #### Redis Proxy
@@ -320,7 +353,7 @@ SendToQueue('update_item', {});
  * @dockerCompose
   # Redis service
   redis:
-    image: redis:alpine
+    image: redis:7.2.0-alpine
     volumes:
       - ./.redis:/data
     ports:
@@ -395,7 +428,7 @@ const data = await client.search({ ... });
  * @dockerCompose
   # Mongo service
   mongo:
-    image: mongo:alpine
+    image: mongo:7-jammy
     volumes:
       - ./.mongo:/data/db
     environment:
@@ -450,7 +483,7 @@ const data = await (await MySqlClient()).query('...', () => {});
  * @dockerCompose
   # Redis service
   redis:
-    image: redis:alpine
+    image: redis:7.2.0-alpine
     volumes:
       - ./.redis:/data
     ports:
@@ -567,14 +600,14 @@ const data = await (await S3Storage()).send(command);
  * Rabbitmq Client singleton.
  * @function RabbitmqClient
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
- * @param {object} { REBBITMQ_URI: "amqp://[[username][:password]@][host][:port]" } // the rabbitmq service url 
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
+ * @param {object} { RABBITMQ_URI: "amqp://[[username][:password]@][host][:port]" } // the rabbitmq service url 
  * @return {promise} the singleton instance
  * @docs https://github.com/amqp-node/amqplib
  * @dockerCompose
   # Rabbitmq service
   rabbitmq:
-    image: rabbitmq:alpine
+    image: rabbitmq:3.9.29
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: root

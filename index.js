@@ -35,7 +35,7 @@ export { MailerClient } from './services/mailer-client.js';
 /**
  * Tools
  */
-export { AssertQueue, SendToQueue } from './tools/rabbitmq-channel.js';
+export { AssertQueue, SendToQueue, RabbitmqChannel } from './tools/rabbitmq-channel.js';
 export { JWTParser } from './tools/jwt-parser.js';
 export { AutoLoad } from './tools/autoload.js';
 export { RedisProxy } from './tools/redis-proxy.js';

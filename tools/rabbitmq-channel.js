@@ -7,32 +7,32 @@ let channel;
  * Assert Queue
  * @function AssertQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
  * @param {object} options {
-     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+     RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
    }
- * @return 
+ * @return {bool}
  * @example AssertQueue('update_item', (data) => { console.log(data) });
  * @dockerCompose
   # Rabbitmq service
   rabbitmq:
-    image: rabbitmq:alpine
+    image: rabbitmq:3.9.29
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: root
     ports:
       - 5672:5672
  */
-export async function AssertQueue(queue, handler, { REBBITMQ_URI } = {}) {
+export async function AssertQueue(queue, handler, { RABBITMQ_URI } = {}) {
 
   const logger = await Logger();
 
   // create channel
   if (!channel) {
-    channel = await (await RabbitmqClient({ REBBITMQ_URI })).createChannel();
-    logger.info('AssertQueue - [channel] create', { REBBITMQ_URI });
+    channel = await (await RabbitmqClient({ RABBITMQ_URI })).createChannel();
+    logger.info('AssertQueue - [channel] create', { RABBITMQ_URI });
   }
 
   // create assert queue
@@ -54,14 +54,16 @@ export async function AssertQueue(queue, handler, { REBBITMQ_URI } = {}) {
     logger.info('AssertQueue [consumer] start.', { queue, data });
 
     // run handler
-    await handler(data);
+    const isDone = await handler(data);
 
     // log
     logger.info('AssertQueue [consumer] done.', { queue, data });
 
     // remove message
-    // channel.ack(message)
-
+    if (isDone !== false) {
+      channel.ack(message);
+    }
+    
   }, { noAck: false });
 
   return true;
@@ -72,23 +74,23 @@ export async function AssertQueue(queue, handler, { REBBITMQ_URI } = {}) {
  * Send to queue
  * @function SendToQueue
  * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
- * @envs [REBBITMQ_URI, LOG_SERVICE_NAME]
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
  * @param {object} options {
-     REBBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+     RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
    }
- * @return 
+ * @return {bool}
  * @example SendToQueue('update_item', {});
  */
-export async function SendToQueue(queue, data, { REBBITMQ_URI } = {}) {
+export async function SendToQueue(queue, data, { RABBITMQ_URI } = {}) {
 
   const logger = await Logger();
 
   // create channel
   if (!channel) {
-    channel = await (await RabbitmqClient({ REBBITMQ_URI })).createChannel();
-    logger.info('AssertQueue - [channel] create', { REBBITMQ_URI });
+    channel = await (await RabbitmqClient({ RABBITMQ_URI })).createChannel();
+    logger.info('AssertQueue - [channel] create', { RABBITMQ_URI });
   }
 
   await channel.sendToQueue(queue, Buffer.from(JSON.stringify(data)));
@@ -98,3 +100,38 @@ export async function SendToQueue(queue, data, { REBBITMQ_URI } = {}) {
   return true;
 
 }
+
+/**
+ * Rabbitmq Channel
+ * @function RabbitmqChannel
+ * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
+ * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
+ * @param {object} options {
+     RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
+   }
+ * @return {object} channel
+ * @example RabbitmqChannel();
+ * @dockerCompose
+  # Rabbitmq service
+  rabbitmq:
+    image: rabbitmq:3.9.29
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: root
+    ports:
+      - 5672:5672
+ */
+export async function RabbitmqChannel({ RABBITMQ_URI } = {}) {
+
+  const logger = await Logger();
+
+  // create channel
+  if (!channel) {
+    channel = await (await RabbitmqClient({ RABBITMQ_URI })).createChannel();
+    logger.info('AssertQueue - [channel] create', { RABBITMQ_URI });
+  }
+
+  return channel;
+
+}
+      
