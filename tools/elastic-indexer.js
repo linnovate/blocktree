@@ -102,12 +102,17 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
      * Test callback (step 3)
      */
     if (testCallback) {
-      if (testCallback(config)) {
-        // logger
-        logger.info('ElasticIndexer [test] succeeded', { alias: config.index, index: config.indexName });
-      } else {
-        // logger
-        logger.error('ElasticIndexer [test] failed', { alias: config.index, index: config.indexName });
+      const isTestSucceeded = await testCallback(config)
+        .then(() => {
+          logger.info('ElasticIndexer [test] succeeded', { alias: config.index, index: config.indexName });
+          return true;
+        })
+        .catch((error) => {
+          logger.error('ElasticIndexer [test] failed', { alias: config.index, index: config.indexName, error: error?.toString() });
+          return false;
+        });
+
+      if (!isTestSucceeded) {
         // skip update alias
         return false;
       }
@@ -119,7 +124,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     if (lastIndex && config.syncOnly) {
       return true;
     }
-    
+
     /*
      * Update alias (step 4)
      */
@@ -270,7 +275,7 @@ export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, inde
       .replaceAll("-", ":")
     return new Date(indexName).getTime()
   }
-  
+
   try {
 
     /*
@@ -282,20 +287,20 @@ export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, inde
      * Fine index
      */
     if (lastIndexCount) {
-      
+
       // load indices of the alias
       const indicesData = await client.indices.get({ index: `${aliasName}---*` }).catch(data => ({}));
-  
+
       // sort by name date
       const indicesList = Object.keys(indicesData).sort((a, b) => getIndexTime(b) - getIndexTime(a));
-  
+
       indexName = indicesList[Math.hypot(lastIndexCount)];
     }
-    
+
     /*
      * Update alias
      */
-    
+
     // load indices of the alias
     const aliases = await client.indices.getAlias({ name: aliasName }).catch(data => ({}));
 

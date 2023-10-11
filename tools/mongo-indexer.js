@@ -62,7 +62,7 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
     }
 
     /*
-     * Create data 
+     * Create/Insert data (step 1/2)
      */
     const offset = await insertData(config, batchCallback);
 
@@ -82,15 +82,21 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
     }
     
     /*
-     * Test callback
+     * Test callback (step 3)
      */
     if (testCallback) {
-      if (testCallback(config)) {
-        // logger
-        logger.info('MongoIndexer [test] succeeded', { ...config });
-      } else {
-        // logger
-        logger.error('MongoIndexer [test] failed', { ...config });
+      const isTestSucceeded = await testCallback(config)
+        .then(() => {
+          logger.info('MongoIndexer [test] succeeded', { ...config });
+          return true;
+        })
+        .catch((error) => {
+          logger.error('MongoIndexer [test] failed', { ...config });
+          return false;
+        });
+
+      if (!isTestSucceeded) {
+        // skip update alias
         return false;
       }
     }
