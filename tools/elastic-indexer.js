@@ -58,7 +58,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
      * Create index (step 1)
      */
     // create name
-    const timeFormat = new Date().toLocaleString("en-GB")
+    const timeFormat = new Date().toLocaleString('en', { hour12: false })
       .replaceAll("/", ".")
       .replaceAll(", ", "_")
       .replaceAll(":", "-");
