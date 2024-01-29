@@ -10,7 +10,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  *   corsOptions,   // see: https://www.npmjs.com/package/cors#configuring-cors 
  *   helmetOptions, // see: https://www.npmjs.com/package/helmet
  * }
- * @return {promise} in done
+ * @return {promise} is done
  * @example SecurityExpress(app, { corsOptions, helmetOptions } = {});
  */
 

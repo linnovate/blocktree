@@ -7,6 +7,7 @@ export { Logger } from './utils/logger.js';
  * Infrastructure
  */
 export { SecurityExpress } from './infrastructures/security-express.js';
+export { SwaggerExpress } from './infrastructures/swagger-express.js';
 export { GraphqlExpress } from './infrastructures/graphql-express.js';
 
 /**

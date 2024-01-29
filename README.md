@@ -16,6 +16,7 @@ npm install @linnovate/blocktree
 
 > [Infrastructures](#infrastructures)
  - [Security Express](#security-express)
+ - [Swagger Express](#swagger-express)
  - [Graphql Express](#graphql-express)
 
 > [Tools](#tools)
@@ -88,10 +89,42 @@ const server = app.listen(PORT, () => console.log(`Example app listening on port
  *   corsOptions,   // see: https://www.npmjs.com/package/cors#configuring-cors 
  *   helmetOptions, // see: https://www.npmjs.com/package/helmet
  * }
- * @return {object} the express router
+ * @return {object} is done
  */
 SecurityExpress(app, { corsOptions, helmetOptions } = {});
 ```
+
+#### Swagger Express
+```js
+/**
+ * Swagger Express
+ * @function SwaggerExpress
+ * @modules [swagger-ui-express@^5]
+ * @envs []
+ * @route /api-docs
+ * @param {object} the express app
+ * @param {object} options {
+ *   ...[swagger-ui options],    // see: https://www.npmjs.com/package/swagger-ui-express 
+ *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
+ * }
+ * @return {promise} is done
+ * @example JsDoc comment:
+    ---------------
+    / *
+    * @openapi
+    * /login:
+    *   get:
+    *     description: Welcome to swagger-jsdoc!
+    *     responses:
+    *       200:
+    *         description: Returns a mysterious string.
+    * /
+    app.use('/login', (req, res) => {});
+ */
+SwaggerExpress(app);
+```
+
+
 
 #### Graphql Express
 ```js

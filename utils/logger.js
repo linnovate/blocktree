@@ -4,6 +4,7 @@
  * @modules [pino@^8 pino-pretty@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {object} { LOG_SERVICE_NAME }
+ * @param {object} { setupOptions }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/pino
  * @example (await Logger()).log('...', '...');
@@ -13,7 +14,7 @@
 
 let $instance;
 
-export async function Logger({ LOG_SERVICE_NAME } = {}) {
+export async function Logger({ LOG_SERVICE_NAME, setupOptions } = {}) {
 
   if ($instance) {
     return $instance;
@@ -54,7 +55,8 @@ export async function Logger({ LOG_SERVICE_NAME } = {}) {
         }
         return method.apply(this, inputArgs)
       }
-    }
+    }, 
+    ...setupOptions,
   });
 
   return $instance;

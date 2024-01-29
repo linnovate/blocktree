@@ -5,6 +5,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function GraphqlExpress
  * @modules [graphql@^16 graphql-yoga@^4 ws@^8 graphql-ws@^5]
  * @envs []
+ * @route /graphql
  * @param {object} the express app
  * @param {array} [{
  *   directives: [{
@@ -18,7 +19,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  *   serverWS,    // the express server
  *   yogaOptions, // see: https://the-guild.dev/graphql/yoga-server/docs
  * }
- * @return {promise} in done
+ * @return {promise} is done
  *
  * @example setup Graphql:
    ---------------
