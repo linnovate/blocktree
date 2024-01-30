@@ -99,29 +99,31 @@ SecurityExpress(app, { corsOptions, helmetOptions } = {});
 /**
  * Swagger Express
  * @function SwaggerExpress
- * @modules [swagger-ui-express@^5]
- * @envs []
+ * @modules [swagger-ui-express@^5 swagger-jsdoc@^6]
+ * @envs [SWAGGER_URL]
  * @route /api-docs
  * @param {object} the express app
  * @param {object} options {
+ *   SWAGGER_URL,                // the api docs route
+ *   autoExpressPaths,           // create swagger paths by express routes (default: true)
  *   ...[swagger-ui options],    // see: https://www.npmjs.com/package/swagger-ui-express 
  *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
  * }
  * @return {promise} is done
- * @example JsDoc comment:
-    ---------------
-    / *
-    * @openapi
-    * /login:
-    *   get:
-    *     description: Welcome to swagger-jsdoc!
-    *     responses:
-    *       200:
-    *         description: Returns a mysterious string.
-    * /
-    app.use('/login', (req, res) => {});
  */
 SwaggerExpress(app);
+
+/**
+ * Example JsDoc annotated
+ * @openapi
+ * /login:
+ *   get:
+ *     description: Welcome to swagger-jsdoc!
+ *     responses:
+ *       200:
+ *         description: Returns a mysterious string.
+ */
+app.get('/login', (req, res) => res.send("OK"));
 ```
 
 
