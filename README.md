@@ -18,6 +18,7 @@ npm install @linnovate/blocktree
  - [Security Express](#security-express)
  - [Swagger Express](#swagger-express)
  - [Graphql Express](#graphql-express)
+ - [OpenId Express](#openid-express)
 
 > [Tools](#tools)
  - [JWT Parser](#jwt-parser)
@@ -190,6 +191,29 @@ GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaO
 AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
   GraphqlExpress(app, schemas, { serverWS: server, yogaOptions: {} });
 });
+```
+
+#### OpenId Express
+```js
+/**
+ * Open Id Express 
+ * @function OpenIdExpress
+ * @modules [openid-client@^5]
+ * @envs [ISSUER_CLIENT_ID, ISSUER_CLIENT_SECRET, ISSUER_URL, ISSUER_REDIRECT_URI, FRONTED_URL, DOMAIN]
+ * @param {object} the express app
+ * @param {object} the options {
+ *  issuer_url,          // (default: process.env.ISSUER_URL)
+ *  client_id,           // (default: process.env.CLIENT_ID)
+ *  client_secret,       // (default: process.env.CLIENT_SECRET)
+ *  redirect_uri,        // (default: process.env.REDIRECT_URI)
+ *  callback(req, res, tokenSet),   // return the tokenSet callback [optional]
+ *  fronted_url, // (default: process.env.FRONTED_URL)
+ *  cookieDomain,        // (default: process.env.DOMAIN) 
+ * }
+ * @return {promise} 
+ * @docs https://www.npmjs.com/package/openid-client
+*/
+OpenIdExpress(app);
 ```
 
 ### Tools
