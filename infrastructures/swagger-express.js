@@ -4,11 +4,10 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * Swagger Express
  * @function SwaggerExpress
  * @modules [swagger-ui-express@^5 swagger-jsdoc@^6]
- * @envs [SWAGGER_URL]
- * @route /api-docs
+ * @envs [SWAGGER_PATH]
  * @param {object} the express app
  * @param {object} options {
- *   SWAGGER_URL,                // the api docs route
+ *   SWAGGER_PATH,               // the api docs route (default: /api-docs)
  *   autoExpressPaths,           // create swagger paths by express routes (default: true)
  *   ...[swagger-ui options],    // see: https://www.npmjs.com/package/swagger-ui-express 
  *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
@@ -38,7 +37,7 @@ export async function SwaggerExpress(app, options = { autoExpressPaths: true }) 
   const { default: swaggerJsdoc } = await DynamicImport('swagger-jsdoc@^6');
 
   // envs
-  options.SWAGGER_URL ??= process.env.SWAGGER_URL || '/api-docs';
+  options.SWAGGER_PATH ??= process.env.SWAGGER_PATH || '/api-docs';
 
   /*
    * JsDoc options
@@ -67,7 +66,7 @@ export async function SwaggerExpress(app, options = { autoExpressPaths: true }) 
    * SwaggerUI
    */
   app.use(
-    options.SWAGGER_URL,
+    options.SWAGGER_PATH,
     SwaggerUI.serve,
     SwaggerUI.setup(jsDocsOptions, options)
   );
@@ -85,18 +84,24 @@ export function AutoExpressPaths(app) {
   app._router?.stack?.forEach(i => {
 
     if (i.route?.path) {
+      
+      let path = i.route.path;
 
-      expressPaths[i.route.path] || (expressPaths[i.route.path] = {});
+      // replace keys format 
+      i.keys.forEach(key => {
+        path = path.replace(`:${key.name}`, `{${key.name}}`);
+      });
+
+      expressPaths[path] || (expressPaths[path] = {});
 
       Object.keys(i.route.methods).forEach(method => {
-
-        expressPaths[i.route.path][method] = {
+        expressPaths[path][method] = {
           parameters: i.keys.map(key => ({
             in: "path",
             name: key.name,
             required: !key.optional,
           })),
-          responses: { 200: null },
+          responses: { },
         }
 
       })

@@ -18,6 +18,7 @@ npm install @linnovate/blocktree
  - [Security Express](#security-express)
  - [Swagger Express](#swagger-express)
  - [Graphql Express](#graphql-express)
+ - [Elactic Indexer Express](#elastic-indexer-express)
  - [OpenId Express](#openid-express)
 
 > [Tools](#tools)
@@ -101,11 +102,11 @@ SecurityExpress(app, { corsOptions, helmetOptions } = {});
  * Swagger Express
  * @function SwaggerExpress
  * @modules [swagger-ui-express@^5 swagger-jsdoc@^6]
- * @envs [SWAGGER_URL]
+ * @envs [SWAGGER_PATH]
  * @route /api-docs
  * @param {object} the express app
  * @param {object} options {
- *   SWAGGER_URL,                // the api docs route
+ *   SWAGGER_PATH,               // the api docs route
  *   autoExpressPaths,           // create swagger paths by express routes (default: true)
  *   ...[swagger-ui options],    // see: https://www.npmjs.com/package/swagger-ui-express 
  *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
@@ -126,8 +127,6 @@ SwaggerExpress(app);
  */
 app.get('/login', (req, res) => res.send("OK"));
 ```
-
-
 
 #### Graphql Express
 ```js
@@ -193,6 +192,54 @@ AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
 });
 ```
 
+#### Elastic Indexer Express
+```js
+/**
+ * Elastic Indexer Express
+ * @function ElasticIndexerExpress
+ * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @envs [ELASTIC_INDEXER_PATH, ELASTICSEARCH_URL, LOG_SERVICE_NAME]
+ * @param {object} the express app
+ * @param {object} options {
+ *   ELASTIC_INDEXER_PATH,    // the api docs route (default: /elastic-indexer)
+ *   configs: [{     // {null|array}
+ *     ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
+ *     index,      // {string} the elastic alias name
+ *     mappings,   // {null|object} the elastic mappings (neets for create/clone index)
+ *     settings,   // {null|object} the elastic settings (neets for create/clone index)
+ *     bulk,       // {null|object} the elastic bulk options (neets for routing and more)
+ *     keyId,      // {null|string} the elastic doc key (neets for update a doc)
+ *     updateOnly, // {null|bool} update parts of items (using a clone index)
+ *     syncOnly,   // {null|bool} update parts of items (using the same index)
+ *     keepAliasesCount,  // {null|number} how many elastic index passes to save
+ *   }],
+ *   batchCallback, // async (offset, config) => ([])
+ *   testCallback,  // async (config) => true
+ * }
+ * @return {promise} is done
+ * @routes {
+ *   [post] [ELASTIC_INDEXER_PATH]/build/:index
+ *   [post] [ELASTIC_INDEXER_PATH]/stop/:index
+ *   [post] [ELASTIC_INDEXER_PATH]/restore/:index/:backup
+ *   [get]  [ELASTIC_INDEXER_PATH]/backups/:index
+ *   [get]  [ELASTIC_INDEXER_PATH]/search?:index?:text?:from?:size?
+ * }
+*/
+ElasticIndexerExpress(app, {
+  configs: [{
+    ELASTICSEARCH_URL: 'http://localhost:9200',
+    index: 'test',
+  }],
+  batchCallback: async (offset, config) => !offset && [{ count: 1 }, { count: 2 }],
+});
+// Or with auth
+app.use('/admin', passport.authenticate('...'));
+ElasticIndexerExpress(app, {
+  ELASTIC_INDEXER_PATH: '/admin/elastic-indexer',
+  // ...
+});
+```
+
 #### OpenId Express
 ```js
 /**
@@ -213,7 +260,7 @@ AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
  * @return {promise} 
  * @docs https://www.npmjs.com/package/openid-client
 */
-OpenIdExpress(app);
+OpenIdExpress(app, options);
 ```
 
 ### Tools
@@ -298,10 +345,23 @@ const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: 
      aliasName,      // {string} the elastic alias name
      indexName,      // {string} the elastic index name
    }
- * @param {function} async testCallback(config)
  * @return {bool} is done
  */
-const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, indexName }, async (config) => true);
+const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, indexName });
+```
+```js
+/**
+ * Elastic Indexer Backups.
+ * @function ElasticIndexerBackups
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
+ * @param {object} {
+     ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
+     aliasName,         // {string} the elastic alias name
+   }
+ * @return {object} { data, actives }
+ */
+const { data, actives } = await ElasticIndexerBackups({ ELASTICSEARCH_URL, aliasName });
 ```
 
 #### Mongo Indexer
@@ -312,7 +372,7 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
  * @modules [mongodb@^5 mongoose@^7 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
-     MONGO_URI,       // the mongo service uri (mongodb://[host]:[port])
+     MONGO_URI,       // the mongo service uri (mongodb://[host]:[port]/[db_name])
      usingMongoose,   // {null|bool} is use mongoose schemas
      modelName,       // {null|string} the mongoose model name
      collectionName,  // {null|string} the mongo collection name
@@ -480,7 +540,7 @@ const data = await client.search({ ... });
  * @function MongoClient
  * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {string} MONGO_URI the mongo service uri (mongodb://[host]:[port])
+ * @param {string} MONGO_URI the mongo service uri (mongodb://[host]:[port]/[db_name])
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb

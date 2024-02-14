@@ -9,6 +9,7 @@ export { Logger } from './utils/logger.js';
 export { SecurityExpress } from './infrastructures/security-express.js';
 export { SwaggerExpress, AutoExpressPaths } from './infrastructures/swagger-express.js';
 export { GraphqlExpress } from './infrastructures/graphql-express.js';
+export { ElasticIndexerExpress } from './infrastructures/elastic-indexer-express.js';
 export { OpenIdExpress, Auth, Callback } from './infrastructures/openid-express.js';
 
 /**
@@ -45,5 +46,5 @@ export { RedisProxy } from './tools/redis-proxy.js';
 /**
  * Tools: (Indexers)
  */
-export { ElasticIndexer, RestoreElasticIndexer } from './tools/elastic-indexer.js';
+export { ElasticIndexer, RestoreElasticIndexer, ElasticIndexerBackups } from './tools/elastic-indexer.js';
 export { MongoIndexer } from './tools/mongo-indexer.js';
