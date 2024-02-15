@@ -13,6 +13,10 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
  * }
  * @return {promise} is done
+ * @routes {
+ *   [get] [SWAGGER_PATH]        // the swagger ui
+ *   [get] [SWAGGER_PATH].json   // the swagger docs
+ * }
  * @example SwaggerExpress(app, options);
  * @example JsDoc annotated:
     ---------------
@@ -63,7 +67,7 @@ export async function SwaggerExpress(app, options = { autoExpressPaths: true }) 
   }
 
   /*
-   * SwaggerUI
+   * Swagger ui
    */
   app.use(
     options.SWAGGER_PATH,
@@ -71,6 +75,13 @@ export async function SwaggerExpress(app, options = { autoExpressPaths: true }) 
     SwaggerUI.setup(jsDocsOptions, options)
   );
 
+  /*
+   * Swagger docs
+   */
+  app.get(options.SWAGGER_PATH + '.json', (req, res) => {
+    res.json(jsDocsOptions);
+  });
+  
 };
 
 

@@ -25,11 +25,11 @@ import { ElasticClient } from '../services/elastic-client.js';
  * }
  * @return {promise} is done
  * @routes {
- *   [post] [ELASTIC_INDEXER_PATH]/build/:index
- *   [post] [ELASTIC_INDEXER_PATH]/stop/:index
- *   [post] [ELASTIC_INDEXER_PATH]/restore/:index/:backup
- *   [get]  [ELASTIC_INDEXER_PATH]/backups/:index
- *   [get]  [ELASTIC_INDEXER_PATH]/search?:index?:text?:from?:size?
+ *   [post] [ELASTIC_INDEXER_PATH]/build/:indexName
+ *   [post] [ELASTIC_INDEXER_PATH]/stop/:indexName
+ *   [post] [ELASTIC_INDEXER_PATH]/restore/:indexName/:backup
+ *   [get]  [ELASTIC_INDEXER_PATH]/backups/:indexName
+ *   [get]  [ELASTIC_INDEXER_PATH]/search?:indexName?:text?:from?:size?
  * }
  * @example 
  * ElasticIndexerExpress(app, {
@@ -56,11 +56,11 @@ export async function ElasticIndexerExpress(app, options) {
 
   /**
    * Build action
-   * @route [ELASTIC_INDEXER_PATH]/build/:index [post]
+   * @route [ELASTIC_INDEXER_PATH]/build/:indexName [post]
    */
-  app.post(`${options.ELASTIC_INDEXER_PATH}/build/:index`, async (req, res) => {
+  app.post(`${options.ELASTIC_INDEXER_PATH}/build/:indexName`, async (req, res) => {
     // find config
-    const config = options.configs?.find(i => i.index == req.params.index);
+    const config = options.configs?.find(i => i.index == req.params.indexName);
     if (!config) {
       return res.status(400).json({ error: 'NOT_FOUND' });
     }
@@ -101,11 +101,11 @@ export async function ElasticIndexerExpress(app, options) {
 
   /**
    * Stop action
-   * @route [ELASTIC_INDEXER_PATH]/stop/:index [post]
+   * @route [ELASTIC_INDEXER_PATH]/stop/:indexName [post]
    */
-  app.post(`${options.ELASTIC_INDEXER_PATH}/stop/:index`, async (req, res) => {
+  app.post(`${options.ELASTIC_INDEXER_PATH}/stop/:indexName`, async (req, res) => {
     // find config
-    const config = options.configs?.find(i => i.index == req.params.index);
+    const config = options.configs?.find(i => i.index == req.params.indexName);
     if (!config) {
       return res.status(400).json({ error: 'NOT_FOUND' });
     }
@@ -117,18 +117,18 @@ export async function ElasticIndexerExpress(app, options) {
 
   /**
    * Restore action
-   * @route [ELASTIC_INDEXER_PATH]/restore/:index/:backup [post]
+   * @route [ELASTIC_INDEXER_PATH]/restore/:indexName/:backup [post]
    */
-  app.post(`${options.ELASTIC_INDEXER_PATH}/restore/:index/:backup`, async (req, res) => {
+  app.post(`${options.ELASTIC_INDEXER_PATH}/restore/:indexName/:backup`, async (req, res) => {
     // find config
-    const config = options.configs?.find(i => i.index == req.params.index);
+    const config = options.configs?.find(i => i.index == req.params.indexName);
     if (!config) {
       return res.status(400).json({ error: 'NOT_FOUND' });
     }
     // run
     const success = await RestoreElasticIndexer({
       ELASTICSEARCH_URL: config.ELASTICSEARCH_URL,
-      aliasName: req.params.index,
+      aliasName: req.params.indexName,
       indexName: req.params.backup
     })
     // send
@@ -137,18 +137,18 @@ export async function ElasticIndexerExpress(app, options) {
 
   /**
    * Backups list
-   * @route [ELASTIC_INDEXER_PATH]/backups/:index [get]
+   * @route [ELASTIC_INDEXER_PATH]/backups/:indexName [get]
    */
-  app.get(`${options.ELASTIC_INDEXER_PATH}/backups/:index`, async (req, res) => {
+  app.get(`${options.ELASTIC_INDEXER_PATH}/backups/:indexName`, async (req, res) => {
     // find config
-    const config = options.configs?.find(i => i.index == req.params.index);
+    const config = options.configs?.find(i => i.index == req.params.indexName);
     if (!config) {
       return res.status(400).json({ error: 'NOT_FOUND' });
     }
     // run
     const { data, actives } = await ElasticIndexerBackups({
       ELASTICSEARCH_URL: config.ELASTICSEARCH_URL,
-      aliasName: req.params.index,
+      aliasName: req.params.indexName,
     })
     // send
     res.json({ ok: true, data, actives });
@@ -156,18 +156,18 @@ export async function ElasticIndexerExpress(app, options) {
 
   /**
    * Search data
-   * @route [ELASTIC_INDEXER_PATH]/search?:index?:text?:from?:size? [get]
+   * @route [ELASTIC_INDEXER_PATH]/search?:indexName?:text?:from?:size? [get]
    */
-  app.get(`${options.ELASTIC_INDEXER_PATH}/search?:index?:text?:from?:size?`, async (req, res) => {
+  app.get(`${options.ELASTIC_INDEXER_PATH}/search?:indexName?:text?:from?:size?`, async (req, res) => {
     // find config
-    const config = options.configs?.find(i => i.index == req.query.index?.split('---')[0]);
+    const config = options.configs?.find(i => i.index == req.query.indexName?.split('---')[0]);
     if (!config) {
       return res.status(400).json({ error: 'NOT_FOUND' });
     }
     // run
     const client = await ElasticClient({ ELASTICSEARCH_URL: config.ELASTICSEARCH_URL });
     await client.search({
-      index: req.query.index,
+      index: req.query.indexName,
       from: req.query.from || 0,
       size: req.query.size || 100,
       query: { query_string: { query: req.query.text || '*' } }

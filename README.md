@@ -112,6 +112,10 @@ SecurityExpress(app, { corsOptions, helmetOptions } = {});
  *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
  * }
  * @return {promise} is done
+ * @routes {
+ *   [get] [SWAGGER_PATH]        // the swagger ui
+ *   [get] [SWAGGER_PATH].json   // the swagger docs
+ * }
  */
 SwaggerExpress(app);
 
@@ -218,11 +222,11 @@ AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
  * }
  * @return {promise} is done
  * @routes {
- *   [post] [ELASTIC_INDEXER_PATH]/build/:index
- *   [post] [ELASTIC_INDEXER_PATH]/stop/:index
- *   [post] [ELASTIC_INDEXER_PATH]/restore/:index/:backup
- *   [get]  [ELASTIC_INDEXER_PATH]/backups/:index
- *   [get]  [ELASTIC_INDEXER_PATH]/search?:index?:text?:from?:size?
+ *   [post] [ELASTIC_INDEXER_PATH]/build/:indexName
+ *   [post] [ELASTIC_INDEXER_PATH]/stop/:indexName
+ *   [post] [ELASTIC_INDEXER_PATH]/restore/:indexName/:backup
+ *   [get]  [ELASTIC_INDEXER_PATH]/backups/:indexName
+ *   [get]  [ELASTIC_INDEXER_PATH]/search?:indexName?:text?:from?:size?
  * }
 */
 ElasticIndexerExpress(app, {
