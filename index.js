@@ -10,7 +10,7 @@ export { SecurityExpress } from './infrastructures/security-express.js';
 export { SwaggerExpress, AutoExpressPaths } from './infrastructures/swagger-express.js';
 export { GraphqlExpress } from './infrastructures/graphql-express.js';
 export { ElasticIndexerExpress } from './infrastructures/elastic-indexer-express.js';
-export { OpenIdExpress, Auth, Callback } from './infrastructures/openid-express.js';
+export { OpenIdExpress } from './infrastructures/openid-express.js';
 
 /**
  * Services: (Databases)

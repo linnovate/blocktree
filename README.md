@@ -250,7 +250,7 @@ ElasticIndexerExpress(app, {
  * Open Id Express 
  * @function OpenIdExpress
  * @modules [openid-client@^5]
- * @envs [ISSUER_CLIENT_ID, ISSUER_CLIENT_SECRET, ISSUER_URL, ISSUER_REDIRECT_URI, FRONTED_URL, DOMAIN]
+ * @envs [ISSUER_CLIENT_ID, ISSUER_CLIENT_SECRET, ISSUER_URL, ISSUER_REDIRECT_URI, WEBSITE_URL]
  * @param {object} the express app
  * @param {object} the options {
  *  issuer_url,          // (default: process.env.ISSUER_URL)
@@ -258,13 +258,13 @@ ElasticIndexerExpress(app, {
  *  client_secret,       // (default: process.env.CLIENT_SECRET)
  *  redirect_uri,        // (default: process.env.REDIRECT_URI)
  *  callback(req, res, tokenSet),   // return the tokenSet callback [optional]
- *  fronted_url, // (default: process.env.FRONTED_URL)
- *  cookieDomain,        // (default: process.env.DOMAIN) 
+ *  website_url,         // (default: process.env.WEBSITE_URL)
+ *  cookieOptions,       // (default: { secure: true, sameSite: 'None', maxAge: 20 * 3600000 }) 
  * }
  * @return {promise} 
  * @docs https://www.npmjs.com/package/openid-client
 */
-OpenIdExpress(app, options);
+OpenIdExpress(app, {});
 ```
 
 ### Tools

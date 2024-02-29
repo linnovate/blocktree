@@ -6,15 +6,15 @@ const defaultOptions = {
   client_secret: process.env.CLIENT_SECRET,
   issuer_url: process.env.ISSUER_URL,
   redirect_uri: process.env.REDIRECT_URI,
-  fronted_url: process.env.FRONTED_URL,
-  cookieDomain: process.env.DOMAIN
+  website_url: process.env.WEBSITE_URL || "/",
+  cookieOptions: {},
 };
 
 /**
  * Open Id Express 
  * @function OpenIdExpress
  * @modules [openid-client@^5]
- * @envs [ISSUER_CLIENT_ID, ISSUER_CLIENT_SECRET, ISSUER_URL, ISSUER_REDIRECT_URI, FRONTED_URL, DOMAIN]
+ * @envs [ISSUER_CLIENT_ID, ISSUER_CLIENT_SECRET, ISSUER_URL, ISSUER_REDIRECT_URI, WEBSITE_URL]
  * @param {object} the express app
  * @param {object} the options {
  *  issuer_url,          // (default: process.env.ISSUER_URL)
@@ -22,8 +22,8 @@ const defaultOptions = {
  *  client_secret,       // (default: process.env.CLIENT_SECRET)
  *  redirect_uri,        // (default: process.env.REDIRECT_URI)
  *  callback(req, res, tokenSet),   // return the tokenSet callback [optional]
- *  fronted_url, // (default: process.env.FRONTED_URL)
- *  cookieDomain,        // (default: process.env.DOMAIN) 
+ *  website_url,         // (default: process.env.WEBSITE_URL || "/" )
+ *  cookieOptions,       // (default: { secure: true, sameSite: 'None', maxAge: 20 * 3600000 }) 
  * }
  * @return {promise} 
  * @example OpenIdExpress(app, options);
@@ -50,41 +50,8 @@ export async function OpenIdExpress(app, options) {
     logger.error('OpenIdExpress [missing env]: options.redirect_uri || REDIRECT_URI');
   }
 
-  // express routes
-  app.get('/auth', async (req, res) => {
-    Auth(res, options)
-  });
-
-  app.get('/auth/callback', async (req, res) => {
-    Callback(req, res, options)
-  });
-}
-
-/**
- * Auth 
- */
-export async function Auth(res, options) {
-
-  const logger = await Logger();
- 
-  options = Object.assign({}, defaultOptions, options)
-
-  // validations erros
-  if (!options.issuer_url) {
-    logger.error('OpenIdExpress [missing env]: options.issuer_url || ISSUER_URL');
-  }
-  if (!options.client_id) {
-    logger.error('OpenIdExpress [missing env]: options.client_id || CLIENT_ID');
-  }
-  if (!options.client_secret) {
-    logger.error('OpenIdExpress [missing env]: options.client_secret || CLIENT_SECRET');
-  }
-  if (!options.redirect_uri) {
-    logger.error('OpenIdExpress [missing env]: options.redirect_uri || REDIRECT_URI');
-  }
-
-  const { Issuer, generators } = await DynamicImport('openid-client@^5');
-  options = Object.assign({}, defaultOptions, options)
+  // issuer setup
+  const { Issuer } = await DynamicImport('openid-client@^5');
 
   const issuer = await Issuer.discover(options.issuer_url).catch(error => {
     logger.error('OpenIdExpress [Issuer] error:', error);
@@ -94,12 +61,35 @@ export async function Auth(res, options) {
     return;
   }
 
-  const client = new issuer.Client({
+  const issuerClient = new issuer.Client({
     client_id: options.client_id,
     client_secret: options.client_secret,
   });
 
-  const url = client.authorizationUrl({
+
+  // express routes
+  app.get('/auth', async (req, res) => {
+    Auth(res, issuerClient, options)
+  });
+
+  app.get('/auth/callback', async (req, res) => {
+    Callback(req, res, issuerClient, options)
+  });
+
+  app.get('/auth/refresh', async (req, res) => {
+    RefreshToken(req, res, issuerClient, options)
+  });
+
+}
+
+/**
+ * Auth 
+ */
+async function Auth(res, issuerClient, options) {
+
+  const { generators } = await DynamicImport('openid-client@^5');
+
+  const url = issuerClient.authorizationUrl({
     scope: 'openid',
     response_type: 'code',
     redirect_uri: options.redirect_uri,
@@ -107,57 +97,29 @@ export async function Auth(res, options) {
   });
 
   res.redirect(url);
-  
+
   return true;
 };
 
 /**
  * Callback 
  */
-export async function Callback(req, res, options) {
+async function Callback(req, res, issuerClient, options) {
 
-  const logger = await Logger();
- 
-  options = Object.assign({}, defaultOptions, options)
-
-  // validations erros
-  if (!options.issuer_url) {
-    logger.error('OpenIdExpress [missing env]: options.issuer_url || ISSUER_URL');
-  }
-  if (!options.client_id) {
-    logger.error('OpenIdExpress [missing env]: options.client_id || CLIENT_ID');
-  }
-  if (!options.client_secret) {
-    logger.error('OpenIdExpress [missing env]: options.client_secret || CLIENT_SECRET');
-  }
-  if (!options.redirect_uri) {
-    logger.error('OpenIdExpress [missing env]: options.redirect_uri || REDIRECT_URI');
+  if (typeof req.cookies === 'undefined') {
+    logger.error('OpenIdExpress [Callback] It appears cookie-parser middleware hasn\'t been applied. Please ensure to use cookie-parser before this middleware.');
+    return res.state(400).json({ message: 'cookies are missing' });
   }
 
-  const { Issuer } = await DynamicImport('openid-client@^5');
-  options = Object.assign({}, defaultOptions, options)
-
-  const issuer = await Issuer.discover(options.issuer_url).catch(error => {
-    logger.error('OpenIdExpress [Issuer] error:', error);
-  });
-
-  if (!issuer) {
-    return;
-  }
-
-  const client = new issuer.Client({
-    client_id: options.client_id,
-    client_secret: options.client_secret,
-  });
-
-  const params = client.callbackParams(req);
+  const params = issuerClient.callbackParams(req);
   const state = params.state;
 
   if (!state || state !== req.query.state) {
-    throw new Error('Invalid state');
+    return res.state(400).json({ message: 'invalid state' });
   }
 
-  const tokenSet = await client.callback(options.redirect_uri, params, { state });
+  const tokenSet = await issuerClient.callback(options.redirect_uri, params, { state });
+
   if (options.callback) {
     return options.callback(req, res, tokenSet);
   }
@@ -166,8 +128,52 @@ export async function Callback(req, res, options) {
     secure: true,
     sameSite: 'None',
     maxAge: 20 * 3600000,
+    ...options.cookieOptions
   };
 
   res.cookie('jwt', tokenSet.access_token, cookieOptions);
-  res.redirect(options.fronted_url);
+  res.cookie('refresh_token', tokenSet.refresh_token, cookieOptions);
+
+  res.redirect(options.website_url);
+
 };
+
+/**
+ * RefreshToken 
+ */
+async function RefreshToken(req, res, issuerClient, options) {
+
+  if (typeof req.cookies === 'undefined') {
+    logger.error('OpenIdExpress [Callback] It appears cookie-parser middleware hasn\'t been applied. Please ensure to use cookie-parser before this middleware.');
+    return res.state(400).json({ message: 'cookies are missing.' });
+  }
+
+  const logger = await Logger();
+
+  const refreshToken = req.cookies['refresh_token'];
+
+  if (!refreshToken) {
+    return res.status(401).json({});
+  }
+
+  const newToken = await issuerClient.refresh(refreshToken)
+    .catch((error) => {
+      logger.error('OpenIdExpress [RefreshToken] error:', error);
+    })
+
+  if (!newToken) {
+    return res.status(401).json({});
+  }
+
+  const cookieOptions = {
+    secure: true,
+    sameSite: 'None',
+    maxAge: 20 * 3600000,
+    ...options.cookieOptions
+  };
+
+  res.cookie('jwt', newToken.access_token, cookieOptions);
+  res.cookie('refresh_token', newToken.refresh_token, cookieOptions);
+
+  return res.status(200).json({ message: 'ok' });
+}
