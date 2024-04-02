@@ -20,8 +20,8 @@ import { ElasticClient } from '../services/elastic-client.js';
  *     syncOnly,   // {null|bool} update parts of items (using the same index)
  *     keepAliasesCount,  // {null|number} how many elastic index passes to save
  *   }],
- *   batchCallback, // async (offset, config) => ([])
- *   testCallback,  // async (config) => true
+ *   batchCallback, // async (offset, config, reports) => ([])
+ *   testCallback,  // async (config, reports) => true
  * }
  * @return {promise} is done
  * @routes {
@@ -69,18 +69,18 @@ export async function ElasticIndexerExpress(app, options) {
     // start chunk
     const intervalId = setInterval(() => res.write(`{ status: 'start' }`), 500);
     // run
-    const isDone = await ElasticIndexer(
+    const reports = await ElasticIndexer(
       config,
-      (offset, config) => {
+      (offset, config, reports) => {
         res.write(`{ offset: ${offset} }`);
-        return !!(inProcess[config.index]) && options.batchCallback(offset, config);
+        return !!(inProcess[config.index]) && options.batchCallback(offset, config, reports);
       },
-      async (config) => {
+      async (config, reports) => {
         if (!inProcess[config.index]) {
           res.write(`{ status: 'stop' }`);
           return false;
         }
-        else if (!options.testCallback || await options.testCallback?.(config)) {
+        else if (!options.testCallback || await options.testCallback?.(config, reports)) {
           res.write(`{ status: 'success' }`)
           return true;
         } else {
@@ -89,13 +89,16 @@ export async function ElasticIndexerExpress(app, options) {
         }
       }
     );
+    console.log(reports)
+
     // is error
-    if (!isDone) {
+    if (!reports['succeeded']) {
       res.status(500);
     }
     // end
     delete inProcess[config.index];
     clearInterval(intervalId);
+    res.write(`{ reports: ${JSON.stringify(reports)} }`)
     res.end();
   })
 

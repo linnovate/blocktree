@@ -217,8 +217,8 @@ AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
  *     syncOnly,   // {null|bool} update parts of items (using the same index)
  *     keepAliasesCount,  // {null|number} how many elastic index passes to save
  *   }],
- *   batchCallback, // async (offset, config) => ([])
- *   testCallback,  // async (config) => true
+ *   batchCallback, // async (offset, config, reports) => ([])
+ *   testCallback,  // async (config, reports) => true
  * }
  * @return {promise} is done
  * @routes {
@@ -315,13 +315,13 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
      settings,   // {null|object} the elastic settings (neets for create/clone index)
      bulk,       // {null|object} the elastic bulk options (neets for routing and more)
      keyId,      // {null|string} the elastic doc key (neets for update a doc)
-     updateOnly, // {bool} update parts of items (using a clone index)
-     syncOnly,   // {bool} update parts of items (using the same index)
+     updateOnly, // {null|bool} update parts of items (using a clone index)
+     syncOnly,   // {null|bool} update parts of items (using the same index)
      keepAliasesCount,  // {null|number} how many elastic index passes to save
    }
- * @param {function} async batchCallback(offset, config)
- * @param {function} async testCallback(config)
- * @return {bool} is done
+ * @param {function} async batchCallback(offset, config, reports)
+ * @param {function} async testCallback(config, reports)
+ * @return {object} is reports
  * @dockerCompose
   # Elastic service
   elastic:
@@ -336,7 +336,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
       - 9200:9200
       - 9300:9300
  */
-const isDone = await ElasticIndexer({ index: "my_name", mappings: {}, settings: {} }, (offset, config) => [], (config) => true);
+const reports = await ElasticIndexer({ index: "my_name", mappings: {}, settings: {} }, (offset, config, reports) => [], (config, reports) => true);
 ```
 ```js
 /**
