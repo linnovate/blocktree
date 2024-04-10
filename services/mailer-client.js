@@ -8,8 +8,14 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance
- * @docs https://nodemailer.com/about;
- * @example const data = await (await MailerClient()).sendMail({ ... });
+ * @docs https://nodemailer.com/about
+ * @example const data = await (await MailerClient()).sendMail({
+    from,    // sender address
+    to,      // list of receivers
+    subject, // subject line
+    text,    // plain text body
+    html,    // html body
+  });
  */
 
 let $instance;

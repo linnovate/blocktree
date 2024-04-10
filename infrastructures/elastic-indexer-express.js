@@ -16,14 +16,13 @@ import { ElasticClient } from '../services/elastic-client.js';
  *     settings,   // {null|object} the elastic settings (neets for create/clone index)
  *     bulk,       // {null|object} the elastic bulk options (neets for routing and more)
  *     keyId,      // {null|string} the elastic doc key (neets for update a doc)
- *     updateOnly, // {null|bool} update parts of items (using a clone index)
- *     syncOnly,   // {null|bool} update parts of items (using the same index)
+ *     mode,       // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
  *     keepAliasesCount,  // {null|number} how many elastic index passes to save
  *   }],
  *   batchCallback, // async (offset, config, reports) => ([])
  *   testCallback,  // async (config, reports) => true
  * }
- * @return {promise} is done
+ * @return {promise:object} the reports data
  * @routes {
  *   [post] [ELASTIC_INDEXER_PATH]/build/:indexName
  *   [post] [ELASTIC_INDEXER_PATH]/stop/:indexName

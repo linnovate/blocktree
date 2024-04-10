@@ -213,14 +213,13 @@ AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
  *     settings,   // {null|object} the elastic settings (neets for create/clone index)
  *     bulk,       // {null|object} the elastic bulk options (neets for routing and more)
  *     keyId,      // {null|string} the elastic doc key (neets for update a doc)
- *     updateOnly, // {null|bool} update parts of items (using a clone index)
- *     syncOnly,   // {null|bool} update parts of items (using the same index)
+ *     mode,       // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
  *     keepAliasesCount,  // {null|number} how many elastic index passes to save
  *   }],
  *   batchCallback, // async (offset, config, reports) => ([])
  *   testCallback,  // async (config, reports) => true
  * }
- * @return {promise} is done
+ * @return {promise:object} the reports data
  * @routes {
  *   [post] [ELASTIC_INDEXER_PATH]/build/:indexName
  *   [post] [ELASTIC_INDEXER_PATH]/stop/:indexName
@@ -306,7 +305,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^8 pino@^8]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
@@ -314,14 +313,13 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
      mappings,   // {null|object} the elastic mappings (neets for create/clone index)
      settings,   // {null|object} the elastic settings (neets for create/clone index)
      bulk,       // {null|object} the elastic bulk options (neets for routing and more)
-     keyId,      // {null|string} the elastic doc key (neets for update a doc)
-     updateOnly, // {null|bool} update parts of items (using a clone index)
-     syncOnly,   // {null|bool} update parts of items (using the same index)
+     keyId,      // {null|string} the elastic doc key (neets for update a doc) (default: "id")
+     mode,       // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
      keepAliasesCount,  // {null|number} how many elastic index passes to save
    }
  * @param {function} async batchCallback(offset, config, reports)
  * @param {function} async testCallback(config, reports)
- * @return {object} is reports
+ * @return {promise:object} the reports data
  * @dockerCompose
   # Elastic service
   elastic:

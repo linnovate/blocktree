@@ -12,14 +12,13 @@ import { Logger } from '../utils/logger.js';
      mappings,   // {null|object} the elastic mappings (neets for create/clone index)
      settings,   // {null|object} the elastic settings (neets for create/clone index)
      bulk,       // {null|object} the elastic bulk options (neets for routing and more)
-     keyId,      // {null|string} the elastic doc key (neets for update a doc)
-     updateOnly, // {null|bool} update parts of items (using a clone index)
-     syncOnly,   // {null|bool} update parts of items (using the same index)
+     keyId,      // {null|string} the elastic doc key (neets for update a doc) (default: "id")
+     mode,       // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
      keepAliasesCount,  // {null|number} how many elastic index passes to save
    }
  * @param {function} async batchCallback(offset, config, reports)
  * @param {function} async testCallback(config, reports)
- * @return {promise:object} is reports
+ * @return {promise:object} the reports data
  * @example const reports = await ElasticIndexer(config, async (offset, config, reports) => [], async (config, reports) => true);
  * @dockerCompose
   # Elastic service
@@ -72,18 +71,17 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     const lastIndex = Object.keys(indexAliases).sort((a, b) => getIndexTime(b) - getIndexTime(a)).reverse()[0];
 
     // sync mode
-    if (lastIndex && config.syncOnly) {
+    if (lastIndex && (config.mode == 'sync'|| config.syncOnly)) {
       config.indexName = lastIndex;
-      logger.info('ElasticIndexer [index mode] syncOnly', { alias: config.index, index: config.indexName });
+      logger.info('ElasticIndexer [index mode] sync', { alias: config.index, index: config.indexName });
     }
     // update mode
-    else if (lastIndex && config.updateOnly) {
+    else if (lastIndex && (config.mode == 'clone' || config.updateOnly)) {
       await client.reindex({
         source: { index: lastIndex },
         dest: { index: config.indexName },
       });
-      logger.info('ElasticIndexer [index mode] updateOnly', { alias: config.index, index: config.indexName });
-      reports["copy_index"] = lastIndex;
+      logger.info('ElasticIndexer [index mode] clone', { alias: config.index, index: config.indexName });
     }
     // new mode
     else {
@@ -92,8 +90,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
         mappings: config.mappings,
         settings: config.settings,
       });
-      logger.info('ElasticIndexer [index mode] create', { alias: config.index, index: config.indexName });
-      reports["create_index"] = config.indexName
+      logger.info('ElasticIndexer [index mode] new', { alias: config.index, index: config.indexName });
     }
     
     reports["using_index"] = config.indexName;
@@ -112,18 +109,19 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
      * Test callback (step 3)
      */
     if (testCallback) {
-      
+      reports["testing_logs"] = [];
       const isTestSucceeded = await testCallback(config, reports)
         .then(() => {
-          logger.info('ElasticIndexer [test] succeeded', { alias: config.index, index: config.indexName });
+          logger.info('ElasticIndexer [testing] succeeded', { alias: config.index, index: config.indexName });
           return true;
         })
         .catch((error) => {
-          logger.error('ElasticIndexer [test] failed', { alias: config.index, index: config.indexName, error: error?.toString() });
+          logger.error('ElasticIndexer [testing] failed', { alias: config.index, index: config.indexName, error: error?.toString() });
+          reports["testing_error"] = error?.toString();
           return false;
         });
 
-      reports["test_succeeded"] = isTestSucceeded;
+      reports["testing_succeeded"] = isTestSucceeded;
 
       if (!isTestSucceeded) {
         // skip update alias
@@ -134,7 +132,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     /*
      * Skip aliases (syncOnly mode)
      */
-    if (lastIndex && config.syncOnly) {
+    if (lastIndex && config.mode == 'sync') {
       return reports;
     }
 
@@ -221,6 +219,7 @@ async function insertData(config, batchCallback, reports, offset = 0) {
   /*
    * Load items (step 1)
    */
+  reports["insertData"][offset]["callback_logs"] = [];
   const items = await batchCallback(offset, config, reports)
     .then((items) => {
       logger.info('ElasticIndexer [batch callback] succeeded', { alias: config.index, index: config.indexName, offset, count: items?.length });
@@ -268,11 +267,11 @@ async function insertData(config, batchCallback, reports, offset = 0) {
   }
   else {
     const logs = response.items.map(item => ({
-      _id: item.index._id,
+      [config.keyId || 'id']: item.index[config.keyId || 'id'],
       action: item.index.result,
     }))
     logger.info('ElasticIndexer [batch inserting] succeeded', { alias: config.index, index: config.indexName, offset, count: items?.length, logs });
-    reports["insertData"][offset]["inserting_logs"] = logs;
+    reports["insertData"][offset]["inserting_succeeded"] = true;
   }
 
   /*
