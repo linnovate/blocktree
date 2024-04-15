@@ -71,12 +71,12 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     const lastIndex = Object.keys(indexAliases).sort((a, b) => getIndexTime(b) - getIndexTime(a)).reverse()[0];
 
     // sync mode
-    if (lastIndex && (config.mode == 'sync'|| config.syncOnly)) {
+    if (lastIndex && config.mode == 'sync') {
       config.indexName = lastIndex;
       logger.info('ElasticIndexer [index mode] sync', { alias: config.index, index: config.indexName });
     }
     // update mode
-    else if (lastIndex && (config.mode == 'clone' || config.updateOnly)) {
+    else if (lastIndex && config.mode == 'clone') {
       await client.reindex({
         source: { index: lastIndex },
         dest: { index: config.indexName },
@@ -130,7 +130,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     }
 
     /*
-     * Skip aliases (syncOnly mode)
+     * Skip aliases (sync mode)
      */
     if (lastIndex && config.mode == 'sync') {
       return reports;
