@@ -15,7 +15,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @dockerCompose
   # Mongo service
   mongo:
-    image: mongo:alpine
+    image: mongo:7-jammy
     volumes:
       - ./.mongo:/data/db
     environment:
@@ -37,7 +37,7 @@ export async function MongoClient(MONGO_URI, mongoClientOptions) {
   }
 
   // imports
-  const { MongoClient } = await DynamicImport('mongodb@^5');
+  const { MongoClient } = await DynamicImport('mongodb@^6');
 
   // envs
   MONGO_URI ??= process.env.MONGO_URI;

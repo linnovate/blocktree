@@ -36,7 +36,7 @@ import { ElasticClient } from '../services/elastic-client.js';
  *     ELASTICSEARCH_URL: 'http://localhost:9200',
  *     index: 'test',
  *   }],
- *   batchCallback: async (offset, config) => !offset && [{ count: 1 }, { count: 2 }],
+ *   batchCallback: async (offset, config, reports) => !offset && [{ count: 1 }, { count: 2 }],
  * });
  * // Or with auth
  * app.use('/admin', passport.authenticate('...'));

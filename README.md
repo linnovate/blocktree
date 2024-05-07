@@ -19,6 +19,7 @@ npm install @linnovate/blocktree
  - [Swagger Express](#swagger-express)
  - [Graphql Express](#graphql-express)
  - [Elactic Indexer Express](#elastic-indexer-express)
+ - [Mongo Indexer Express](#mongo-indexer-express)
  - [OpenId Express](#openid-express)
 
 > [Tools](#tools)
@@ -243,6 +244,51 @@ ElasticIndexerExpress(app, {
 });
 ```
 
+#### Mongo Indexer Express
+```js
+/**
+ * Mongo Indexer Express
+ * @function MongoIndexerExpress
+ * @modules [mongodb@^6 pino@^8]
+ * @envs [MONGO_INDEXER_PATH, MONGO_URI, LOG_SERVICE_NAME]
+ * @param {object} the express app
+ * @param {object} options {
+ *   MONGO_INDEXER_PATH,    // the api docs route (default: /elastic-indexer)
+ *   configs: [{     // {null|array}
+ *     MONGO_URI,       // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
+ *     collectionName,  // {null|string} the mongo collection name
+ *     keyId,           // {null|string} the mongo doc key
+ *     mode,            // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
+ *     keepAliasesCount,  // {null|number} how many elastic index passes to save
+ *     mongoClientOptions,
+ *   }],
+ *   batchCallback, // async (offset, config, reports) => ([])
+ *   testCallback,  // async (config, reports) => true
+ * }
+ * @return {promise:object} the reports data
+ * @routes {
+ *   [post] [MONGO_INDEXER_PATH]/build/:collectionName
+ *   [post] [MONGO_INDEXER_PATH]/stop/:collectionName
+ *   [post] [MONGO_INDEXER_PATH]/restore/:collectionName/:backup
+ *   [get]  [MONGO_INDEXER_PATH]/backups/:collectionName
+ *   [get]  [MONGO_INDEXER_PATH]/search?:collectionName?:text?:from?:size?
+ * }
+*/
+MongoIndexerExpress(app, {
+  configs: [{
+    MONGO_URI: 'mongodb://root:root@localhost:27017/test?authSource=admin',
+    collectionName: 'items',
+  }],
+  batchCallback: async (offset, config, reports) => !offset && [{ count: 1 }, { count: 2 }],
+});
+// Or with auth
+app.use('/admin', passport.authenticate('...'));
+MongoIndexerExpress(app, {
+  MONGO_INDEXER_PATH: '/admin/mongo-indexer',
+  // ...
+});
+```
+
 #### OpenId Express
 ```js
 /**
@@ -371,19 +417,20 @@ const { data, actives } = await ElasticIndexerBackups({ ELASTICSEARCH_URL, alias
 /**
  * Mongo Indexer.
  * @function MongoIndexer
- * @modules [mongodb@^5 mongoose@^7 pino@^8 pino-pretty@^10]
+ * @modules [mongodb@^6 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
-     MONGO_URI,       // the mongo service uri (mongodb://[host]:[port]/[db_name])
-     usingMongoose,   // {null|bool} is use mongoose schemas
-     modelName,       // {null|string} the mongoose model name
+     MONGO_URI,       // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
      collectionName,  // {null|string} the mongo collection name
      keyId,           // {null|string} the mongo doc key
-     disconnectMongo, // {null|bool} is disconnect mongo
+     mode,            // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
+     keepAliasesCount,  // {null|number} how many index passes to save
+     mongoClientOptions,
    }
- * @param {function} async batchCallback(offset, config) [{ ... , deleted: true }]
- * @param {function} async testCallback(config)
+ * @param {function} async batchCallback(offset, config, reports) [{ ... , deleted: true }]
+ * @param {function} async testCallback(config, reports)
  * @return {promise} is done
+ * @example const isDone = await MongoIndexer(config, async (offset, config, reports) => [], async (config) => true);
  * @dockerCompose
   # Mongo service
   mongo:
@@ -396,7 +443,38 @@ const { data, actives } = await ElasticIndexerBackups({ ELASTICSEARCH_URL, alias
     ports:
       - 27017:27017
  * */
-const isDone = await MongoIndexer({ MONGO_URI, usingMongoose: true, modelName: "Article", collectionName: "articles" }, async (offset, config) => [], async (config) => true);
+const isDone = await MongoIndexer({ MONGO_URI, collectionName: "articles" }, async (offset, config, reports) => [], async (config) => true);
+```
+```js
+/**
+ * Restore Mongo Indexer.
+ * @function RestoreMongoIndexer
+ * @modules [mongodb@^6 pino@^8 pino-pretty@^10]
+ * @envs [MONGO_URI, LOG_SERVICE_NAME]
+ * @param {object} {
+     MONGO_URI,      // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
+     aliasName,      // {string} the alias name
+     indexName,      // {string} the index name
+     lastIndexCount: // {number} the count of lasts index
+   }
+ * @return {bool} is done
+ */
+const isDone = await RestoreMongoIndexer({ MONGO_URI, aliasName, indexName });
+```
+```js
+/**
+ * Mongo Indexer Backups.
+ * @function MongoIndexerBackups
+ * @modules [mongodb@^6 pino@^8 pino-pretty@^10]
+ * @envs [MONGO_URI, LOG_SERVICE_NAME]
+ * @param {object} {
+     MONGO_URI,     // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
+     aliasName,     // {string} the alias name
+   }
+ * @return {object} { data, actives }
+ * @example const backupsList = await MongoIndexerBackups({ MONGO_URI, aliasName });
+ */
+const { data, actives } = await MongoIndexerBackups({ MONGO_URI, aliasName });
 ```
 
 #### Rabbitmq Channel

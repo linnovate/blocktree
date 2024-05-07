@@ -38,7 +38,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
 
   const logger = await Logger();
   const reports = {};
-  
+
   function getIndexTime(indexName) {
     indexName = indexName
       .replace(`${config.index}---`, '')
@@ -73,7 +73,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     // sync mode
     if (lastIndex && config.mode == 'sync') {
       config.indexName = lastIndex;
-      logger.info('ElasticIndexer [index mode] sync', { alias: config.index, index: config.indexName });
+      logger.info('ElasticIndexer [mode] sync', { alias: config.index, index: config.indexName });
     }
     // update mode
     else if (lastIndex && config.mode == 'clone') {
@@ -81,7 +81,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
         source: { index: lastIndex },
         dest: { index: config.indexName },
       });
-      logger.info('ElasticIndexer [index mode] clone', { alias: config.index, index: config.indexName });
+      logger.info('ElasticIndexer [mode] clone', { alias: config.index, index: config.indexName });
     }
     // new mode
     else {
@@ -90,21 +90,21 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
         mappings: config.mappings,
         settings: config.settings,
       });
-      logger.info('ElasticIndexer [index mode] new', { alias: config.index, index: config.indexName });
+      logger.info('ElasticIndexer [mode] new', { alias: config.index, index: config.indexName });
     }
-    
+
     reports["using_index"] = config.indexName;
-    
+
     /*
      * Insert data (step 2)
      */
     const isDone = await insertData(config, batchCallback, reports)
-    
+
     if (!isDone) {
       // skip update alias
       return reports;
     }
-    
+
     /*
      * Test callback (step 3)
      */
@@ -139,7 +139,6 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     /*
      * Update alias (step 4)
      */
-
     // load indices of the alias
     const removeAliases = await client.indices.getAlias({ name: config.index }).catch(data => ({}));
 
@@ -155,13 +154,12 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     await client.indices.updateAliases({ body: { actions } });
 
     logger.info('ElasticIndexer [aliases] succeeded', { alias: config.index, index: config.indexName, removeAliases: Object.keys(removeAliases) });
-   
+
     reports["removeAliases"] = Object.keys(removeAliases);
-    
+
     /*
      * Remove old indices (step 5)
      */
-
     // load indices of the alias
     const indicesData = await client.indices.get({ index: `${config.index}---*` }).catch(data => ({}));
 
@@ -173,10 +171,10 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
 
     // split the list of keep & remove indices
     const removeIndices = keepIndices.splice(config.keepAliasesCount ?? 1);
-    
+
     reports["keepIndices"] = keepIndices;
     reports["removeIndices"] = {};
-    
+
     // delete old indexes
     for (let i = 0; i < removeIndices.length; i++) {
       await client.indices.delete({ index: removeIndices[i], allow_no_indices: true })
@@ -189,9 +187,9 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
           reports["removeIndices"][removeIndices[i]] = error?.toString();
         });
     }
-    
+
     reports["succeeded"] = true;
-    
+
   }
   catch (error) {
     logger.error('ElasticIndexer [error]', { alias: config.index, error: error?.toString() });
@@ -199,7 +197,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
   }
 
   return reports;
-  
+
 };
 
 
@@ -212,10 +210,10 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
 async function insertData(config, batchCallback, reports, offset = 0) {
 
   const logger = await Logger();
-  
+
   reports["insertData"] || (reports["insertData"] = {});
   reports["insertData"][offset] = {};
-  
+
   /*
    * Load items (step 1)
    */
@@ -223,12 +221,12 @@ async function insertData(config, batchCallback, reports, offset = 0) {
   const items = await batchCallback(offset, config, reports)
     .then((items) => {
       logger.info('ElasticIndexer [batch callback] succeeded', { alias: config.index, index: config.indexName, offset, count: items?.length });
-      reports["insertData"][offset]["callback_succeeded"] = true; 
+      reports["insertData"][offset]["callback_succeeded"] = true;
       return items;
     })
     .catch((error) => {
       logger.error('ElasticIndexer [batch callback] failed', { alias: config.index, index: config.indexName, offset, error: error?.toString() });
-      reports["insertData"][offset]["callback_error"] = error?.toString(); 
+      reports["insertData"][offset]["callback_error"] = error?.toString();
       return { error: error?.toString() }
     });
 
@@ -316,7 +314,7 @@ export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, inde
     const client = await ElasticClient({ ELASTICSEARCH_URL });
 
     /*
-     * Fine index
+     * Find index
      */
     if (lastIndexCount) {
 
@@ -396,7 +394,7 @@ export async function ElasticIndexerBackups({ ELASTICSEARCH_URL, aliasName }) {
   const data = Object.keys(indicesData).sort((a, b) => getIndexTime(b) - getIndexTime(a));
 
   const actives = Object.keys(indicesData).filter(key => !!indicesData[key].aliases[aliasName]);
-  
+
   return { data, actives };
 
 };
