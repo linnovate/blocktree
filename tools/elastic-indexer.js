@@ -75,7 +75,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
       config.indexName = lastIndex;
       logger.info('ElasticIndexer [mode] sync', { alias: config.index, index: config.indexName });
     }
-    // update mode
+    // clone mode
     else if (lastIndex && config.mode == 'clone') {
       await client.reindex({
         source: { index: lastIndex },

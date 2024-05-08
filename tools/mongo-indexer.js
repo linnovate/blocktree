@@ -80,9 +80,9 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
       config.indexName = lastIndex;
       logger.info('MongoIndexer [mode] sync', { alias: config.index, index: config.indexName });
     }
-    // update mode
+    // clone mode
     else if (lastIndex && config.mode == 'clone') {
-      await db[lastIndex].aggregate([{ $out: config.indexName }]);
+      await db.collection(config.index).aggregate([{ $out: config.indexName }]);
       logger.info('MongoIndexer [mode] clone', { alias: config.index, index: config.indexName });
     }
     // new mode
@@ -140,9 +140,9 @@ export async function MongoIndexer(config, batchCallback, testCallback) {
     /*
      * Update alias (step 4)
      */
-    await db.renameCollection(config.index, `${config.index}---${timeFormat}--draf`);
+    lastIndex && await db.renameCollection(config.index, `${config.index}---${timeFormat}--draf`);
     await db.renameCollection(config.indexName, config.index);
-    await db.renameCollection(`${config.index}---${timeFormat}--draf`, `${config.index}---${timeFormat}`);
+    lastIndex && await db.renameCollection(`${config.index}---${timeFormat}--draf`, `${config.index}---${timeFormat}`);
     logger.info('MongoIndexer [aliases] succeeded', { alias: config.index, index: config.index });
 
 
@@ -239,7 +239,7 @@ async function insertData(config, batchCallback, reports, offset = 0) {
 
   const response = await (await MongoClient(config.MONGO_URI, config.mongoClientOptions))
     .db()
-    .collection(config.collectionName).bulkWrite(docs, { ordered: false })
+    .collection(config.indexName).bulkWrite(docs, { ordered: false })
 
 
   /*
