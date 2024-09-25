@@ -1,7 +1,7 @@
 /**
  * Utils
  */
-export { Logger } from './utils/logger.js';
+export { Logger, logger } from './utils/logger.js';
 
 /**
  * Infrastructure

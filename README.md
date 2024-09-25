@@ -570,14 +570,16 @@ const data = await RedisProxy("[host]/api", {}, { debug: true });
  * Logger.
  * @function Logger
  * @modules [pino@^8 pino-pretty@^10]
- * @envs [LOG_SERVICE_NAME]
- * @param {object} { LOG_SERVICE_NAME }
+ * @param {object} {
+     LOG_SERVICE_NAME,
+     setupOptions: { server: serverInstance, fetch: fetchInstance, ... },
+     details: { codeLine: true, ip: true },
+   }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/pino
  */
-(await Logger()).log('...', '...');
-Logger().then(logger => { logger.log('...', '...'); });
-const logger = await Logger();
+import { Logger, logger } from '@linnovate/blocktree';
+await Logger({ setupOptions: {}, details: {} });
 logger.log('...', '...');
 ```
 
