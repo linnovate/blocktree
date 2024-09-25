@@ -64,7 +64,7 @@ export async function Logger({ LOG_SERVICE_NAME, setupOptions, details } = {}) {
         const msg = inputArgs.shift();
         const obj = {};
         details?.codeLine && (obj.code = GetCodeLine(level));
-        details?.ip && (obj.ip = $socket?.parser?.incoming?.ip);
+        details?.ip && (obj.ip = $socket.address().address);
         Object.assign(obj, inputArgs.shift() || {}) 
         return method.apply(this, [obj, msg])
       }
@@ -137,29 +137,27 @@ async function FetchLogger(fetch, $instance) {
   const { default: symbols } = await import('undici/lib/core/symbols.js')
   const Dispatcher = getGlobalDispatcher();
   
-  // Dispatcher.on('drain', (event) => {
-  //   $instance.info('Fetch [drain]', { href: event.href });
-  // });
-  
-  Dispatcher.addListener('connect', (...args) => {
-    const [event,[ , ,Client], error] = args
-    const req = Client[symbols.kQueue]?.pop() || {};
-    $instance.info('Fetch [connect]', {
-      code: undefined,
-      method: req.method,
-      url: `${req.origin}${req.path}`,
-      error: error?.message,
-    });
-     // return true;
+  Dispatcher.on('connect', (...args) => {
+    const [event,[ , ,Client], error] = args;
+    const socket = Client[symbols.kSocket];
+    const req = Client[symbols.kQueue]?.[Client[symbols.kQueue].length - 1];
+    const res = socket?.[symbols.kParser];
+    let first = false;
+    socket.on('readable', () => {
+      if (res?.statusCode && !first) {
+        first = true;
+        $instance.info('Fetch [connect]', {
+          code: undefined,
+          method: req?.method,
+          url: `${req?.origin}${req?.path}`,
+          statusCode: res.statusCode,
+        });
+      }
+    })
   });
 
-  // Dispatcher.addListener('disconnect', (...args) => {
-  //   const [event,[ , ,Client], error] = args
-  //   $instance.info('Fetch [disconnect]', { url: event.href, error: error?.message });
-  // });
-  
-  Dispatcher.addListener('connectionError',  (...args) => {
-    const [event, , error] = args
+  Dispatcher.on('connectionError',  (...args) => {
+    const [event, , error] = args;
     $instance.info('Fetch [error]', {
       code: undefined,
       url: event.href,
