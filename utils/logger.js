@@ -64,7 +64,7 @@ export async function Logger({ LOG_SERVICE_NAME, setupOptions, details } = {}) {
         const msg = inputArgs.shift();
         const obj = {};
         details?.codeLine && (obj.code = GetCodeLine(level));
-        details?.ip && (obj.ip = $socket.address().address);
+        details?.ip && (obj.ip = $socket?.address?.()?.address);
         Object.assign(obj, inputArgs.shift() || {}) 
         return method.apply(this, [obj, msg])
       }
