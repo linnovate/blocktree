@@ -2,10 +2,11 @@
  * Logger.
  * @function Logger
  * @modules [pino@^8 pino-pretty@^10]
- * @envs [LOG_SERVICE_NAME]
+ * @envs [LOG_SERVICE_NAME, LOG_LEVEL]
  * @param {object} {
      LOG_SERVICE_NAME,
-     setupOptions: { server: serverInstance, fetch: fetchInstance, ... },
+     LOG_LEVEL: 'info', // enum: fatal|error|warn|info|debug|trace|silent
+     setupOptions: { server: serverInstance, ... },
      details: { codeLine: true, ip: true },
    }
  * @return {promise} the singleton instance
@@ -18,15 +19,13 @@
  */
 
 let $instance;
+export { $instance as logger };
+
 let $socket;
 
-export function logger() {
-  return $instance;
-}
+export async function Logger({ LOG_SERVICE_NAME, LOG_LEVEL, setupOptions, details } = {}) {
 
-export async function Logger({ LOG_SERVICE_NAME, setupOptions, details } = {}) {
-
-  if ($instance) {
+  if ($instance?.info) {
     return $instance;
   }
 
@@ -43,7 +42,8 @@ export async function Logger({ LOG_SERVICE_NAME, setupOptions, details } = {}) {
   
   // envs
   LOG_SERVICE_NAME ??= process.env.LOG_SERVICE_NAME;
-
+  LOG_LEVEL ??= process.env.LOG_LEVEL;
+  
   if (!LOG_SERVICE_NAME) {
     console.warn('Logger \x1b[31m[missing env] \x1b[36m LOG_SERVICE_NAME \x1b[0m');
   }
@@ -53,6 +53,7 @@ export async function Logger({ LOG_SERVICE_NAME, setupOptions, details } = {}) {
    */ 
   $instance = pino({
     name: LOG_SERVICE_NAME,
+    level: LOG_LEVEL || 'info',
     transport: {
       target: pinoPretty ? 'pino-pretty' : 'pino/file',
       options: {
@@ -71,16 +72,12 @@ export async function Logger({ LOG_SERVICE_NAME, setupOptions, details } = {}) {
     }, 
     ...setupOptions,
   });
-
+  
   /**
    * Logs for services
    */ 
   if (setupOptions?.server) {
     ServerLogger(setupOptions.server, $instance);
-  }
-
-  if (setupOptions?.fetch) {
-    await FetchLogger(setupOptions.fetch, $instance);
   }
 
   return $instance;
@@ -125,44 +122,5 @@ function ServerLogger(server, $instance) {
       statusCode: res.statusCode,
     });
   })
-  
-}
-
-/**
- * Fetch Logger
- */ 
-async function FetchLogger(fetch, $instance) {
-  
-  const { getGlobalDispatcher } = await import('undici');
-  const { default: symbols } = await import('undici/lib/core/symbols.js')
-  const Dispatcher = getGlobalDispatcher();
-  
-  Dispatcher.on('connect', (...args) => {
-    const [event,[ , ,Client], error] = args;
-    const socket = Client[symbols.kSocket];
-    const req = Client[symbols.kQueue]?.[Client[symbols.kQueue].length - 1];
-    const res = socket?.[symbols.kParser];
-    let first = false;
-    socket.on('readable', () => {
-      if (res?.statusCode && !first) {
-        first = true;
-        $instance.info('Fetch [connect]', {
-          code: undefined,
-          method: req?.method,
-          url: `${req?.origin}${req?.path}`,
-          statusCode: res.statusCode,
-        });
-      }
-    })
-  });
-
-  Dispatcher.on('connectionError',  (...args) => {
-    const [event, , error] = args;
-    $instance.info('Fetch [error]', {
-      code: undefined,
-      url: event.href,
-      error: error?.message,
-    });
-  });
   
 }
