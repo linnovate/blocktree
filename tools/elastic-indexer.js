@@ -86,11 +86,21 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     }
     // new mode
     else {
-      await client.indices.create({
-        index: config.indexName,
-        mappings: config.mappings,
-        settings: config.settings,
-      });
+      if (client?.name == "opensearch-js") {
+        await client.indices.create({
+          index: config.indexName,
+          body: {
+            mappings: config.mappings,
+            settings: config.settings,
+          }
+        });
+      } else {
+        await client.indices.create({
+          index: config.indexName,
+          mappings: config.mappings,
+          settings: config.settings,
+        });
+      }
       logger.info('ElasticIndexer [mode] new', { alias: config.index, index: config.indexName });
     }
 
