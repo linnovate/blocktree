@@ -24,6 +24,12 @@ import { DynamicImport } from '../utils/dynamic-import.js';
     ports:
       - 9200:9200
       - 9300:9300
+  kibana:
+    image: kibana
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: '["https://elastic:9200"]'
  */
 
 let $instance;

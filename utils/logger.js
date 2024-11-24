@@ -15,7 +15,7 @@
    ---------------------------
    import { Logger, logger } from '@linnovate/blocktree';
    await Logger({ setupOptions: {}, details: {} });
-   logger.log('...', '...');
+   logger.info('...', '...');
  */
 
 let $instance;

@@ -35,6 +35,7 @@ npm install @linnovate/blocktree
 
 > [Services: Databases](#services-databases)
  - [Elastic Client](#elastic-client)
+ - [OpenSearch Client](#opensearch-client)
  - [Mongo Client](#mongo-client)
  - [MySql Client](#mysql-client)
  - [Redis Client](#redis-client)
@@ -362,6 +363,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
      keyId,      // {null|string} the elastic doc key (neets for update a doc) (default: "id")
      mode,       // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
      keepAliasesCount,  // {null|number} how many elastic index passes to save
+     serviceSDK, // {null|object} the client service sdk (default: ElasticClient)
    }
  * @param {function} async batchCallback(offset, config, reports)
  * @param {function} async testCallback(config, reports)
@@ -580,7 +582,7 @@ const data = await RedisProxy("[host]/api", {}, { debug: true });
  */
 import { Logger, logger } from '@linnovate/blocktree';
 await Logger({ setupOptions: {}, details: {} });
-logger.log('...', '...');
+logger.info('...', '...');
 ```
 
 ### Services: Databases
@@ -609,11 +611,53 @@ logger.log('...', '...');
     ports:
       - 9200:9200
       - 9300:9300
+  kibana:
+    image: kibana
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: '["https://elastic:9200"]'
  */
 const data = await (await ElasticClient()).search({ ... });
 const client = await ElasticClient();
 const data = await client.search({ ... });
 ```
+
+#### OpenSearch Client
+```js
+/**
+ * OpenSearch Client singleton.
+ * @function OpenSearchClient
+ * @modules [@opensearch-project/opensearch@^2 pino@^8 pino-pretty@^10]
+ * @envs [OPENSEARCH_URL, LOG_SERVICE_NAME]
+ * @param {object} { OpenSearchClient: "http[s]://[host][:port]" } // the service url
+ * @return {promise} the singleton instance
+ * @docs https://opensearch.org/docs/latest/clients/javascript/index/
+ * @dockerCompose
+  # OpenSearch service
+  opensearch:
+    image: opensearchproject/opensearch:2
+    volumes:
+      - ./.opensearch:/usr/share/opensearch/data
+    environment:
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Opensearch1!
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    ports:
+      - 9200:9200
+      - 9600:9600
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
+    ports:
+      - 5601:5601
+ */
+const data = await (await OpenSearchClient()).search({ ... });
+const client = await OpenSearchClient();
+const data = await client.search({ ... });
+ ```
 
 #### Mongo Client
 ```js

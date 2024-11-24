@@ -15,6 +15,7 @@ import { Logger } from '../utils/logger.js';
      keyId,      // {null|string} the elastic doc key (neets for update a doc) (default: "id")
      mode,       // {null|enum:new,clone,sync} "new" is using a new empty index, "clone" is using a clone of the last index, "sync" is using the current index. (default: "new") 
      keepAliasesCount,  // {null|number} how many elastic index passes to save
+     serviceSDK, // {null|object} the client service sdk (default: ElasticClient)
    }
  * @param {function} async batchCallback(offset, config, reports)
  * @param {function} async testCallback(config, reports)
@@ -52,7 +53,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     /*
      * Get elastic instance
      */
-    const client = await ElasticClient({ ELASTICSEARCH_URL: config.ELASTICSEARCH_URL });
+    const client = config?.serviceSDK || await ElasticClient({ ELASTICSEARCH_URL: config.ELASTICSEARCH_URL });
 
     /*
      * Create index (step 1)
@@ -140,8 +141,12 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
      * Update alias (step 4)
      */
     // load indices of the alias
-    const removeAliases = await client.indices.getAlias({ name: config.index }).catch(data => ({}));
+    let removeAliases = await client.indices.getAlias({ name: config.index }).catch(data => ({}));
 
+    if (client?.name == "opensearch-js") {
+      removeAliases = removeAliases?.body;
+    }
+    
     // create actions - update alias
     const actions = [{ add: { index: config.indexName, alias: config.index } }];
 
@@ -161,8 +166,12 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
      * Remove old indices (step 5)
      */
     // load indices of the alias
-    const indicesData = await client.indices.get({ index: `${config.index}---*` }).catch(data => ({}));
+    let indicesData = await client.indices.get({ index: `${config.index}---*` }).catch(data => ({}));
 
+    if (client?.name == "opensearch-js") {
+      indicesData = indicesData?.body;
+    }
+    
     // ignore active index
     delete indicesData[config.indexName];
 
@@ -250,10 +259,17 @@ async function insertData(config, batchCallback, reports, offset = 0) {
   }, item]);
 
   // get elastic instance
-  const client = await ElasticClient({ ELASTICSEARCH_URL: config.ELASTICSEARCH_URL });
-
+  const client = config?.serviceSDK || await ElasticClient({ ELASTICSEARCH_URL: config.ELASTICSEARCH_URL });
+  
   // create items
-  const response = await client.bulk({ operations, refresh: true });
+  let response;
+
+  if (client?.name == "opensearch-js") {
+    response = await client.bulk({ body: operations, index: config.indexName, refresh: true });
+    Object.assign(response, response?.body);
+  } else {
+    response = await client.bulk({ operations, refresh: true });
+  }
 
   /*
    * Print Logs (step 3)
@@ -374,7 +390,7 @@ export async function RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, inde
  * @return {object} { data, actives }
  * @example const backupsList = await ElasticIndexerBackups({ ELASTICSEARCH_URL, aliasName });
  */
-export async function ElasticIndexerBackups({ ELASTICSEARCH_URL, aliasName }) {
+export async function ElasticIndexerBackups({ ELASTICSEARCH_URL, serviceSDK, aliasName }) {
 
   function getIndexTime(indexName) {
     indexName = indexName
@@ -385,7 +401,7 @@ export async function ElasticIndexerBackups({ ELASTICSEARCH_URL, aliasName }) {
   }
 
   // Get elastic instance
-  const client = await ElasticClient({ ELASTICSEARCH_URL });
+  const client = serviceSDK || await ElasticClient({ ELASTICSEARCH_URL });
 
   // Load indices of the alias
   const indicesData = await client.indices.get({ index: `${aliasName}---*` }).catch(data => ({}));
