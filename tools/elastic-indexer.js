@@ -67,7 +67,11 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     config.indexName = `${config.index}---${timeFormat}`;
 
     // get aliases
-    const indexAliases = await client.indices.getAlias({ name: config.index }).catch(() => ({}));
+    let indexAliases = await client.indices.getAlias({ name: config.index }).catch(() => ({}));
+
+    if (client?.name == "opensearch-js") {
+      indexAliases = indexAliases?.body || {};
+    }
 
     const lastIndex = Object.keys(indexAliases).sort((a, b) => getIndexTime(b) - getIndexTime(a)).reverse()[0];
 
@@ -78,10 +82,19 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     }
     // clone mode
     else if (lastIndex && config.mode == 'clone') {
-      await client.reindex({
-        source: { index: lastIndex },
-        dest: { index: config.indexName },
-      });
+      if (client?.name == "opensearch-js") {
+        await client.reindex({
+          body: {
+            source: { index: lastIndex },
+            dest: { index: config.indexName },
+          }
+        });
+      } else {
+        await client.reindex({
+          source: { index: lastIndex },
+          dest: { index: config.indexName },
+        });
+      }
       logger.info('ElasticIndexer [mode] clone', { alias: config.index, index: config.indexName });
     }
     // new mode
@@ -179,7 +192,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     let indicesData = await client.indices.get({ index: `${config.index}---*` }).catch(data => ({}));
 
     if (client?.name == "opensearch-js") {
-      indicesData = indicesData?.body;
+      indicesData = indicesData?.body || {};
     }
     
     // ignore active index
