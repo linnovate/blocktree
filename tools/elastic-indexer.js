@@ -154,7 +154,7 @@ export async function ElasticIndexer(config, batchCallback, testCallback) {
     let removeAliases = await client.indices.getAlias({ name: config.index }).catch(data => ({}));
 
     if (client?.name == "opensearch-js") {
-      removeAliases = removeAliases?.body;
+      removeAliases = removeAliases?.body || {};
     }
     
     // create actions - update alias
