@@ -4,13 +4,17 @@ import { DynamicImport } from '../utils/dynamic-import.js';
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^8 @elastic/elasticsearch-mock@^2 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" } // the elastic service url
+ * @param {object} {
+ *   ELASTICSEARCH_URL: "http[s]://[host][:port]", // the elastic service url
+ *   mock, // {null|bool} is using ElasticMockServer 
+ * } 
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
  * @example const data = await (await ElasticClient()).search({ ... });
- * @example const client = await ElasticClient(); const data = await client.search({ ... });
+ * @example const client = await ElasticClient({ mock: true }); const data = await client.search({ ... });
+ * @example (await ElasticMockServer()).add({ ... });
  * @dockerCompose
   # Elastic service
   elastic:
@@ -34,7 +38,9 @@ import { DynamicImport } from '../utils/dynamic-import.js';
 
 let $instance;
 
-export async function ElasticClient({ ELASTICSEARCH_URL } = {}) {
+let $mockServer;
+
+export async function ElasticClient({ ELASTICSEARCH_URL, mock } = {}, elasticClientOptions = {}) {
 
   const logger = await Logger();
 
@@ -52,9 +58,29 @@ export async function ElasticClient({ ELASTICSEARCH_URL } = {}) {
     logger.error('ElasticClient [missing env]: ELASTICSEARCH_URL');
   }
 
+  if (mock) {
+    elasticClientOptions || (elasticClientOptions = {});
+    elasticClientOptions.Connection = (await ElasticMockServer()).getConnection();
+  }
+
   // instance
-  $instance = new Client({ node: ELASTICSEARCH_URL });
+  $instance = new Client({ node: ELASTICSEARCH_URL, ...elasticClientOptions });
 
   return $instance;
 
 }
+
+
+export async function ElasticMockServer() {
+
+  if ($mockServer) {
+    return $mockServer;
+  }
+
+  const { default: Mock } = await DynamicImport('@elastic/elasticsearch-mock@^2');
+  $mockServer = new Mock();
+
+  return $mockServer;
+
+}
+

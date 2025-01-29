@@ -18,7 +18,7 @@ export { OpenIdExpress } from './infrastructures/openid-express.js';
  */
 export { MySqlClient } from './services/mysql-client.js';
 export { MongoClient } from './services/mongo-client.js';
-export { ElasticClient } from './services/elastic-client.js';
+export { ElasticClient, ElasticMockServer } from './services/elastic-client.js';
 export { OpenSearchClient } from './services/opensearch-client.js';
 export { RedisClient } from './services/redis-client.js';
 

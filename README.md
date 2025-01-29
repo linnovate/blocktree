@@ -593,11 +593,15 @@ logger.info('...', '...');
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^8 @elastic/elasticsearch-mock@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" } // the elastic service url
+ * @param {object} {
+ *   ELASTICSEARCH_URL: "http[s]://[host][:port]", // the elastic service url
+ *   mock, // {null|bool} is using ElasticMockServer 
+ * } 
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
+ * @docs https://www.npmjs.com/package/@elastic/elasticsearch-mock
  * @dockerCompose
   # Elastic service
   elastic:
@@ -619,7 +623,8 @@ logger.info('...', '...');
       ELASTICSEARCH_HOSTS: '["https://elastic:9200"]'
  */
 const data = await (await ElasticClient()).search({ ... });
-const client = await ElasticClient();
+const client = await ElasticClient({ mock: true });
+(await ElasticMockServer()).add({ ... })
 const data = await client.search({ ... });
 ```
 
