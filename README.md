@@ -597,10 +597,11 @@ logger.info('...', '...');
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
  *   ELASTICSEARCH_URL: "http[s]://[host][:port]", // the elastic service url
- *   mock, // {null|bool} is using "ElasticMockServer"
+ *   mock, // {null|bool} using "@elastic/elasticsearch-mock@^2"
  * } 
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
+ * @docs https://www.npmjs.com/package/@elastic/elasticsearch-mock
  * @dockerCompose
   # Elastic service
   elastic:
@@ -623,18 +624,8 @@ logger.info('...', '...');
  */
 const data = await (await ElasticClient()).search({ ... });
 const client = await ElasticClient({ mock: true });
+client.mockServer.add({ ... });
 const data = await client.search({ ... });
-```
-```js
-/**
- * Elastic Mock Server.
- * @function ElasticMockServer
- * @modules [@elastic/elasticsearch-mock@^2 pino@^8 pino-pretty@^10]
- * @envs [LOG_SERVICE_NAME]
- * @return {promise} the singleton instance
- * @docs https://www.npmjs.com/package/@elastic/elasticsearch-mock
- */
-(await ElasticMockServer()).add({ method: 'GET', path: '/_search' }, () => ({ hits: {} })  );
 ```
 
 #### OpenSearch Client

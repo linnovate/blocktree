@@ -8,7 +8,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
  *   MONGO_URI: "mongodb://[host]:[port]/[db_name]", // the mongo service url
- *   mock, // {null|bool} is using "mongodb-memory-server"
+ *   mock, // {null|bool} using "mongodb-memory-server@^10"
  * } 
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
