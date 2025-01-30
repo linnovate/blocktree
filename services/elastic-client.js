@@ -4,14 +4,15 @@ import { DynamicImport } from '../utils/dynamic-import.js';
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 @elastic/elasticsearch-mock@^2 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
  *   ELASTICSEARCH_URL: "http[s]://[host][:port]", // the elastic service url
- *   mock, // {null|bool} is using ElasticMockServer 
+ *   mock, // {null|bool} is using "ElasticMockServer"
  * } 
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
+ * @docs https://www.npmjs.com/package/@elastic/elasticsearch-mock
  * @example const data = await (await ElasticClient()).search({ ... });
  * @example const client = await ElasticClient({ mock: true }); const data = await client.search({ ... });
  * @example (await ElasticMockServer()).add({ ... });
@@ -70,7 +71,15 @@ export async function ElasticClient({ ELASTICSEARCH_URL, mock } = {}, elasticCli
 
 }
 
-
+/**
+ * Elastic Mock Server.
+ * @function ElasticMockServer
+ * @modules [@elastic/elasticsearch-mock@^2 pino@^8 pino-pretty@^10]
+ * @envs [LOG_SERVICE_NAME]
+ * @return {promise} the singleton instance
+ * @docs https://www.npmjs.com/package/@elastic/elasticsearch-mock
+ * @example (await ElasticMockServer()).add({ method: 'GET', path: '/_search' }, () => ({ hits: {} })  );
+ */
 export async function ElasticMockServer() {
 
   if ($mockServer) {
