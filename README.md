@@ -595,9 +595,13 @@ logger.info('...', '...');
  * @function ElasticClient
  * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} { ELASTICSEARCH_URL: "http[s]://[host][:port]" } // the elastic service url
+ * @param {object} {
+ *   ELASTICSEARCH_URL: "http[s]://[host][:port]", // the elastic service url
+ *   mock, // {null|bool} using "@elastic/elasticsearch-mock@^2"
+ * } 
  * @return {promise} the singleton instance
  * @docs https://www.elastic.co/guide/en/elasticsearch/reference/8.5/elasticsearch-intro.html
+ * @docs https://www.npmjs.com/package/@elastic/elasticsearch-mock
  * @dockerCompose
   # Elastic service
   elastic:
@@ -619,7 +623,8 @@ logger.info('...', '...');
       ELASTICSEARCH_HOSTS: '["https://elastic:9200"]'
  */
 const data = await (await ElasticClient()).search({ ... });
-const client = await ElasticClient();
+const client = await ElasticClient({ mock: true });
+client.mockServer.add({ ... });
 const data = await client.search({ ... });
 ```
 
@@ -666,7 +671,10 @@ const data = await client.search({ ... });
  * @function MongoClient
  * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {string} MONGO_URI the mongo service uri (mongodb://[host]:[port]/[db_name])
+ * @param {object} {
+ *   MONGO_URI: "mongodb://[host]:[port]/[db_name]", // the mongo service url
+ *   mock, // {null|bool} is using "mongodb-memory-server"
+ * } 
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb
@@ -683,7 +691,7 @@ const data = await client.search({ ... });
       - 27017:27017
  */
 const data = await (await MongoClient()).db('...');
-const mongo = await MongoClient();
+const mongo = await MongoClient({ mock: true });
 const data = await mongo.db('...');
 ```
 

@@ -6,7 +6,10 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @function MongoClient
  * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {string} MONGO_URI the mongo service uri (mongodb://[host]:[port]/[db_name])
+ * @param {object} {
+ *   MONGO_URI: "mongodb://[host]:[port]/[db_name]", // the mongo service url
+ *   mock, // {null|bool} using "mongodb-memory-server@^10"
+ * } 
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mongodb
@@ -27,7 +30,12 @@ import { DynamicImport } from '../utils/dynamic-import.js';
 
 let $instance;
 
-export async function MongoClient(MONGO_URI, mongoClientOptions) {
+export async function MongoClient({ MONGO_URI, mock } = {}, mongoClientOptions) {
+
+  if (typeof options == 'string') {
+    console.warn(`[MongoClient] "${options}" should be an object with the { MONGO_URI: "${options}" } variable!`);
+    // options = { MONGO_URI: options };
+  }
 
   const logger = await Logger();
 
@@ -44,6 +52,12 @@ export async function MongoClient(MONGO_URI, mongoClientOptions) {
 
   if (!MONGO_URI) {
     logger.error('MongoClient [missing env]: MONGO_URI');
+  }
+
+  if (mock) {
+    const { MongoMemoryServer } = await DynamicImport('mongodb-memory-server@^10');
+    const mongoServer = await MongoMemoryServer.create();
+    MONGO_URI = mongoServer.getUri();
   }
 
   // instance 
