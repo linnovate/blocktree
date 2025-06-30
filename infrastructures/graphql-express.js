@@ -1,4 +1,5 @@
 import { DynamicImport } from '../utils/dynamic-import.js';
+import { Logger } from '../utils/logger.js';
 
 /**
  * Graphql Express
@@ -18,6 +19,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
  * @param {object} the options {
  *   serverWS,    // the express server
  *   yogaOptions, // see: https://the-guild.dev/graphql/yoga-server/docs
+ *   armorOptions, // New parameter for Armor configuration
  * }
  * @return {promise} is done
  *
@@ -26,7 +28,7 @@ import { DynamicImport } from '../utils/dynamic-import.js';
    import express from 'express';
    const app = express();
    const server = app.listen(5000);
-   GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaOptions: {} });
+   GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaOptions: {}, armorOptions: {} });
  *	 
  * @example server WebSocket:
    ---------------------------
@@ -57,7 +59,11 @@ import { DynamicImport } from '../utils/dynamic-import.js';
    });
 */
 
-export async function GraphqlExpress(app, schemas, { serverWS, yogaOptions } = {}) {
+export async function GraphqlExpress(app, schemas, {
+  serverWS,
+  yogaOptions,
+  armorOptions = {} // New parameter for Armor configuration
+} = {}) {
 
   /*
    * Imports
@@ -66,6 +72,8 @@ export async function GraphqlExpress(app, schemas, { serverWS, yogaOptions } = {
   const { WebSocketServer } = await DynamicImport('ws@^8');
   const { useServer } = await DynamicImport('graphql-ws/lib/use/ws');
   await DynamicImport('graphql@^16');
+  const { GraphQLArmor } = await DynamicImport('@escape.tech/graphql-armor');
+  const logger = await Logger();
 
 
   /*
@@ -136,7 +144,34 @@ export async function GraphqlExpress(app, schemas, { serverWS, yogaOptions } = {
   /*
    * Create graphql route
    */
-  app.use('/graphql', createYoga({ schema, graphiql: true, ...yogaOptions }));
+  // Configure GraphQL Armor with provided options or defaults
+  const defaultArmorOptions = {
+    maxDepth: 10,
+    maxDirectives: 5,
+    maxArguments: 10,
+    maxCost: 1000,
+    maxAliases: 0, // Disable aliases by default
+    blockFieldSuggestion: true,
+    disableIntrospection: false, // Keep introspection for development
+    onError: (error) => {
+      logger.warn('GraphQL Armor blocked query', {
+        type: error.type,
+        message: error.message,
+        query: error.query
+      });
+    }
+  };
+
+  const finalArmorOptions = { ...defaultArmorOptions, ...armorOptions };
+
+  const armor = new GraphQLArmor(finalArmorOptions);
+
+  app.use('/graphql', createYoga({
+    schema,
+    graphiql: true,
+    plugins: [armor.plugin()],
+    ...yogaOptions
+  }));
 
 
   /*

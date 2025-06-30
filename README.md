@@ -139,7 +139,7 @@ app.get('/login', (req, res) => res.send("OK"));
 /**
  * Graphql Express
  * @function GraphqlExpress
- * @modules [graphql graphql-yoga@^4 ws@^8 graphql-ws@^5]
+ * @modules [graphql graphql-yoga@^4 ws@^8 graphql-ws@^5 @escape.tech/graphql-armor]
  * @envs []
  * @param {object} the express app
  * @param {array} [{
@@ -153,6 +153,7 @@ app.get('/login', (req, res) => res.send("OK"));
  * @param {object} the options {
  *   serverWS,    // the express server
  *   yogaOptions, // see: https://the-guild.dev/graphql/yoga-server/docs
+ *   armorOptions, // GraphQL Armor security configuration
  * }
  * @return {object} express app.next()
  *
@@ -163,6 +164,29 @@ app.get('/login', (req, res) => res.send("OK"));
    const server = app.listen(5000);
    GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaOptions: {} });
  *	 
+ * @example setup Graphql with Armor security:
+   -------------------------------------------
+   import express from 'express';
+   const app = express();
+   const server = app.listen(5000);
+   
+   // Basic security configuration
+   const armorOptions = {
+     maxAliases: 0,           // Disable aliases completely
+     maxDepth: 10,            // Limit query depth
+     maxCost: 1000,           // Cost-based limiting
+     maxDirectives: 5,        // Limit directive usage
+     maxArguments: 10,        // Limit arguments per field
+     blockFieldSuggestion: true, // Block field suggestions
+     disableIntrospection: false // Keep introspection for development
+   };
+ *   
+ *   GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { 
+ *     serverWS: server, 
+ *     yogaOptions: {},
+ *     armorOptions 
+ *   });
+ *
  * @example server WebSocket:
    ---------------------------
    const { createPubSub } = await import('graphql-yoga');
@@ -195,6 +219,17 @@ GraphqlExpress(app, [{ typeDefs: '', resolvers: {} }], { serverWS: server, yogaO
 // using AutoLoad
 AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
   GraphqlExpress(app, schemas, { serverWS: server, yogaOptions: {} });
+});
+
+// using AutoLoad with Armor security
+AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
+  const armorOptions = {
+    maxAliases: 0,
+    maxDepth: 10,
+    maxCost: 1000,
+    blockFieldSuggestion: true
+  };
+  GraphqlExpress(app, schemas, { serverWS: server, yogaOptions: {}, armorOptions });
 });
 ```
 
@@ -616,7 +651,7 @@ logger.info('...', '...');
       - 9200:9200
       - 9300:9300
   kibana:
-    image: kibana
+    image: kibana@escape.tech/graphql-armor
     ports:
       - 5601:5601
     environment:
