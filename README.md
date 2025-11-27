@@ -6,6 +6,8 @@ Tools for developers, to build services with a uniform standard (node_modules/en
 ## Install module
 ```bash
 npm install @linnovate/blocktree
+// or
+yarn add @linnovate/blocktree
 ```
 
 ---
@@ -57,21 +59,21 @@ npm install @linnovate/blocktree
 ```js
 /**
  * Server
- * @modules [express]
+ * @modules [express@^5]
  * @envs [PORT]
  * @dockerCompose
   # Server service
   server:
-    image: node:18.17
+    image: node:24-slim
     working_dir: /usr/src/app
     volumes:
       - ./:/usr/src/app
     ports:
       - 3000:3000
-    env_file:
-      - .env
-    command:
-      - /bin/sh -c "yarn && yarn start"
+      - 9222:9222
+    command: sh -c "yarn && node --watch --inspect=0.0.0.0:9222 ./server.js"
+   # command: sh -c "yarn && node --permission --allow-fs-read=./ --allow-worker ./server.js"
+
  */
 import express from 'express';
 const app = express();
@@ -86,7 +88,7 @@ const server = app.listen(PORT, () => console.log(`Example app listening on port
 /**
  * Security Express
  * @function SecurityExpress
- * @modules [compression@^1 helmet@^7 cors@^2]
+ * @modules [compression@^1 helmet@^8 cors@^2]
  * @envs []
  * @param {object} the express app
  * @param {object} {
@@ -108,7 +110,7 @@ SecurityExpress(app, { corsOptions, helmetOptions } = {});
  * @route /api-docs
  * @param {object} the express app
  * @param {object} options {
- *   SWAGGER_PATH,               // the api docs route
+ *   SWAGGER_PATH,               // the api docs route (default: /api-docs)
  *   autoExpressPaths,           // create swagger paths by express routes (default: true)
  *   ...[swagger-ui options],    // see: https://www.npmjs.com/package/swagger-ui-express 
  *   ...[swagger-jsdoc options], // see: https://www.npmjs.com/package/swagger-jsdoc
@@ -139,7 +141,7 @@ app.get('/login', (req, res) => res.send("OK"));
 /**
  * Graphql Express
  * @function GraphqlExpress
- * @modules [graphql graphql-yoga@^4 ws@^8 graphql-ws@^5]
+ * @modules [graphql graphql-yoga@^5 ws@^8 graphql-ws@^6]
  * @envs []
  * @param {object} the express app
  * @param {array} [{
@@ -203,7 +205,7 @@ AutoLoad(["typeDefs", "directives", "resolvers"]).then(schemas => {
 /**
  * Elastic Indexer Express
  * @function ElasticIndexerExpress
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^9 pino@^10]
  * @envs [ELASTIC_INDEXER_PATH, ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} the express app
  * @param {object} options {
@@ -250,7 +252,7 @@ ElasticIndexerExpress(app, {
 /**
  * Mongo Indexer Express
  * @function MongoIndexerExpress
- * @modules [mongodb@^6 pino@^8]
+ * @modules [mongodb@^7 pino@^10]
  * @envs [MONGO_INDEXER_PATH, MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} the express app
  * @param {object} options {
@@ -295,7 +297,7 @@ MongoIndexerExpress(app, {
 /**
  * Open Id Express 
  * @function OpenIdExpress
- * @modules [openid-client@^5]
+ * @modules [openid-client@^6]
  * @envs [ISSUER_CLIENT_ID, ISSUER_CLIENT_SECRET, ISSUER_URL, ISSUER_REDIRECT_URI, WEBSITE_URL]
  * @param {object} the express app
  * @param {object} the options {
@@ -321,7 +323,7 @@ OpenIdExpress(app, {});
 /**
  * JWT Parser
  * @function JWTParser
- * @modules [jsonwebtoken@^8 pino@^8 pino-pretty@^10]
+ * @modules [jsonwebtoken@^9 pino@^10 pino-pretty@^13]
  * @envs [JWT_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {string} token
  * @param {string} JWT_SECRET_KEY
@@ -352,7 +354,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
 /**
  * Elastic Indexer.
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8]
+ * @modules [@elastic/elasticsearch@^9 pino@^10]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
@@ -371,7 +373,7 @@ const { typeDefs, directives, resolvers } = await AutoLoad(["typeDefs", "directi
  * @dockerCompose
   # Elastic service
   elastic:
-    image: elasticsearch:8.5.3
+    image: elasticsearch:9.1.5
     volumes:
       - ./.elastic:/usr/share/elasticsearch/data
     environment:
@@ -388,7 +390,7 @@ const reports = await ElasticIndexer({ index: "my_name", mappings: {}, settings:
 /**
  * Restore Elastic Indexer.
  * @function RestoreElasticIndexer
- * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^9 pino@^10 pino-pretty@^13]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
@@ -403,7 +405,7 @@ const isDone = await RestoreElasticIndexer({ ELASTICSEARCH_URL, aliasName, index
 /**
  * Elastic Indexer Backups.
  * @function ElasticIndexerBackups
- * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^9 pino@^10 pino-pretty@^13]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
      ELASTICSEARCH_URL, // the elastic host (http[s]://[host][:port])
@@ -419,7 +421,7 @@ const { data, actives } = await ElasticIndexerBackups({ ELASTICSEARCH_URL, alias
 /**
  * Mongo Indexer.
  * @function MongoIndexer
- * @modules [mongodb@^6 pino@^8 pino-pretty@^10]
+ * @modules [mongodb@^7 pino@^10 pino-pretty@^13]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
      MONGO_URI,       // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
@@ -436,7 +438,7 @@ const { data, actives } = await ElasticIndexerBackups({ ELASTICSEARCH_URL, alias
  * @dockerCompose
   # Mongo service
   mongo:
-    image: mongo:7-jammy
+    image: mongo:8-noble
     volumes:
       - ./.mongo:/data/db
     environment:
@@ -451,7 +453,7 @@ const isDone = await MongoIndexer({ MONGO_URI, collectionName: "articles" }, asy
 /**
  * Restore Mongo Indexer.
  * @function RestoreMongoIndexer
- * @modules [mongodb@^6 pino@^8 pino-pretty@^10]
+ * @modules [mongodb@^7 pino@^10 pino-pretty@^13]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
      MONGO_URI,      // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
@@ -467,7 +469,7 @@ const isDone = await RestoreMongoIndexer({ MONGO_URI, aliasName, indexName });
 /**
  * Mongo Indexer Backups.
  * @function MongoIndexerBackups
- * @modules [mongodb@^6 pino@^8 pino-pretty@^10]
+ * @modules [mongodb@^7 pino@^10 pino-pretty@^13]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
      MONGO_URI,     // the mongo service uri (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
@@ -484,7 +486,7 @@ const { data, actives } = await MongoIndexerBackups({ MONGO_URI, aliasName });
 /**
  * Assert Queue
  * @function AssertQueue
- * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
+ * @modules [amqplib@^0.10 pino@^10 pino-pretty@^13]
  * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {function} handler
@@ -495,7 +497,7 @@ const { data, actives } = await MongoIndexerBackups({ MONGO_URI, aliasName });
  * @dockerCompose
   # Rabbitmq service
   rabbitmq:
-    image: rabbitmq:3.9.29
+    image: rabbitmq:4
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: root
@@ -510,7 +512,7 @@ AssertQueue('update_item', (data) => { console.log(data) });
 /**
  * Send to queue
  * @function SendToQueue
- * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
+ * @modules [amqplib@^0.10 pino@^10 pino-pretty@^13]
  * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {string} queue
  * @param {object} data
@@ -524,7 +526,7 @@ SendToQueue('update_item', {});
 /**
  * Rabbitmq Channel
  * @function RabbitmqChannel
- * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
+ * @modules [amqplib@^0.10 pino@^10 pino-pretty@^13]
  * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {object} options {
      RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
@@ -539,7 +541,7 @@ RabbitmqChannel();
 /**
  * Redis Proxy
  * @function RedisProxy
- * @modules [redis@^4 pino@^8 pino-pretty@^10]
+ * @modules [redis@^5 pino@^10 pino-pretty@^13]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
  * @param {string} the fetch url
  * @param {null|object} the fetch options
@@ -571,7 +573,7 @@ const data = await RedisProxy("[host]/api", {}, { debug: true });
 /**
  * Logger.
  * @function Logger
- * @modules [pino@^8 pino-pretty@^10]
+ * @modules [pino@^10 pino-pretty@^13]
  * @param {object} {
      LOG_SERVICE_NAME,
      setupOptions: { server: serverInstance, fetch: fetchInstance, ... },
@@ -593,7 +595,7 @@ logger.info('...', '...');
 /**
  * Elastic Client singleton.
  * @function ElasticClient
- * @modules [@elastic/elasticsearch@^8 pino@^8 pino-pretty@^10]
+ * @modules [@elastic/elasticsearch@^9 pino@^10 pino-pretty@^13]
  * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} {
  *   ELASTICSEARCH_URL: "http[s]://[host][:port]", // the elastic service url
@@ -605,7 +607,7 @@ logger.info('...', '...');
  * @dockerCompose
   # Elastic service
   elastic:
-    image: elasticsearch:8.5.3
+    image: elasticsearch:9.1.5
     volumes:
       - ./.elastic:/usr/share/elasticsearch/data
     environment:
@@ -633,7 +635,7 @@ const data = await client.search({ ... });
 /**
  * OpenSearch Client singleton.
  * @function OpenSearchClient
- * @modules [@opensearch-project/opensearch@^2 pino@^8 pino-pretty@^10]
+ * @modules [@opensearch-project/opensearch@^3 pino@^10 pino-pretty@^13]
  * @envs [OPENSEARCH_URL, LOG_SERVICE_NAME]
  * @param {object} { OpenSearchClient: "http[s]://[host][:port]" } // the service url
  * @return {promise} the singleton instance
@@ -641,7 +643,7 @@ const data = await client.search({ ... });
  * @dockerCompose
   # OpenSearch service
   opensearch:
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch:3
     volumes:
       - ./.opensearch:/usr/share/opensearch/data
     environment:
@@ -669,7 +671,7 @@ const data = await client.search({ ... });
 /**
  * Mongo Client singleton.
  * @function MongoClient
- * @modules [mongodb@^5 pino@^8 pino-pretty@^10]
+ * @modules [mongodb@^7 pino@^10 pino-pretty@^13]
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
  *   MONGO_URI: "mongodb://[host]:[port]/[db_name]", // the mongo service url
@@ -681,7 +683,7 @@ const data = await client.search({ ... });
  * @dockerCompose
   # Mongo service
   mongo:
-    image: mongo:7-jammy
+    image: mongo:8-noble
     volumes:
       - ./.mongo:/data/db
     environment:
@@ -700,7 +702,7 @@ const data = await mongo.db('...');
 /**
  * MySql Client singleton.
  * @function MySqlClient
- * @modules [mysql2@^3 pino@^8 pino-pretty@^10]
+ * @modules [mysql2@^3 pino@^10 pino-pretty@^13]
  * @envs [MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, LOG_SERVICE_NAME]
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance
@@ -708,7 +710,7 @@ const data = await mongo.db('...');
  * @dockerCompose
   # Mysql service
   mysql:
-    image: mysql:8
+    image: mysql:9
     volumes:
       - ./.mysql:/var/lib/mysql
     environment:
@@ -725,7 +727,7 @@ const data = await (await MySqlClient()).query('...', () => {});
 /**
  * Redis Client singleton.
  * @function RedisClient
- * @modules [redis@^4 pino@^8 pino-pretty@^10]
+ * @modules [redis@^5 pino@^10 pino-pretty@^13]
  * @envs [REDIS_URI, LOG_SERVICE_NAME]
  * @param {object} {
     REDIS_URI,    // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
@@ -753,7 +755,7 @@ const data = await (await RedisClient()).set('key', 'value');
 /**
  * Fetch Client
  * @function FetchClient
- * @modules [pino@^8 pino-pretty@^10]
+ * @modules [pino@^10 pino-pretty@^13]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} the fetch url
  * @param {null|object} the fetch options
@@ -768,7 +770,7 @@ const { ok, status, data } = await FetchClient("[host]/api", {});
 /**
  * GraphqlClient
  * @function GraphqlClient
- * @modules [pino@^8 pino-pretty@^10]
+ * @modules [pino@^10 pino-pretty@^13]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -786,7 +788,7 @@ const data = await GraphqlClient("[host]/graphql", { query = "", variables = {},
 /**
  * JsonApi client
  * @function JsonApiClient
- * @modules [pino@^8 pino-pretty@^10]
+ * @modules [pino@^10 pino-pretty@^13]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -803,7 +805,7 @@ const data = await JsonApiClient("[host]/jsonapi/node/article", { filters: { tit
 /**
  * JsonApi client action
  * @function JsonApiClientAction
- * @modules [pino@^8 pino-pretty@^10]
+ * @modules [pino@^10 pino-pretty@^13]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -821,7 +823,7 @@ const data = await JsonApiClientAction("[host]/jsonapi/node/article", { method =
 /**
  * Google Storage singleton.
  * @function GoogleStorage
- * @modules [@google-cloud/storage@^7 pino@^8 pino-pretty@^10]
+ * @modules [@google-cloud/storage@^7 pino@^10 pino-pretty@^13]
  * @envs [GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, LOG_SERVICE_NAME]
  * @param {object} { GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY }
  * @return {promise} the singleton instance
@@ -835,7 +837,7 @@ const data = await (await GoogleStorage()).bucket({ ... });
 /**
  * S3 Storage singleton.
  * @function S3Storage
- * @modules [@aws-sdk/client-s3@^3 pino@^8 pino-pretty@^10]
+ * @modules [@aws-sdk/client-s3@^3 pino@^10 pino-pretty@^13]
  * @envs [S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {object} { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY }
  * @return {promise} the singleton instance
@@ -852,7 +854,7 @@ const data = await (await S3Storage()).send(command);
 /**
  * Rabbitmq Client singleton.
  * @function RabbitmqClient
- * @modules [amqplib@^0.10 pino@^8 pino-pretty@^10]
+ * @modules [amqplib@^0.10 pino@^10 pino-pretty@^13]
  * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
  * @param {object} { RABBITMQ_URI: "amqp://[[username][:password]@][host][:port]" } // the rabbitmq service url 
  * @return {promise} the singleton instance
@@ -860,7 +862,7 @@ const data = await (await S3Storage()).send(command);
  * @dockerCompose
   # Rabbitmq service
   rabbitmq:
-    image: rabbitmq:3.9.29
+    image: rabbitmq:4
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: root
@@ -875,7 +877,7 @@ const data = await (await RabbitmqClient()).createChannel();
 /**
  * Mailer Client singleton.
  * @function MailerClient
- * @modules [nodemailer@^6 pino@^8 pino-pretty@^10]
+ * @modules [nodemailer@^7 pino@^10 pino-pretty@^13]
  * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance

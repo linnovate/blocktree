@@ -1,15 +1,18 @@
 {
   "name": "@linnovate/blocktree",
-  "version": "1.5.0",
+  "version": "2.0.0-dev",
   "description": "Tools for developers, to build services with a uniform standard (node_modules/envs/logs).",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "author": "Aron Stein",
   "license": "MIT",
   "homepage": "https://github.com/linnovate/blocktree",
   "bugs": "https://github.com/linnovate/blocktree/issues",
+  "imports": {
+    "#linnovate/blocktree": "./src/index.js"
+  },
   "scripts": {
-    "eslint": "eslint --fix .eslintrc.cjs",
+    "eslint": "eslint --fix",
     "test": "mocha './test/**/*.js'"
   },
   "keywords": [
@@ -21,8 +24,55 @@
     "url": "https://github.com/linnovate/blocktree.git"
   },
   "devDependencies": {
-    "eslint": ">=5.16.0",
-    "eslint-config-google": "^0.14.0",
-    "mocha": "^10.2.0"
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "peerDependencies": {
+    "@elastic/elasticsearch": "^9",
+    "@elastic/elasticsearch-mock": "^2",
+    "@escape.tech/graphql-armor": "^3",
+    "@graphql-yoga/plugin-disable-introspection": "^2",
+    "@opensearch-project/opensearch": "^3",
+    "compression": "^1",
+    "cors": "^2",
+    "express": "^5",
+    "express-rate-limit": "^8",
+    "graphql": "^16",
+    "graphql-yoga": "^5",
+    "helmet": "^8",
+    "mongodb": "^7",
+    "mongodb-memory-server": "^10",
+    "pino": "^10",
+    "pino-pretty": "^13",
+    "redis": "^5",
+    "swagger-jsdoc": "^6",
+    "swagger-ui-express": "^5"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^9",
+    "@elastic/elasticsearch-mock": "^2",
+    "@escape.tech/graphql-armor": "^3",
+    "@graphql-yoga/plugin-disable-introspection": "^2",
+    "@opensearch-project/opensearch": "^3",
+    "amqplib": "^0.10",
+    "compression": "^1",
+    "cors": "^2",
+    "express": "^5",
+    "express-rate-limit": "^8",
+    "graphql": "^16",
+    "graphql-yoga": "^5",
+    "helmet": "^8",
+    "mongodb": "^7",
+    "mongodb-memory-server": "^10",
+    "mysql2": "^3",
+    "pino": "^10",
+    "pino-pretty": "^13",
+    "redis": "^5",
+    "swagger-jsdoc": "^6",
+    "swagger-ui-express": "^5"
   }
 }
