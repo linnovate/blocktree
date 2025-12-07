@@ -13,7 +13,8 @@
   },
   "scripts": {
     "eslint": "eslint --fix",
-    "test": "mocha './test/**/*.js'"
+    "test": "mocha './test/**/*.js'",
+    "docs": "jsdoc2md --files src/utils/*.js > docs/utils.md & jsdoc2md --files src/server/*.js > docs/server.md & jsdoc2md --files src/graphql/*.js > docs/graphql.md & jsdoc2md --files src/mongo/*.js > docs/mongo.md & jsdoc2md --files src/elastic/*.js > docs/elastic.md & jsdoc2md --files src/services/*.js > docs/services.md"
   },
   "keywords": [
     "blocktree-core",
@@ -26,7 +27,9 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "eslint": "^9.39.1",
-    "globals": "^16.5.0"
+    "globals": "^16.5.0",
+    "jsdoc": "^4.0.5",
+    "jsdoc-to-markdown": "^9.1.3"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -37,6 +40,7 @@
     "@escape.tech/graphql-armor": "^3",
     "@graphql-yoga/plugin-disable-introspection": "^2",
     "@opensearch-project/opensearch": "^3",
+    "amqplib": "^0.10",
     "compression": "^1",
     "cors": "^2",
     "express": "^5",
@@ -44,8 +48,10 @@
     "graphql": "^16",
     "graphql-yoga": "^5",
     "helmet": "^8",
+    "jsonwebtoken": "^9",
     "mongodb": "^7",
     "mongodb-memory-server": "^10",
+    "mysql2": "^3",
     "pino": "^10",
     "pino-pretty": "^13",
     "redis": "^5",
@@ -66,6 +72,7 @@
     "graphql": "^16",
     "graphql-yoga": "^5",
     "helmet": "^8",
+    "jsonwebtoken": "^9",
     "mongodb": "^7",
     "mongodb-memory-server": "^10",
     "mysql2": "^3",

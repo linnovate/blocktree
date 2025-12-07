@@ -6,7 +6,10 @@
  * @param {object} { MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB }
  * @return {promise} the singleton instance
  * @docs https://www.npmjs.com/package/mysql2
- * @example const data = await (await MySqlClient()).query('...', () => {});
+ * @example
+ * --------
+ * const client = await MySqlClient({ MYSQL_HOST:  });
+ * const data = await client.query('...', () => {});
  * @dockerCompose
   # Mysql service
   mysql:
@@ -23,11 +26,13 @@
 const $instances = {};
 
 export async function MySqlClient({
-  logPrefix = "",
+  logPrefix = '',
   MYSQL_HOST = process.env.MYSQL_HOST,
   MYSQL_USER = process.env.MYSQL_USER,
   MYSQL_PASS = process.env.MYSQL_PASS,
   MYSQL_DB = process.env.MYSQL_DB,
+  usePool = false,
+  ...options
 } = {}) {
 
   /*
@@ -41,28 +46,61 @@ export async function MySqlClient({
    * Imports
    */
   const { DynamicImport } = await import('../utils/dynamic-import.js');
-  const Mysql = await DynamicImport('mysql2@^3');
+  const { createConnection, createPool } = await DynamicImport('mysql2/promise@^3');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   /*
    * Options
    */
-  if (!MYSQL_HOST || !MYSQL_USER || !MYSQL_PASS || !MYSQL_DB) {
-    logger.error(`${logPrefix}MySqlClient [missing env]: MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB`);
+  if (!MYSQL_HOST || !MYSQL_DB) {
+    logger.error(`${logPrefix}MySqlClient [missing env]: MYSQL_HOST, MYSQL_DB`);
     return;
   }
-  logger.debug(`${logPrefix}MySqlClient [setup] options (path: ${MYSQL_HOST})`, { MYSQL_HOST, MYSQL_DB });
+  logger.debug(`${logPrefix}MySqlClient [setup] options (path: ${MYSQL_HOST})`, { namespace: 'MySqlClient', MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, usePool, ...options });
 
+  /*
+   * Create DATABASE IF NOT EXISTS
+   */
+  const client = await createConnection({ host: MYSQL_HOST, user: MYSQL_USER, password: MYSQL_PASS, ...options }).catch(() => null); 
+  await client?.query(`CREATE DATABASE\`${MYSQL_DB}\`;`)
+    .then(() => logger.info(`${logPrefix}MySqlClient [setup] create database - ${MYSQL_DB}`))
+    .catch(() => null); 
+  client?.end()
+ 
   /*
    * Instance
    */
-  $instances[MYSQL_HOST] = Mysql.createConnection({
-    host: MYSQL_HOST,
-    user: MYSQL_USER,
-    password: MYSQL_PASS,
-    database: MYSQL_DB
-  });
-
+  if (usePool) {
+    
+    $instances[MYSQL_HOST] = createPool({
+      host: MYSQL_HOST,
+      user: MYSQL_USER,
+      password: MYSQL_PASS,
+      database: MYSQL_DB,
+      ...options,
+    });
+    
+    logger.info(`${logPrefix}MySqlClient [setup] starting! (usePool: ${!!usePool})`);
+  
+  }
+  else {
+    
+    $instances[MYSQL_HOST] = await createConnection({
+      host: MYSQL_HOST,
+      user: MYSQL_USER,
+      password: MYSQL_PASS,
+      database: MYSQL_DB,
+      ...options,
+    })
+      .then(async client => {
+        logger.info(`${logPrefix}MySqlClient [setup] starting! (usePool: ${!!usePool})`);
+        return client;
+      })
+      .catch(error => {
+        logger.error(`${logPrefix}MySqlClient [setup] ${error?.message}!`);
+      });
+  }
+   
   return $instances[MYSQL_HOST];
 
-};
+}

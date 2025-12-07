@@ -16,7 +16,7 @@
  * @return {promise} the data
  * @example
  * --------
- * const data = await RedisProxy("[host]/api", {}, { debug: true });
+ * const data = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
  * @dockerCompose
   # Redis service
   redis:
@@ -26,46 +26,42 @@
     ports:
       - 6379:6379
  */
-export async function RedisProxy(url, fetchOptions, { REDIS_URI, noCache, debug, callback, setOptions, redisOptions } = {}) {
+export async function RedisProxy(url, fetchOptions, redisOptions) {
 
   /*
    * Imports
    */
   const { RedisClient } = await import('../services/redis-client.js');
-  const { FetchClient } = await import('../services/fetch-client.js');
+  const { FetchClient } = await import('../utils/fetch-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  const client = await RedisClient({ REDIS_URI, ...redisOptions });
-
-  let data;
-
-  // load from cache
-  if (!noCache) {
-
-    data = await client.get(url);
-    data = JSON.parse(data || null);
-
-    if (debug && data) {
-      logger.info('RedisProxy [from cache]', { url, REDIS_URI, noCache });
-    }
-
+  logger.debug(`RedisProxy [request] ${url}`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
+  
+  const client = await RedisClient(redisOptions);
+ 
+  /*
+   * Load from redis
+   */
+  const resData = await client.json.get(url);
+  if (resData) {
+    logger.debug(`RedisProxy [response] ${url} - from cache`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
+    return resData;
   }
 
-  // load from remote
-  if (data == null) {
-
-    if (callback) {
-      data = await callback(url, fetchOptions);
-    }
-    else {
-      const res = await FetchClient(url, fetchOptions);
-      data = res.data;
-    }
-
-    await client.set(url, JSON.stringify(data), setOptions);
-
-    logger.debug('RedisProxy [from remote]', { url, REDIS_URI, noCache });
+  /*
+   * Load from fetch
+   */
+  const res = await FetchClient(url, fetchOptions);
+  if (res?.ok) {
+    await client.json.set(url, '$', {
+      data: res.data,
+      ok: res.ok,
+      status: res.status,
+      statusText: res.statusText,
+    });
   }
-
-  return data;
+  logger.debug(`RedisProxy [response] ${url} - from remote`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
+ 
+  return res;
+  
 }

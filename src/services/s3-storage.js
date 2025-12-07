@@ -1,7 +1,7 @@
 /**
  * S3 Storage singleton.
  * @function S3Storage
- * @modules [@aws-sdk/client-s3@^3 pino@^10 pino-pretty@^13]
+ * @modules [@aws-sdk/client-s3@^3 pino@^10]
  * @envs [S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, LOG_SERVICE_NAME]
  * @param {object} { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY }
  * @return {promise} the singleton instance
@@ -41,7 +41,7 @@ export async function S3Storage({
     logger.error(`${logPrefix}S3Storage [missing env]: S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY`);
     return;
   }
-  logger.debug(`${logPrefix}S3Storage [setup] options (path: ${S3_BUCKET})`, { S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY });
+  logger.debug(`${logPrefix}S3Storage [setup] options (path: ${S3_BUCKET})`, { namespace: 'S3Storage', S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY });
 
   // instance
   $instance = new S3Client({
@@ -56,4 +56,4 @@ export async function S3Storage({
 
   return $instance;
 
-};
+}

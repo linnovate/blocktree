@@ -18,7 +18,7 @@ export async function ElasticIndexerBackups({ index, ...options }) {
   const { ElasticClient } = await import('../services/elastic-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`ElasticIndexerBackups [setup] options`, { index, ...options });
+  logger.debug(`ElasticIndexerBackups [setup] options`, { namespace: 'ElasticIndexerBackups', index, ...options });
 
   /*
    * Options
@@ -31,9 +31,9 @@ export async function ElasticIndexerBackups({ index, ...options }) {
    * Vars
    */
   const client = await ElasticClient({ logPrefix: 'ElasticIndexerBackups:', ...options });
-  const adaptarOut = (obj) => (client?.name == "opensearch-js") ? obj?.body || {} : obj || {};
+  const adaptarOut = (obj) => (client?.name == 'opensearch-js') ? obj?.body || {} : obj || {};
   const sortByTime = (obj) => {
-    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll("_", " ").replaceAll("-", ":")).getTime();
+    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':')).getTime();
     return Object.keys(obj || {}).sort((a, b) => getTime(b) - getTime(a))
   }
 
@@ -47,6 +47,6 @@ export async function ElasticIndexerBackups({ index, ...options }) {
   /*
    * Return
    */
-  return { indices, actives };
+  return { indicesData, indices, actives };
 
 }

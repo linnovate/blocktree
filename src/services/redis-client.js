@@ -11,7 +11,7 @@
  * @docs https://www.npmjs.com/package/redis
  * @example
  * --------
- * const redisClient = await RedisClient({ REDIS_URI: "redis://localhost:6379/1" });
+ * const redisClient = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
  * await redisClient.set('key', 'value');      
  * @dockerCompose
   # Redis service
@@ -52,10 +52,10 @@ export async function RedisClient({
     logger.error(`${logPrefix}RedisClient [missing env]: REDIS_URI`);
     return;
   }
-  logger.debug(`${logPrefix}RedisClient [setup] options (path: ${REDIS_URI})`, { REDIS_URI, logPrefix, ...options });
+  logger.debug(`${logPrefix}RedisClient [setup] options (path: ${REDIS_URI})`, { namespace: 'RedisClient', REDIS_URI, logPrefix, ...options });
 
   /*
-   * Instance
+   * Create Instance
    */
   $instances[REDIS_URI] = createClient({
     socket: { reconnectStrategy: () => 3000 },
@@ -63,8 +63,8 @@ export async function RedisClient({
     url: REDIS_URI,
   });
 
-  $instances[REDIS_URI].on('error', (error, con) => {
-    logger.error(`${logPrefix}RedisClient [error] ${error?.message}`, { REDIS_URI, error: error?.message, con });
+  $instances[REDIS_URI].on('error', (error) => {
+    logger.error(`${logPrefix}RedisClient [error] ${error?.message}`);
   });
 
   await $instances[REDIS_URI].connect().then(() => {

@@ -1,7 +1,7 @@
 /**
  * JsonApi client
  * @function JsonApiClient
- * @modules [pino@^10 pino-pretty@^13]
+ * @modules [pino@^10]
  * @envs [LOG_SERVICE_NAME]
  * @param {string} url // see: https://jsonapi.org
  * @param {object} {
@@ -12,15 +12,14 @@
  *   authToken, // {string} see: https://jsonapi.org/format/#fetching-includes
  * }
  * @return {object} the data
- * @example const data = await JsonApiClient("[host]/jsonapi/node/article", { filters: { title: "my title" }, includes: ["field_image"] });
+ * @example const data = await JsonApiClient('[host]/jsonapi/node/article', { filters: { title: 'my title' }, includes: ['field_image'] });
  */
 export async function JsonApiClient(url, { filters, includes, offset, limit, authToken } = {}) {
 
   /*
    * Imports
    */
-  const { FetchClient } = await import('./fetch-client.js');
-  // const logger = await (await import('../utils/logger.js')).Logger();
+  const { FetchClient } = await import('../utils/fetch-client.js');
 
   // create url params from filters object and includes array
   const urlParams = CreateUrlParams({ filters, includes, offset, limit });
@@ -29,12 +28,12 @@ export async function JsonApiClient(url, { filters, includes, offset, limit, aut
    * Return
    */
   return FetchClient(`${url}?${urlParams}`, {
-    logPrefix: "JsonApiClient:",
-    method: "GET",
+    logPrefix: 'JsonApiClient:',
+    method: 'GET',
     headers: {
-      "Authorization": authToken,
-      "Accept": "application/vnd.api+json",
-      "Content-type": "application/vnd.api+json",
+      'Authorization': authToken,
+      'Accept': 'application/vnd.api+json',
+      'Content-type': 'application/vnd.api+json',
     },
   })
     .then(res => {
@@ -56,26 +55,26 @@ export async function JsonApiClient(url, { filters, includes, offset, limit, aut
  *   authToken, // {string} see: https://jsonapi.org/format/#fetching-includes
  * }
  * @return {object} the data
- * @example const data = await JsonApiClientAction("[host]/jsonapi/node/article", { method = "POST", body = {}, authToken = "MY_TOKEN" });
+ * @example const data = await JsonApiClientAction('[host]/jsonapi/node/article', { method = 'POST', body = {}, authToken = 'MY_TOKEN' });
  */
 export async function JsonApiClientAction(url, { method, body, authToken } = {}) {
 
   /*
    * Imports
    */
-  const { FetchClient } = await import('./fetch-client.js');
+  const { FetchClient } = await import('../utils/fetch-client.js');
   // const logger = await (await import('../utils/logger.js')).Logger();
 
   /*
    * Return
    */
   return FetchClient(url, {
-    logPrefix: "JsonApiClientAction:",
-    method: method || "POST",
+    logPrefix: 'JsonApiClientAction:',
+    method: method || 'POST',
     headers: {
-      "Authorization": authToken,
-      "Accept": "application/vnd.api+json",
-      "Content-type": "application/vnd.api+json",
+      'Authorization': authToken,
+      'Accept': 'application/vnd.api+json',
+      'Content-type': 'application/vnd.api+json',
     },
     body: JSON.stringify(body || {}),
   })

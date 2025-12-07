@@ -56,9 +56,9 @@ export async function AssertQueue(queue, handler, { logPrefix = '', ...options }
 
   // Create Queue
   const logger = await (await import('../utils/logger.js')).Logger();
-  const channel = await RabbitmqChannel({ logPrefix: "AssertQueue:", ...options });
+  const channel = await RabbitmqChannel({ logPrefix: 'AssertQueue:', ...options });
   await channel.assertQueue(queue, { durable: false });
-  logger.debug(`${logPrefix}AssertQueue [create] ${queue}`, { queue });
+  logger.debug(`${logPrefix}AssertQueue [create] ${queue}`, { namespace: 'AssertQueue', queue });
 
   // Create exchange
   // await channel.assertExchange(exchange, 'direct');
@@ -69,14 +69,14 @@ export async function AssertQueue(queue, handler, { logPrefix = '', ...options }
     // get data
     const data = JSON.parse(message?.content?.toString() || {});
 
-    logger.debug(`${logPrefix}AssertQueue [consume] ${queue} - start!`, { queue, data, options });
+    logger.debug(`${logPrefix}AssertQueue [consume] ${queue} - start!`, { namespace: 'AssertQueue', queue, data, options });
 
     const isDone = await handler(data)
       ?.catch(error => {
-        logger.error(`${logPrefix}AssertQueue [error]: ${queue} - ${error?.message}`, { queue, data, options, message: error?.message });
+        logger.error(`${logPrefix}AssertQueue [error]: ${queue} - ${error?.message}`);
       });
 
-    logger.debug(`${logPrefix}AssertQueue [consume] ${queue} - end! (isDone: ${!!isDone})`, { queue, data, options });
+    logger.debug(`${logPrefix}AssertQueue [consume] ${queue} - end! (isDone: ${!!isDone})`, { namespace: 'AssertQueue', queue, data, options });
 
     // remove message
     if (isDone !== false) {
@@ -107,7 +107,7 @@ export async function SendToQueue(queue, data, { logPrefix = '', ...options } = 
 
   const channel = await RabbitmqChannel({ logPrefix, ...options });
   await channel.sendToQueue(queue, Buffer.from(JSON.stringify(data)));
-  logger.debug(`${logPrefix}SendToQueue [send] ${queue}`, { queue, data, options });
+  logger.debug(`${logPrefix}SendToQueue [send] ${queue}`, { namespace: 'SendToQueue', queue, data, options });
 
   return true;
 

@@ -5,7 +5,7 @@
  * @envs [MONGO_URI, LOG_SERVICE_NAME]
  * @param {object} {
  *   MONGO_URI, {string} the mongo service url (mongodb://[user]:[pass]@[host]:[port]/[db_name]?authSource=admin)
- *   mock, // {null|bool} using "mongodb-memory-server@^10"
+ *   mock, // {null|bool} using 'mongodb-memory-server@^10'
  * } 
  * @param {object} MongoClientOptions
  * @return {promise} the singleton instance
@@ -31,7 +31,7 @@ export async function MongoClient({
   MONGO_URI = process.env.MONGO_URI,
   mock,
   rejectOnError,
-  logPrefix = "",
+  logPrefix = '',
   ...options
 } = {}) {
 
@@ -56,7 +56,7 @@ export async function MongoClient({
     logger.error(`${logPrefix}MongoClient [missing env]: MONGO_URI || mock`);
     return;
   }
-  logger.debug(`${logPrefix}MongoClient [setup] options (path: ${MONGO_URI})`, { MONGO_URI, mock, rejectOnError, logPrefix, ...options });
+  logger.debug(`${logPrefix}MongoClient [setup] options (path: ${MONGO_URI})`, { namespace: 'MongoClient', MONGO_URI, mock, rejectOnError, logPrefix, ...options });
 
   /*
    * Mock
@@ -71,13 +71,13 @@ export async function MongoClient({
    * Logger
    */
   const mongodbLog = {
-    mongodbLogComponentSeverities: { command: "debug" },
+    mongodbLogComponentSeverities: { command: 'debug' },
     mongodbLogPath: {
       async write({ c, commandName, message, serverHost, serverPort, databaseName, durationMS }) {
         if (c == 'command') {
-          const events = { "Command started": "request", "Command succeeded": "response" };
+          const events = { 'Command started': 'request', 'Command succeeded': 'response' };
           const msg = `${serverHost}:${serverPort} - ${databaseName} {${commandName}} ${durationMS || 0}ms`;
-          logger.debug(`${logPrefix}MongoClient [${events[message] || message}] ${msg}`, { serverHost, serverPort, databaseName, message, commandName, durationMS, command: "...", reply: "..." });
+          logger.debug(`${logPrefix}MongoClient [${events[message] || message}] ${msg}`, { namespace: 'MongoClient', serverHost, serverPort, databaseName, message, commandName, durationMS, command: '...', reply: '...' });
         }
       }
     }

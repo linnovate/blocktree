@@ -20,7 +20,7 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
   const { ElasticClient } = await import('../services/elastic-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`ElasticIndexerRestore [setup] options`, { index, backupIndex, lastIndexCount, ...options });
+  logger.debug(`ElasticIndexerRestore [setup] options`, { namespace: 'ElasticIndexerRestore', index, backupIndex, lastIndexCount, ...options });
 
   /*
    * Options
@@ -36,9 +36,9 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
    * Vars
    */
   const client = await ElasticClient({ logPrefix: 'ElasticIndexerRestore:', ...options });
-  const adaptarOut = (obj) => (client?.name == "opensearch-js") ? obj?.body || {} : obj || {};
+  const adaptarOut = (obj) => (client?.name == 'opensearch-js') ? obj?.body || {} : obj || {};
   const sortByTime = (obj) => {
-    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll("_", " ").replaceAll("-", ":")).getTime();
+    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':')).getTime();
     return Object.keys(obj || {}).sort((a, b) => getTime(b) - getTime(a))
   }
 
@@ -48,6 +48,7 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
   if (lastIndexCount && !backupIndex) {
     const indicesData = await client.indices.get({ index: `${index}---*` }).then(data => adaptarOut(data));
     backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount)];
+    logger.debug(`ElasticIndexerRestore [lastIndexCount] backupIndex - ${backupIndex} (lastIndexCount: ${lastIndexCount})`, { namespace: 'ElasticIndexer', index, lastIndexCount, backupIndex, indicesData });
   }
 
   /*
@@ -56,20 +57,22 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
   const aliases = await client.indices.getAlias({ name: index }).then(data => adaptarOut(data));
   delete aliases[backupIndex];
   // add new alias & remove old alias
-  await client.indices.updateAliases({
+  const resUpdateAliases = await client.indices.updateAliases({
     body: {
       actions: [
         { add: { index: backupIndex, alias: index } },
-        ...Object.keys(aliases).map(index => ({ remove: { index, alias: index } })),
+        ...Object.keys(aliases).map(key => ({ remove: { index: key, alias: index } })),
       ]
     }
-  })
-    .then(() => {
-      logger.info('ElasticIndexerRestore [aliases] succeeded', { index, backupIndex, aliases: Object.keys(aliases) });
-    })
-    .catch((error) => {
-      logger.error('ElasticIndexerRestore [aliases] failed', { index, backupIndex, aliases: Object.keys(aliases), error: error?.toString() });
-    });
+  });
+
+  // step logger
+  if (resUpdateAliases?.error !== false) {
+    logger.info(`ElasticIndexerRestore [restore] succeeded! (alias: ${index}, backupIndex: ${backupIndex})`);
+  } else {
+    logger.error(`ElasticIndexerRestore [restore] failed! - ${resUpdateAliases?.error?.toString?.()} (alias: ${index}, index: ${backupIndex})`);
+    return;
+  }
 
   return true;
 }

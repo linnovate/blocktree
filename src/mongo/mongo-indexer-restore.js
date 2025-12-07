@@ -17,10 +17,10 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
   /*
    * Imports
    */
-  const { MongoClient } = await import('../tools/mongo-client.js');
+  const { MongoClient } = await import('../services/mongo-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`MongoIndexerRestore [setup] options`, { index, backupIndex, lastIndexCount, ...options });
+  logger.debug(`MongoIndexerRestore [setup] options`, { namespace: 'MongoIndexerRestore', index, backupIndex, lastIndexCount, ...options });
 
   /*
    * Options
@@ -36,9 +36,9 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
    * Vars
    */
   const db = await (await MongoClient({ logPrefix: 'MongoIndexerRestore:', ...options })).db();
-  const sortByTime = (obj) => {
-    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll("_", " ").replaceAll("-", ":")).getTime();
-    return Object.keys(obj || {}).sort((a, b) => getTime(b) - getTime(a))
+  const sortByTime = (array) => {
+    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':')).getTime();
+    return array.sort((a, b) => getTime(b) - getTime(a))
   }
 
   /*
@@ -55,9 +55,9 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
    * Update alias
    */
   const timeFormat = new Date().toLocaleString('en', { hour12: false })
-    .replaceAll("/", ".")
-    .replaceAll(", ", "_")
-    .replaceAll(":", "-");
+    .replaceAll('/', '.')
+    .replaceAll(', ', '_')
+    .replaceAll(':', '-');
 
   await db.renameCollection(index, `${index}---${timeFormat}`);
   await db.renameCollection(backupIndex, index);

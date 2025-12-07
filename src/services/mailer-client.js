@@ -1,7 +1,7 @@
 /**
  * Mailer Client singleton.
  * @function MailerClient
- * @modules [nodemailer@^7 pino@^10 pino-pretty@^13]
+ * @modules [nodemailer@^7 pino@^10]
  * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
  * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
  * @return {promise} the singleton instance
@@ -54,11 +54,11 @@ export async function MailerClient({
     },
   });
 
-  $instance.verify(function (error, success) {
+  $instance.verify(function (error) {
     if (error) {
       logger.error(`MailerClient verify: ${error}`);
     } else {
-      logger.info('MailerClient Server is ready to take our messages', { success });
+      logger.info('MailerClient Server is ready to take our messages');
     }
   });
 

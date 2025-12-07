@@ -16,10 +16,10 @@ export async function MongoIndexerBackups({ index, ...options }) {
   /*
    * Imports
    */
-  const { MongoClient } = await import('../tools/mongo-client.js');
+  const { MongoClient } = await import('../services/mongo-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`MongoIndexerBackups [setup] options`, { index, ...options });
+  logger.debug(`MongoIndexerBackups [setup] options`, { namespace: 'MongoIndexerBackups', index, ...options });
 
   /*
    * Options
@@ -32,9 +32,9 @@ export async function MongoIndexerBackups({ index, ...options }) {
    * Vars
    */
   const db = await (await MongoClient({ logPrefix: 'MongoIndexerBackups:', ...options })).db();
-  const sortByTime = (obj) => {
-    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll("_", " ").replaceAll("-", ":")).getTime();
-    return Object.keys(obj || {}).sort((a, b) => getTime(b) - getTime(a))
+  const sortByTime = (array) => {
+    const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':')).getTime();
+    return array.sort((a, b) => getTime(b) - getTime(a))
   }
 
   /*
@@ -42,13 +42,12 @@ export async function MongoIndexerBackups({ index, ...options }) {
    */
   const indicesData = (await db.listCollections({}, { nameOnly: true }).toArray())
     ?.map(i => i.name)
-    ?.filter(name => name.startsWith(`${index}---`) || name == index);
-  const actives = indicesData?.filter(name => name == index);
+    ?.filter(name => name.startsWith(`${index}---`));
   const indices = sortByTime(indicesData);
 
   /*
    * Return
    */
-  return { indices, actives };
+  return { indices, actives: [index] };
 
 }
