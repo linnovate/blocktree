@@ -10,14 +10,30 @@
 <li>To enable debug logs set env: <code>DEBUG=blocktree:ElasticClient</code> or <code>DEBUG=blocktree</code></li>
 </ul>
 </dd>
-<dt><a href="#ElasticIndexerBackups">ElasticIndexerBackups({)</a> ⇒ <code>object</code></dt>
-<dd><p>Elastic Indexer Backups.</p>
+<dt><a href="#ElasticIndexerBackups">ElasticIndexerBackups(options)</a> ⇒ <code>Promise.&lt;{indices: Array.&lt;string&gt;, actives: Array.&lt;string&gt;}&gt;</code></dt>
+<dd><p>Elastic Indexer Backups - Retrieves all indices matching a specific backup pattern for a given alias.</p>
+<ul>
+<li>Uses default envs: <code>ELASTICSEARCH_URL</code>.</li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:ElasticIndexerBackups</code> or <code>DEBUG=blocktree</code></li>
+</ul>
 </dd>
-<dt><a href="#ElasticIndexerRestore">ElasticIndexerRestore({)</a> ⇒ <code>bool</code></dt>
-<dd><p>Elastic Indexer Restore.</p>
+<dt><a href="#ElasticIndexerRestore">ElasticIndexerRestore(options)</a> ⇒ <code>Promise.&lt;boolean&gt;</code></dt>
+<dd><p>Elastic Indexer Restore - Switches the public alias (e.g., &#39;users&#39;) to point to a specific backup timestamp index.</p>
+<ul>
+<li>Uses default envs: <code>ELASTICSEARCH_URL</code>.</li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:ElasticIndexerRestore</code> or <code>DEBUG=blocktree</code></li>
+</ul>
 </dd>
-<dt><a href="#ElasticIndexer">ElasticIndexer({, async, async)</a> ⇒ <code>promise:object</code></dt>
-<dd><p>Elastic Indexer.</p>
+<dt><a href="#ElasticIndexer">ElasticIndexer(options, batchCallback, testCallback)</a> ⇒ <code>Promise.&lt;{error: (string|boolean)}&gt;</code></dt>
+<dd><p>Elastic Indexer - A utility to manage Zero-Downtime indexing (Blue/Green deployment) for Elasticsearch/OpenSearch.</p>
+<ul>
+<li>Uses default envs: <code>ELASTICSEARCH_URL</code>.</li>
+<li>Handles Index Rotation: Creates <code>index-name---YYYY.MM.DD_HH-mm-ss</code>.</li>
+<li>Manages Aliases: Atomically swaps the alias to the new index.</li>
+<li>Cleanup: Removes old indices based on <code>keepAliasesCount</code>.</li>
+<li>Bulk Indexing: Batches data efficiently.</li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:ElasticIndexer</code> or <code>DEBUG=blocktree</code></li>
+</ul>
 </dd>
 </dl>
 
@@ -37,12 +53,12 @@ Elastic Client - Singleton Elastic Client instance by service URL.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
-| options.ELASTICSEARCH_URL | <code>string</code> \| <code>null</code> | <code>&quot;process.env.ELASTICSEARCH_URL-&quot;</code> | The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set. |
+| options.ELASTICSEARCH_URL | <code>string</code> \| <code>null</code> | <code>&quot;process.env.ELASTICSEARCH_URL&quot;</code> | The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set. |
 | options.useOpensearch | <code>boolean</code> | <code>false</code> | If `true`, requires and uses `module:@opensearch-project/opensearch` instead of Elasticsearch. |
 | options.rejectOnError | <code>boolean</code> | <code>false</code> | If `true`, the decorated client will throw an error on a failed request instead of returning `null`. |
 | options.mock | <code>boolean</code> | <code>false</code> | If `true`, requires and uses `module:@elastic/elasticsearch-mock`. [https://www.npmjs.com/package/@elastic/elasticsearch-mock](https://www.npmjs.com/package/@elastic/elasticsearch-mock) |
 | options.logPrefix | <code>string</code> \| <code>null</code> |  | A string prefix to add to all internal log messages (e.g., `[my-service]`). |
-| ...options | <code>Object</code> \| <code>null</code> |  | Additional standard `@elastic/elasticsearch@^9` or `@opensearch-project/opensearch@^3` options. [https://www.npmjs.com/package/@elastic/elasticsearch](https://www.npmjs.com/package/@elastic/elasticsearch) [https://www.npmjs.com/package/@opensearch-project/opensearch](https://www.npmjs.com/package/@opensearch-project/opensearch). |
+| ...options | <code>Object</code> \| <code>null</code> |  | Additional standard `module:@elastic/elasticsearch` or `module:@opensearch-project/opensearch` options. [https://www.npmjs.com/package/@elastic/elasticsearch](https://www.npmjs.com/package/@elastic/elasticsearch) [https://www.npmjs.com/package/@opensearch-project/opensearch](https://www.npmjs.com/package/@opensearch-project/opensearch) |
 
 **Example**  
 ```js
@@ -104,69 +120,86 @@ services:
 ```
 <a name="ElasticIndexerBackups"></a>
 
-## ElasticIndexerBackups({) ⇒ <code>object</code>
-Elastic Indexer Backups.
+## ElasticIndexerBackups(options) ⇒ <code>Promise.&lt;{indices: Array.&lt;string&gt;, actives: Array.&lt;string&gt;}&gt;</code>
+Elastic Indexer Backups - Retrieves all indices matching a specific backup pattern for a given alias.
+- Uses default envs: `ELASTICSEARCH_URL`.
+- To enable debug logs set env: `DEBUG=blocktree:ElasticIndexerBackups` or `DEBUG=blocktree`
 
 **Kind**: global function  
-**Returns**: <code>object</code> - { data, actives }  
-**Modules**: [@elastic/elasticsearch@^9|@opensearch-project/opensearch@^3 pino@^10]  
-**Envs**: [ELASTICSEARCH_URL, LOG_SERVICE_NAME]  
+**Returns**: <code>Promise.&lt;{indices: Array.&lt;string&gt;, actives: Array.&lt;string&gt;}&gt;</code> - Returns an object containing:
+- `indices`: Array of all backup index names sorted by date (descending).
+- `actives`: Array of index names that currently have the public alias attached.  
+**Requires**: <code>module:@elastic/elasticsearch@^9\|@opensearch-project/opensearch@^3</code>, <code>module:pino@^10</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| { | <code>object</code> | index,         // {string} the elastic index name      ...options,    // {null|object} the elastic options    } |
+| options | <code>Object</code> | Configuration options. |
+| options.index | <code>string</code> | The public alias name (e.g., 'users'). |
+| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. |
 
 **Example**  
 ```js
-const backupsList = await ElasticIndexerBackups({ index, ELASTICSEARCH_URL });
+const { indices, actives } = await ElasticIndexerBackups({ index: 'users', ELASTICSEARCH_URL: 'http://localhost:9200' });
+console.log({ indices, actives });
 ```
 <a name="ElasticIndexerRestore"></a>
 
-## ElasticIndexerRestore({) ⇒ <code>bool</code>
-Elastic Indexer Restore.
+## ElasticIndexerRestore(options) ⇒ <code>Promise.&lt;boolean&gt;</code>
+Elastic Indexer Restore - Switches the public alias (e.g., 'users') to point to a specific backup timestamp index.
+- Uses default envs: `ELASTICSEARCH_URL`.
+- To enable debug logs set env: `DEBUG=blocktree:ElasticIndexerRestore` or `DEBUG=blocktree`
 
 **Kind**: global function  
-**Returns**: <code>bool</code> - is done  
-**Modules**: [@elastic/elasticsearch@^9|@opensearch-project/opensearch@^3 pino@^10]  
-**Envs**: [ELASTICSEARCH_URL, LOG_SERVICE_NAME]  
+**Returns**: <code>Promise.&lt;boolean&gt;</code> - Returns `true` if the restore operation was successful, otherwise `false`.  
+**Requires**: <code>module:@elastic/elasticsearch@^9\|@opensearch-project/opensearch@^3</code>, <code>module:pino@^10</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| { | <code>object</code> | index,      // {string}       backupIndex,      // {string}      lastIndexCount: // {number} the count of lasts elastic index      ...options,    // {null|object} the elastic options    } |
+| options | <code>Object</code> | Configuration options. |
+| options.index | <code>string</code> | The public alias name (e.g., 'users'). |
+| options.backupIndex | <code>string</code> | The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided. |
+| options.lastIndexCount | <code>string</code> | The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing. |
+| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. |
 
 **Example**  
 ```js
-const isDone = await ElasticIndexerRestore({ ELASTICSEARCH_URL, aliasName, indexName });
+const isDone = await ElasticIndexerRestore({ index: 'users', lastIndexCount: 1, ELASTICSEARCH_URL: 'http://localhost:9200' });
 ```
 <a name="ElasticIndexer"></a>
 
-## ElasticIndexer({, async, async) ⇒ <code>promise:object</code>
-Elastic Indexer.
+## ElasticIndexer(options, batchCallback, testCallback) ⇒ <code>Promise.&lt;{error: (string\|boolean)}&gt;</code>
+Elastic Indexer - A utility to manage Zero-Downtime indexing (Blue/Green deployment) for Elasticsearch/OpenSearch.
+- Uses default envs: `ELASTICSEARCH_URL`.
+- Handles Index Rotation: Creates `index-name---YYYY.MM.DD_HH-mm-ss`.
+- Manages Aliases: Atomically swaps the alias to the new index.
+- Cleanup: Removes old indices based on `keepAliasesCount`.
+- Bulk Indexing: Batches data efficiently.
+- To enable debug logs set env: `DEBUG=blocktree:ElasticIndexer` or `DEBUG=blocktree`
 
 **Kind**: global function  
-**Returns**: <code>promise:object</code> - the messages { error: NO_INDEX_NAME || FIND_INDEX_FAILED || INSERT_DATA_FAILED || TEST_DATA_FAILED || UPDATE_ALIASES_FAILED ||REMOVE_OLD_INDICES_FAILED }  
-**Modules**: [@elastic/elasticsearch@^9|@opensearch-project/opensearch@^3 pino@^10]  
-**Envs**: [ELASTICSEARCH_URL, LOG_SERVICE_NAME]  
-**Dockercompose**: # Elastic service
-  elastic:
-    image: elasticsearch:9.1.5
-    volumes:
-      - ./.elastic:/usr/share/elasticsearch/data
-    environment:
-      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
-      - 'discovery.type=single-node'
-      - 'xpack.security.enabled=false'
-    ports:
-      - 9200:9200
-      - 9300:9300  
+**Returns**: <code>Promise.&lt;{error: (string\|boolean)}&gt;</code> - Returns `{ error: false }` on success or an object with an error code string.  
+**Requires**: <code>module:@elastic/elasticsearch@^9\|@opensearch-project/opensearch@^3</code>, <code>module:pino@^10</code>  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| { | <code>object</code> | ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])      index,      // {string} the elastic alias name      mappings,   // {null|object} the elastic mappings (neets for create/clone index)      settings,   // {null|object} the elastic settings (neets for create/clone index)      bulkOptions,// {null|object} the elastic bulk options (neets for routing and more)      keyId,      // {null|string} the elastic doc key (neets for update a doc) (default: 'id')      mode,       // {null|enum:new,clone,sync} 'new' is using a new empty index, 'clone' is using a clone of the last index, 'sync' is using the current index. (default: 'new')       keepAliasesCount,  // {null|number} how many elastic index passes to save      ...options  // {null|object} the elastic options    } |
-| async | <code>function</code> | batchCallback(offset, config, reports) |
-| async | <code>function</code> | testCallback(config, reports) |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>Object</code> |  | Configuration options. |
+| options.index | <code>string</code> |  | The public alias name (e.g., 'users'). |
+| options.mode | <code>&#x27;new&#x27;</code> \| <code>&#x27;clone&#x27;</code> \| <code>&#x27;sync&#x27;</code> | <code>&#x27;new&#x27;</code> | - 'new': Creates a fresh, empty index. - 'clone': Clones the currently active index (fast copy). - 'sync': Updates the currently active index directly (no rotation). |
+| options.keyId | <code>string</code> \| <code>null</code> | <code>&quot;&#x27;id&#x27;&quot;</code> | The field name in the data to use as the document _id. |
+| options.keepAliasesCount | <code>number</code> | <code>1</code> | Number of past indices to keep before deletion. |
+| options.mappings | <code>Object</code> \| <code>null</code> |  | Elastic index mappings. [https://www.elastic.co/docs/manage-data/data-store/mapping](https://www.elastic.co/docs/manage-data/data-store/mapping) |
+| options.settings | <code>Object</code> \| <code>null</code> |  | Elastic index settings. [https://www.elastic.co/docs/reference/elasticsearch/index-settings](https://www.elastic.co/docs/reference/elasticsearch/index-settings) |
+| options.bulkOptions | <code>Object</code> \| <code>null</code> |  | Options for bulk operations (e.g., routing, pipeline). [https://www.elastic.co/docs/reference/elasticsearch/clients/javascript/api-reference#_bulk](https://www.elastic.co/docs/reference/elasticsearch/clients/javascript/api-reference#_bulk) |
+| ...options | <code>Object</code> \| <code>null</code> |  | Additional options passed directly to the `ElasticClient` factory. |
+| batchCallback | <code>function</code> |  | Async function `({ offset, index, mode, response })`. Should return an Array of objects to index. - Return `[]` or `null` to stop processing. - To delete a doc, include property `{ delete: true }` in the object. - `response` contains the result of the *previous* bulkWrite operation. |
+| testCallback | <code>function</code> |  | Async function `({ index, activeIndexName })`. - Runs after indexing but before alias swapping. - Return `true` to proceed, or throw/return error to abort. |
 
 **Example**  
 ```js
-const reports = await ElasticIndexer(config, async (offset, config, reports) => [], async (config, reports) => true);
+const result = await ElasticIndexer({
+    index: 'users',
+    ELASTICSEARCH_URL: 'http://localhost:9200'
+  },
+  async ({ offset }) => offset == 0 && [{ time: Date.now() }],
+);
 ```

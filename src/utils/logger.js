@@ -13,12 +13,12 @@
  * @param {string|null} options.DEBUG=process.env.DEBUG - Debug namespaces string (e.g., "blocktree:*, -blocktree:Server"). {@link https://www.npmjs.com/package/debug}
  * @param {string|null} options.LOG_SERVICE_NAME=process.env.LOG_SERVICE_NAME - The name of the service to appear in logs.
  * @param {Object|null} options.server - An http server instance to attach request logging to.
- * @param {Object|null} ...options - Additional standard pino options. {@link https://www.npmjs.com/package/pino}
+ * @param {Object|null} ...options - Additional standard `pino` options. {@link https://www.npmjs.com/package/pino}
  *
  * @returns {Promise<Object>} The initialized Pino instance.
  *
  * @example
- * const logger = await Logger();
+ * const logger = await Logger({ DEBUG: 'blocktree:Server' });
  * logger.info('User logged in', { userId: 123 });
  */
 

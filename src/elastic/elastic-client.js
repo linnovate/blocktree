@@ -12,12 +12,12 @@
  * @requires module:pino@^10 (Used internally for logging)
  *
  * @param {Object|null} options - Configuration options.
- * @param {string|null} options.ELASTICSEARCH_URL=process.env.ELASTICSEARCH_URL- The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set.
+ * @param {string|null} options.ELASTICSEARCH_URL=process.env.ELASTICSEARCH_URL - The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set.
  * @param {boolean} options.useOpensearch=false - If `true`, requires and uses `module:@opensearch-project/opensearch` instead of Elasticsearch.
  * @param {boolean} options.rejectOnError=false - If `true`, the decorated client will throw an error on a failed request instead of returning `null`.
  * @param {boolean} options.mock=false - If `true`, requires and uses `module:@elastic/elasticsearch-mock`. {@link https://www.npmjs.com/package/@elastic/elasticsearch-mock}
  * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
- * @param {Object|null} ...options - Additional standard `@elastic/elasticsearch@^9` or `@opensearch-project/opensearch@^3` options. {@link https://www.npmjs.com/package/@elastic/elasticsearch} {@link https://www.npmjs.com/package/@opensearch-project/opensearch}.
+ * @param {Object|null} ...options - Additional standard `module:@elastic/elasticsearch` or `module:@opensearch-project/opensearch` options. {@link https://www.npmjs.com/package/@elastic/elasticsearch} {@link https://www.npmjs.com/package/@opensearch-project/opensearch}
  *
  * @returns {Promise<Object>} The initialized client instance (a standard client object with an optional `mockServer` property).
  *
@@ -86,11 +86,14 @@ export async function ElasticClient({
   ...options
 } = {}) {
 
+  // Create a unique key for the singleton based on ELASTICSEARCH_URL or mock
+  const instanceKey = mock ? 'mock' : ELASTICSEARCH_URL;
+  
   /**
    * Return Singleton if exists
    */
-  if ($instances[ELASTICSEARCH_URL]) {
-    return $instances[ELASTICSEARCH_URL];
+  if ($instances[instanceKey]) {
+    return $instances[instanceKey];
   }
 
   /*
@@ -109,6 +112,26 @@ export async function ElasticClient({
     return false;
   }
   logger.debug(`${logPrefix}ElasticClient [setup] options (path: ${ELASTICSEARCH_URL})`, { namespace: 'ElasticClient', ELASTICSEARCH_URL, useOpensearch, rejectOnError, mock, logPrefix, ...options });
+  
+  /*
+   * Mock Setup
+   */
+  let $mockServer;
+  if (mock) {
+    const { default: Mock } = await DynamicImport('@elastic/elasticsearch-mock@^2');
+    $mockServer = new Mock();
+    
+    // Add default mock response for search endpoints
+    $mockServer.add(
+      { method: 'GET', path: ['/_search', '/:index/_search'] },
+      () => ({ hits: { total: { value: 1 }, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text' } }] } })
+    );
+   
+    // Set mock-specific options for the Client constructor
+    options || (options = {});
+    options.Connection = $mockServer.getConnection();
+    options.node = 'http://mock'; // Set a dummy node for mock mode
+  }
 
   /*
    * Logger Transport
@@ -136,29 +159,9 @@ export async function ElasticClient({
   }
 
   /*
-   * Mock Setup
+   * Create instance
    */
-  let $mockServer;
-  if (mock) {
-    const { default: Mock } = await DynamicImport('@elastic/elasticsearch-mock@^2');
-    $mockServer = new Mock();
-    
-    // Add default mock response for search endpoints
-    $mockServer.add(
-      { method: 'GET', path: ['/_search', '/:index/_search'] },
-      () => ({ hits: { total: { value: 1 }, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text' } }] } })
-    );
-   
-    // Set mock-specific options for the Client constructor
-    options || (options = {});
-    options.Connection = $mockServer.getConnection();
-    options.node = 'http://mock'; // Set a dummy node for mock mode
-  }
-
-  /*
-   * Instance
-   */
-  $instances[ELASTICSEARCH_URL] = new Client({
+  $instances[instanceKey] = new Client({
     node: ELASTICSEARCH_URL,
     Transport: LoggorTransport,
     ...options,
@@ -166,11 +169,11 @@ export async function ElasticClient({
 
   if ($mockServer) {
     // Attach the mock server instance for test setup
-    $instances[ELASTICSEARCH_URL].mockServer = $mockServer;
+    $instances[instanceKey].mockServer = $mockServer;
   }
 
   logger.info(`${logPrefix}ElasticClient [setup] initialized! (mock: ${!!mock}, useOpensearch: ${!!useOpensearch})`);
 
-  return $instances[ELASTICSEARCH_URL];
+  return $instances[instanceKey];
 
 }

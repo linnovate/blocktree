@@ -59,8 +59,9 @@ Fetch Client - A robust wrapper around the global fetch API
 
 | Param | Type | Description |
 | --- | --- | --- |
-| url | <code>string</code> \| <code>null</code> | The URL to which the request is made. |
+| url | <code>string</code> | The URL to which the request is made. |
 | options | <code>Object</code> \| <code>null</code> | Standard fetch options, extended with custom properties. |
+| options.namespace | <code>string</code> \| <code>null</code> | A string prefix to add to namespace log messages (e.g., `[my-service]`). |
 | options.logPrefix | <code>string</code> \| <code>null</code> | A string prefix to add to all internal log messages (e.g., `[my-service]`). |
 | ...options | <code>Object</code> \| <code>null</code> | Additional standard fetch options (e.g., `method`, `headers`, `body`). |
 
@@ -84,7 +85,7 @@ JWT Parser - Verifies and decodes a JWT token.
 | --- | --- | --- | --- |
 | token | <code>string</code> |  | The JWT string to verify and parse. |
 | JWT_SECRET_KEY | <code>string</code> | <code>&quot;process.env.JWT_SECRET_KEY&quot;</code> | The secret key used to sign the token. |
-| options | <code>Object</code> \| <code>null</code> |  | Configuration options for jwt.verify. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
+| options | <code>Object</code> \| <code>null</code> |  | Configuration options for `jwt.verify`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
 
 **Example**  
 ```js
@@ -109,10 +110,10 @@ Logger - Singleton logger instance.
 | options.DEBUG | <code>string</code> \| <code>null</code> | <code>&quot;process.env.DEBUG&quot;</code> | Debug namespaces string (e.g., "blocktree:*, -blocktree:Server"). [https://www.npmjs.com/package/debug](https://www.npmjs.com/package/debug) |
 | options.LOG_SERVICE_NAME | <code>string</code> \| <code>null</code> | <code>&quot;process.env.LOG_SERVICE_NAME&quot;</code> | The name of the service to appear in logs. |
 | options.server | <code>Object</code> \| <code>null</code> |  | An http server instance to attach request logging to. |
-| ...options | <code>Object</code> \| <code>null</code> |  | Additional standard pino options. [https://www.npmjs.com/package/pino](https://www.npmjs.com/package/pino) |
+| ...options | <code>Object</code> \| <code>null</code> |  | Additional standard `pino` options. [https://www.npmjs.com/package/pino](https://www.npmjs.com/package/pino) |
 
 **Example**  
 ```js
-const logger = await Logger();
+const logger = await Logger({ DEBUG: 'blocktree:Server' });
 logger.info('User logged in', { userId: 123 });
 ```

@@ -11,8 +11,8 @@
  * @param {Object} app - The express application instance.
  * @param {Object|null} options - Configuration options.
  * @param {String|null} options.SWAGGER_PATH=/api-docs - The URL route to serve the swagger UI.
- * @param {Object|null} options.swaggerUIOptions - Options to pass to `swagger-ui-express`. {@link https://www.npmjs.com/package/swagger-ui-express}
- * @param {Object|null} options.swaggerJsdocOptions - Options to pass to `swagger-jsdoc`. {@link https://www.npmjs.com/package/swagger-jsdoc}
+ * @param {Object|null} options.swaggerUIOptions - Options to pass to `module:swagger-ui-express`. {@link https://www.npmjs.com/package/swagger-ui-express}
+ * @param {Object|null} options.swaggerJsdocOptions - Options to pass to `module:swagger-jsdoc`. {@link https://www.npmjs.com/package/swagger-jsdoc}
  *
  * @returns {Promise<void>}
  *

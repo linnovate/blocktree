@@ -9,7 +9,7 @@
  *
  * @param {Object} app - The express application instance.
  * @param {Object|null} options - Configuration options.
- * @param {Object|null} options.compressionOptions - Options to pass to the `compression`. {@link https://www.npmjs.com/package/compression}
+ * @param {Object|null} options.compressionOptions - Options to pass to the `module:compression`. {@link https://www.npmjs.com/package/compression}
  *
  * @returns {Promise<void>}
  *

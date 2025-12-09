@@ -1,20 +1,22 @@
 /**
- * Mailer Client singleton.
+ * Mailer Client - Singleton Nodemailer instance.
+ * - Uses default envs: `MAILER_HOST`, `MAILER_USER`, `MAILER_PESS`.
+ * - To enable debug logs set env: `DEBUG=blocktree`
+ * 
+ * @async
  * @function MailerClient
- * @modules [nodemailer@^7 pino@^10]
- * @envs [MAILER_HOST, MAILER_USER, MAILER_PESS, LOG_SERVICE_NAME]
- * @param {object} { MAILER_HOST, MAILER_USER, MAILER_PESS }
- * @return {promise} the singleton instance
- * @docs https://nodemailer.com/about
- * @example const data = await (await MailerClient()).sendMail({
-    from,    // sender address
-    to,      // list of receivers
-    subject, // subject line
-    text,    // plain text body
-    html,    // html body
-  });
+ * @requires module:nodemailer@^7
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {Object|null} ...options - Additional standard `module:nodemailer` options. {@link https://nodemailer.com/about}
+ *
+ * @returns {Promise<Object>} The initialized instance.
+ *
+ * @example
+ * const storage = await MailerClient();
+ * await storage.bucket('my-bucket').upload('./file.txt');
  */
-
 let $instance;
 
 export async function MailerClient({
@@ -23,7 +25,9 @@ export async function MailerClient({
   MAILER_PESS = process.env.MAILER_PESS,
 } = {}) {
 
-
+  /**
+   * Return Singleton if exists
+   */
   if ($instance) {
     return $instance;
   }
@@ -35,11 +39,16 @@ export async function MailerClient({
   const { nodemailer } = await DynamicImport('nodemailer@^7');
   const logger = await (await import('../utils/logger.js')).Logger();
 
+  /*
+   * Validation
+   */
   if (!MAILER_HOST || !MAILER_USER || !MAILER_PESS) {
     logger.error('MailerClient [missing env]: MAILER_HOST, MAILER_USER, MAILER_PESS');
   }
 
-  // instance
+  /*
+   * Create Instance
+   */
   $instance = nodemailer.createTransport({
     host: MAILER_HOST,
     port: 465,
@@ -64,4 +73,4 @@ export async function MailerClient({
 
   return $instance;
 
-};
+}

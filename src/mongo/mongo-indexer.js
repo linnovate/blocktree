@@ -1,31 +1,48 @@
 /**
- * Mongo Indexer.
+ * Mongo Indexer - A utility to manage Zero-Downtime indexing (Blue/Green deployment) for Mongo.
+ * - Uses default envs: `MONGO_URI`.
+ * - Handles Index Rotation: Creates `index-name---YYYY.MM.DD_HH-mm-ss`.
+ * - Manages Aliases: Atomically swaps the alias to the new index.
+ * - Cleanup: Removes old indices based on `keepAliasesCount`.
+ * - Bulk Indexing: Batches data efficiently.
+ * - To enable debug logs set env: `DEBUG=blocktree:MongoIndexer` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function MongoIndexer
- * @modules [mongodb@^7 pino@^10 pino-pretty@^13]
- * @envs [MONGO_URI, LOG_SERVICE_NAME]
- * @param {object} {
-     index,  // {null|string} the mongo collection name
-     keyId,           // {null|string} the mongo doc key
-     mode,            // {null|enum:new,clone,sync} 'new' is using a new empty index, 'clone' is using a clone of the last index, 'sync' is using the current index. (default: 'new') 
-     keepAliasesCount,  // {null|number} how many index passes to save
-     options,
-   }
- * @param {function} async batchCallback(offset, config, reports) [{ ... , deleted: true }]
- * @param {function} async testCallback(config, reports)
- * @return {promise:object} the messages { error: NO_INDEX_NAME || FIND_INDEX_FAILED || INSERT_DATA_FAILED || TEST_DATA_FAILED || UPDATE_ALIASES_FAILED ||REMOVE_OLD_INDICES_FAILED }
- * @example const isDone = await MongoIndexer(config, async (offset, config, reports) => [], async (config) => true);
- * @dockerCompose
-  # Mongo service
-  mongo:
-    image: mongo:8-noble
-    volumes:
-      - ./.mongo:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-    ports:
-      - 27017:27017
-*/
+ * @requires module:mongodb@^7
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {string} options.index - The public alias name (e.g., 'users').
+ * @param {'new'|'clone'|'sync'} options.mode='new' -
+ * - 'new': Creates a fresh, empty index.
+ * - 'clone': Clones the currently active index (fast copy).
+ * - 'sync': Updates the currently active index directly (no rotation).
+ * @param {string|null} options.keyId='id' - The field name to use as the unique identifier for updates/upserts.
+ * @param {number} options.keepAliasesCount=1 - Number of past indices to keep before deletion.
+ * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory.
+ *
+ * @param {Function} batchCallback
+ * Async function `({ offset, index, mode, response })`. Should return an Array of objects to index.
+ * - Return `[]` or `null` to stop processing.
+ * - To delete a doc, include property `{ delete: true }` in the object.
+ * - `response` contains the result of the *previous* bulkWrite operation.
+ *
+ * @param {Function} testCallback
+ * Async function `({ index, activeIndexName })`.
+ * - Runs after indexing but *before* alias swapping.
+ * - Return `true` to proceed, or throw/return error to abort
+ *
+ * @returns {Promise<{error: string|boolean}>} Returns `{ error: false }` on success or an object with an error code string.
+ *
+ * @example
+ * const result = await MongoIndexer({
+ *     index: 'users',
+ *     MONGO_URI: 'mongodb://root:root@localhost:27017'
+ *   },
+ *   async ({ offset }) => offset == 0 && [{ time: Date.now() }],
+ * );
+ */
 export async function MongoIndexer(
   {
     index,
@@ -44,10 +61,10 @@ export async function MongoIndexer(
   const { MongoClient } = await import('../services/mongo-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`MongoIndexer [setup] options`, { namespace: 'MongoIndexer', index, keyId, mode, keepAliasesCount, ...options });
+  logger.debug(`MongoIndexer [setup] options`, { namespace: 'MongoIndexer', index, mode, keyId, keepAliasesCount, ...options });
 
   /*
-   * Options
+   * Validation
    */
   if (!index) {
     logger.error('MongoIndexer [missing option]: index');
@@ -55,30 +72,32 @@ export async function MongoIndexer(
   }
 
   /*
-   * Vars
+   * Setup & Helpers
    */
+  // Initialize Client
   const client = await MongoClient({ logPrefix: 'MongoIndexer:', ...options });
+  // Helper: Sort indices by timestamp suffix (newest first)
   const sortByTime = (array) => {
     const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':').replaceAll('--draf', '')).getTime();
     return array.sort((a, b) => getTime(b) - getTime(a))
   }
 
   /*
-   * Use index (step 1)
+   * 1. Determine Indices
    */
-  logger.debug(`MongoIndexer (1/5)[find-index] start! (alias: ${index})`, { namespace: 'MongoIndexer', index, mode });
+  logger.debug(`MongoIndexer (1/5)[determine-indice] start! (alias: ${index})`, { namespace: 'MongoIndexer', index, mode });
 
-  // get the last indexName 
+  // Get existing alias info
   const indexAliases = (await client.db().listCollections({}, { nameOnly: true }).toArray())
     ?.map(i => i.name)
     ?.filter(name => name.startsWith(`${index}---`) || name == index);
   const lastIndexName = indexAliases.find(name => name == index);
   
-  // generate a new index name
+  // Generate a new index name
   const timeFormat = new Date().toLocaleString('en', { hour12: false }).replaceAll('/', '.').replaceAll(', ', '_').replaceAll(':', '-');
   let activeIndexName = `${index}---${timeFormat}`;
 
-  // create/use the active index by mode
+  // Mode Logic
   let resUseIndex;
   if (mode == 'sync' && lastIndexName) {
     activeIndexName = lastIndexName;
@@ -88,36 +107,41 @@ export async function MongoIndexer(
     resUseIndex = await client.db().collection(index).aggregate([{ $out: activeIndexName }]);
   }
   else {
+    // Mode 'new' or first run
     resUseIndex = await client.db().createCollection(activeIndexName);
   }
 
-  logger.debug(`MongoIndexer (1/5)[find-index] end! (${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`, { namespace: 'MongoIndexer', index, mode, activeIndexName, lastIndexName, indexAliases });
+  logger.debug(`MongoIndexer (1/5)[determine-indice] end! (${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`, { namespace: 'MongoIndexer', index, mode, activeIndexName, lastIndexName, indexAliases });
   
-  // step logger
   if (resUseIndex) {
-    logger.info(`MongoIndexer (1/5)[find-index] succeeded! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
+    logger.info(`MongoIndexer (1/5)[determine-indice] succeeded! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
   } else {
-    logger.error(`MongoIndexer (1/5)[find-index] failed! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
-    return { error: "FIND_INDEX_FAILED" };
+    logger.error(`MongoIndexer (1/5)[determine-indice] failed! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
+    return { error: "DETERMINE_INDICE_FAILED" };
   }
   
   /*
-   * Insert data (step 2)
+   * 2. Insert Data (Batch Loop)
    */
-  const insertData = async (offset = 0, response) => {
+  let offset = 0;
+  let batchSuccess = true;
+  let lastBulkResponse = null;
+  
+  while (true) {
     logger.debug(`MongoIndexer (2/5)[insert-data] batch (index: ${activeIndexName}, offset: ${offset})`, { namespace: 'MongoIndexer', index, mode, activeIndexName });
-    // run batch
-    const items = await batchCallback({ offset, index, mode, response }).catch((error) => ({ error }));
-    // callback error
+    // Fetch Batch
+    const items = await batchCallback({ offset, index, mode, response: lastBulkResponse }).catch((error) => ({ error }));
+    // Batch failed
     if (items?.error) {
       logger.error(`MongoIndexer (2/5)[insert-data] callback - ${items?.error?.toString?.()} (index: ${activeIndexName}, offset: ${offset})`);
-      return false;
+      batchSuccess = false;
+      break;
     }
-    // end data
-    else if (!items?.length) {
-      return true;
+    // Stop if empty or null
+    if (!items?.length) {
+      break;
     }
-    // generate bulk data
+    // Prepare Bulk Operations 
     const operations = items.map(item => {
       const filter = (keyId in item) ? { [keyId]: item[keyId] } : {};
       if (item?.deleted) {
@@ -126,21 +150,17 @@ export async function MongoIndexer(
         return { updateOne: { filter, update: { $set: item }, upsert: true } }
       }
     })
-    // insert data
-    const bulkResponse = await client.db().collection(activeIndexName).bulkWrite(operations, { ordered: false })
+    // Send to Mongo
+    const lastBulkResponse = await client.db().collection(activeIndexName).bulkWrite(operations, { ordered: false })
       .catch(error => ({ error }));
-    // bulk error
-    if (bulkResponse?.error) {
-      logger.error(`MongoIndexer (2/5)[insert-data] bulk - ${bulkResponse?.error} (index: ${activeIndexName}, offset: ${offset})`);
+    // Log generic error, but usually we continue unless critical
+    if (lastBulkResponse?.error) {
+      logger.error(`MongoIndexer (2/5)[insert-data] bulk - ${lastBulkResponse?.error} (index: ${activeIndexName}, offset: ${offset})`);
     }
-    // run next batch
-    return await insertData(offset + items.length, bulkResponse);
-  };
- 
-  const resInsertData = await insertData();
+    offset += items.length;
+  }
 
-  // step logger
-  if (resInsertData) {
+  if (batchSuccess) {
     logger.info(`MongoIndexer (2/5)[insert-data] succeeded! (index: ${activeIndexName})`);
   } else {
     logger.error(`MongoIndexer (2/5)[insert-data] failed! (index: ${activeIndexName})`);
@@ -148,13 +168,12 @@ export async function MongoIndexer(
   }
   
   /*
-   * Test callback (step 3)
+   * 3. Test Data
    */
   const resTestCallback = await testCallback?.({ index, activeIndexName })
     ?.catch(error => ({ error }));
-  
-  // step logger
-  if (resTestCallback?.error !== false) {
+  // Check: Must explicitly return true, or simply not return an error object
+  if (resTestCallback === true && resTestCallback?.error !== false) {
     logger.info(`MongoIndexer (3/5)[test-data] succeeded! (index: ${activeIndexName})`);
   } else {
     logger.error(`MongoIndexer (3/5)[test-data] failed! - ${resTestCallback?.error?.toString?.()} (index: ${activeIndexName})`);
@@ -162,7 +181,11 @@ export async function MongoIndexer(
   }
 
   /*
-   * Update/Remove aliases (step 4)
+   * 4. Update Aliases
+   * Strategy:
+   * 1. Rename `live` -> `new_name--draft` (Preserves old data temporarily)
+   * 2. Rename `new_name` -> `live` (The critical swap)
+   * 3. Rename `new_name--draft` -> `new_name` (Archives old data at the timestamped name)
    */
   logger.debug('MongoIndexer (4/5)[update-aliases] start!', { namespace: 'MongoIndexer', index, mode, activeIndexName });
    
@@ -173,7 +196,6 @@ export async function MongoIndexer(
   
   logger.debug('MongoIndexer (4/5)[update-aliases] end!', { namespace: 'MongoIndexer', index, mode, activeIndexName, error });
   
-  // step logger
   if (!error) {
     logger.info(`MongoIndexer (4/5)[update-aliases] succeeded! (alias: ${index}, index: ${activeIndexName})`);
   } else {
@@ -182,22 +204,23 @@ export async function MongoIndexer(
   }
   
   /*
-   * Remove old indices (step 5)
+   * 5. Remove Old Indices
    */
   logger.debug('MongoIndexer (5/5)[remove-indices] start!', { namespace: 'MongoIndexer', index, mode, activeIndexName });
-  // load indices of the alias
+ 
+  // Fetch all indices matching pattern `alias---*`
   const indicesData = (await client.db().listCollections({}, { nameOnly: true }).toArray())
     ?.map(i => i.name)
     ?.filter(name => name.startsWith(`${index}---`));
-  // sort by time & split the list of keep
+  // Sort Newest -> Oldest. Splice off the ones we want to keep. The rest are deleted.
   const removeIndices = sortByTime(indicesData).splice(keepAliasesCount);
-  // remove old indexes  
+  // Remove old indexes  
   const resRemoveIndices = await Promise.all(
     removeIndices?.map(key => client.db().dropCollection(key) )
   ).catch(error => ({ error }));
+  
   logger.debug('MongoIndexer (5/5)[remove-old-indices] end!', { namespace: 'MongoIndexer', index, mode, activeIndexName, indicesData, removeIndices });
 
-  // step logger
   if (!resRemoveIndices?.error) {
     logger.info(`MongoIndexer (5/5)[remove-old-indices] succeeded! (alias: ${index}, index: ${activeIndexName})`);
   } else {

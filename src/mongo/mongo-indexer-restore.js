@@ -1,16 +1,23 @@
 /**
- * Mongo Indexer Restore.
+ * Mongo Indexer Restore - Switches the public alias (e.g., 'users') to point to a specific backup timestamp index.
+ * - Uses default envs: `MONGO_URI`.
+ * - To enable debug logs set env: `DEBUG=blocktree:MongoIndexerRestore` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function MongoIndexerRestore
- * @modules [mongodb@^7 pino@^10]
- * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} {
-     index,      // {string} 
-     backupIndex,      // {string}
-     lastIndexCount: // {number} the count of lasts elastic index
-     ...options,    // {null|object} the elastic options
-   }
- * @return {bool} is done
- * @example const isDone = await MongoIndexerRestore({ index, backupIndex, lastIndexCount });
+ * @requires module:mongodb@^7
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {string} options.index - The public alias name (e.g., 'users').
+ * @param {string} options.backupIndex - The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided.
+ * @param {string} options.lastIndexCount - The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing.
+ * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory.
+ *
+ * @returns {Promise<boolean>} Returns `true` if the restore operation was successful, otherwise `false`.
+ *
+ * @example
+ * const isDone = await MongoIndexerRestore({ index: 'users', lastIndexCount: 1, MONGO_URI: 'mongodb://root:root@localhost:27017' });
  */
 export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, ...options }) {
 
@@ -23,7 +30,7 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
   logger.debug(`MongoIndexerRestore [setup] options`, { namespace: 'MongoIndexerRestore', index, backupIndex, lastIndexCount, ...options });
 
   /*
-   * Options
+   * Validation
    */
   if (!index) {
     return logger.error('MongoIndexerRestore [missing option]: index');
@@ -33,9 +40,11 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
   }
 
   /*
-   * Vars
+   * Setup & Helpers
    */
+  // Initialize Client
   const db = await (await MongoClient({ logPrefix: 'MongoIndexerRestore:', ...options })).db();
+  // Expected format: alias---2023.01.01_12-00-00
   const sortByTime = (array) => {
     const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':')).getTime();
     return array.sort((a, b) => getTime(b) - getTime(a))
@@ -58,10 +67,17 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
     .replaceAll('/', '.')
     .replaceAll(', ', '_')
     .replaceAll(':', '-');
+  // Rename 'index' to 'index---{timeFormat}' (Backup)
+  const res1 = await db.renameCollection(index, `${index}---${timeFormat}`);
+  // Rename 'backupIndex' to 'index' (Restore)
+  const res2 = await db.renameCollection(backupIndex, index);
+  const error = res1?.error?.toString() || res2?.error?.toString();
 
-  await db.renameCollection(index, `${index}---${timeFormat}`);
-  await db.renameCollection(backupIndex, index);
-  logger.info('MongoIndexerRestore [aliases] succeeded', { index, backupIndex });
-
-  return true;
+  if (!error) {
+    logger.info(`MongoIndexerRestore [restore] succeeded! (alias: ${index}, backupIndex: ${backupIndex})`);
+    return true;
+  } else {
+    logger.error(`MongoIndexerRestore [restore] failed! - ${error} (alias: ${index}, index: ${backupIndex})`);
+    return false;
+  }
 }

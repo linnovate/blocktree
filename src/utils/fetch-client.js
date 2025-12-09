@@ -8,8 +8,9 @@
  * @function FetchClient
  * @requires module:pino@^10 (Used internally for logging)
  *
- * @param {string|null} url - The URL to which the request is made.
+ * @param {string} url - The URL to which the request is made.
  * @param {Object|null} options - Standard fetch options, extended with custom properties.
+ * @param {string|null} options.namespace - A string prefix to add to namespace log messages (e.g., `[my-service]`).
  * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
  * @param {Object|null} ...options - Additional standard fetch options (e.g., `method`, `headers`, `body`).
  *
@@ -19,14 +20,14 @@
  * const { ok, status, data } = await FetchClient('[host]/api');
  * console.log({ ok, status, data });
  */
-export async function FetchClient(url, { logPrefix = '', ...options }) {
+export async function FetchClient(url, { namespace = 'FetchClient', logPrefix = '', ...options }) {
 
   /*
    * Imports
    */
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`${logPrefix}FetchClient [request] ${url}`, { namespace: 'FetchClient', ...options });
+  logger.debug(`${logPrefix}FetchClient [request] ${url}`, { namespace, ...options });
 
   /*
    * Return
@@ -44,7 +45,7 @@ export async function FetchClient(url, { logPrefix = '', ...options }) {
 
       // Log based on response status
       if (res.ok) {
-        logger.debug(`${logPrefix}FetchClient [response] ${url} - ${res.statusText}`, { namespace: 'FetchClient', url, options, status: res.status, statusText: res.statusText });
+        logger.debug(`${logPrefix}FetchClient [response] ${url} - ${res.statusText}`, { namespace, url, options, status: res.status, statusText: res.statusText });
       } else {
         logger.error(`${logPrefix}FetchClient [response] ${url} - ${res.statusText}`);
       }

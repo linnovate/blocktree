@@ -8,7 +8,7 @@
  * @requires module:@google-cloud/storage@^7
  * @requires module:pino@^10 (Used internally for logging)
  *
- * @param {Object|null} options - Configuration options.
+ * @param {Object} options - Configuration options.
  * @param {string} options.GOOGLE_STORAGE_CLIENT_EMAIL=process.env.GOOGLE_STORAGE_CLIENT_EMAIL - The service account email.
  * @param {string} options.GOOGLE_STORAGE_PRIVATE_KEY=process.env.GOOGLE_STORAGE_PRIVATE_KEY - The private key (raw or base64 encoded).
  * @param {Object|null} ...options - Additional standard `@google-cloud/storage` options. {@link https://www.npmjs.com/package/@google-cloud/storage}
@@ -16,10 +16,12 @@
  * @returns {Promise<Object>} The initialized Storage instance.
  *
  * @example
- * const storage = await GoogleStorage();
+ * const storage = await GoogleStorage({
+ *   GOOGLE_STORAGE_CLIENT_EMAIL: "[some_client_email]",
+ *   GOOGLE_STORAGE_PRIVATE_KEY: "[some_private_key]",
+ * });
  * await storage.bucket('my-bucket').upload('./file.txt');
  */
-
 let $instance;
 
 export async function GoogleStorage({

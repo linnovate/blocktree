@@ -1,46 +1,60 @@
 /**
- * Elastic Indexer.
+ * Elastic Indexer - A utility to manage Zero-Downtime indexing (Blue/Green deployment) for Elasticsearch/OpenSearch.
+ * - Uses default envs: `ELASTICSEARCH_URL`.
+ * - Handles Index Rotation: Creates `index-name---YYYY.MM.DD_HH-mm-ss`.
+ * - Manages Aliases: Atomically swaps the alias to the new index.
+ * - Cleanup: Removes old indices based on `keepAliasesCount`.
+ * - Bulk Indexing: Batches data efficiently.
+ * - To enable debug logs set env: `DEBUG=blocktree:ElasticIndexer` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function ElasticIndexer
- * @modules [@elastic/elasticsearch@^9|@opensearch-project/opensearch@^3 pino@^10]
- * @envs [ELASTICSEARCH_URL, LOG_SERVICE_NAME]
- * @param {object} {
-     ELASTICSEARCH_URL, // the elastic service url (http[s]://[host][:port])
-     index,      // {string} the elastic alias name
-     mappings,   // {null|object} the elastic mappings (neets for create/clone index)
-     settings,   // {null|object} the elastic settings (neets for create/clone index)
-     bulkOptions,// {null|object} the elastic bulk options (neets for routing and more)
-     keyId,      // {null|string} the elastic doc key (neets for update a doc) (default: 'id')
-     mode,       // {null|enum:new,clone,sync} 'new' is using a new empty index, 'clone' is using a clone of the last index, 'sync' is using the current index. (default: 'new') 
-     keepAliasesCount,  // {null|number} how many elastic index passes to save
-     ...options  // {null|object} the elastic options
-   }
- * @param {function} async batchCallback(offset, config, reports)
- * @param {function} async testCallback(config, reports)
- * @return {promise:object} the messages { error: NO_INDEX_NAME || FIND_INDEX_FAILED || INSERT_DATA_FAILED || TEST_DATA_FAILED || UPDATE_ALIASES_FAILED ||REMOVE_OLD_INDICES_FAILED }
- * @example const reports = await ElasticIndexer(config, async (offset, config, reports) => [], async (config, reports) => true);
- * @dockerCompose
-  # Elastic service
-  elastic:
-    image: elasticsearch:9.1.5
-    volumes:
-      - ./.elastic:/usr/share/elasticsearch/data
-    environment:
-      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
-      - 'discovery.type=single-node'
-      - 'xpack.security.enabled=false'
-    ports:
-      - 9200:9200
-      - 9300:9300
+ * @requires module:@elastic/elasticsearch@^9|@opensearch-project/opensearch@^3
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {string} options.index - The public alias name (e.g., 'users').
+ * @param {'new'|'clone'|'sync'} options.mode='new' -
+ * - 'new': Creates a fresh, empty index.
+ * - 'clone': Clones the currently active index (fast copy).
+ * - 'sync': Updates the currently active index directly (no rotation).
+ * @param {string|null} options.keyId='id' - The field name in the data to use as the document _id.
+ * @param {number} options.keepAliasesCount=1 - Number of past indices to keep before deletion.
+ * @param {Object|null} options.mappings - Elastic index mappings. {@link https://www.elastic.co/docs/manage-data/data-store/mapping}
+ * @param {Object|null} options.settings - Elastic index settings. {@link https://www.elastic.co/docs/reference/elasticsearch/index-settings}
+ * @param {Object|null} options.bulkOptions - Options for bulk operations (e.g., routing, pipeline). {@link https://www.elastic.co/docs/reference/elasticsearch/clients/javascript/api-reference#_bulk}
+ * @param {Object|null} ...options - Additional options passed directly to the `ElasticClient` factory.
+ *
+ * @param {Function} batchCallback
+ * Async function `({ offset, index, mode, response })`. Should return an Array of objects to index.
+ * - Return `[]` or `null` to stop processing.
+ * - To delete a doc, include property `{ delete: true }` in the object.
+ * - `response` contains the result of the *previous* bulkWrite operation.
+ *
+ * @param {Function} testCallback
+ * Async function `({ index, activeIndexName })`.
+ * - Runs after indexing but before alias swapping.
+ * - Return `true` to proceed, or throw/return error to abort.
+ *
+ * @returns {Promise<{error: string|boolean}>} Returns `{ error: false }` on success or an object with an error code string.
+ *
+ * @example
+ * const result = await ElasticIndexer({
+ *     index: 'users',
+ *     ELASTICSEARCH_URL: 'http://localhost:9200'
+ *   },
+ *   async ({ offset }) => offset == 0 && [{ time: Date.now() }],
+ * );
  */
 export async function ElasticIndexer(
   {
     index,
     mode = 'new',
     keyId = 'id',
+    keepAliasesCount = 1,
     mappings,
     settings,
     bulkOptions,
-    keepAliasesCount = 1,
     ...options
   },
   batchCallback,
@@ -53,10 +67,10 @@ export async function ElasticIndexer(
   const { ElasticClient } = await import('../services/elastic-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
-  logger.debug(`ElasticIndexer [setup] options`, { namespace: 'ElasticIndexer', index, mappings, settings, bulkOptions, keyId, mode, keepAliasesCount, ...options });
+  logger.debug(`ElasticIndexer [setup] options`, { namespace: 'ElasticIndexer', index, mode, keyId, keepAliasesCount, mappings, settings, bulkOptions, ...options });
 
   /*
-   * Options
+   * Validation
    */
   if (!index) {
     logger.error('ElasticIndexer [missing option]: index');
@@ -64,30 +78,36 @@ export async function ElasticIndexer(
   }
 
   /*
-   * Vars
+   * Setup & Helpers
    */
+  // Initialize Client
   const client = await ElasticClient({ logPrefix: 'ElasticIndexer:', ...options });
+  
+  // Helper: Normalize Client Differences (Elastic vs OpenSearch)
   const adaptarIn = (obj) => (client?.name == 'opensearch-js') ? { body: obj } : obj;
   const adaptarOut = (obj) => (client?.name == 'opensearch-js') ? obj?.body || {} : obj || {};
+  
+  // Helper: Sort indices by timestamp suffix (newest first)
   const sortByTime = (obj) => {
+    // Expected format: alias---2023.01.01_12-00-00
     const getTime = (indexName) => new Date(indexName.replace(`${index}---`, '').replaceAll('_', ' ').replaceAll('-', ':')).getTime();
     return Object.keys(obj || {}).sort((a, b) => getTime(b) - getTime(a))
   }
 
   /*
-   * Use index (step 1)
+   * 1. Determine Indices
    */
-  logger.debug(`ElasticIndexer (1/5)[find-index] start! (alias: ${index})`, { namespace: 'ElasticIndexer', index, mode });
+  logger.debug(`ElasticIndexer (1/5)[determine-indice] start! (alias: ${index})`, { namespace: 'ElasticIndexer', index, mode });
  
-  // get the last indexName 
+  // Get existing alias info
   const indexAliases = await client.indices.getAlias({ name: index }).then(data => adaptarOut(data));
   const lastIndexName = sortByTime(indexAliases).reverse()[0];
 
-  // generate a new index name
+  // Generate new index name
   const timeFormat = new Date().toLocaleString('en', { hour12: false }).replaceAll('/', '.').replaceAll(', ', '_').replaceAll(':', '-');
   let activeIndexName = `${index}---${timeFormat}`;
 
-  // create/use the active index by mode
+  // Mode Logic
   let resUseIndex;
   if (mode == 'sync' && lastIndexName) {
     activeIndexName = lastIndexName;
@@ -97,55 +117,56 @@ export async function ElasticIndexer(
     resUseIndex = await client.reindex(adaptarIn({ source: { index: lastIndexName }, dest: { index: activeIndexName } }));
   }
   else {
+    // Mode 'new' or first run
     resUseIndex = await client.indices.create({ index: activeIndexName, ...adaptarIn({ mappings, settings }) });
   }
   
-  logger.debug(`ElasticIndexer (1/5)[find-index] end! (${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`, { namespace: 'ElasticIndexer', index, mode, activeIndexName, lastIndexName, indexAliases });
+  logger.debug(`ElasticIndexer (1/5)[determine-indice] end! (${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`, { namespace: 'ElasticIndexer', index, mode, activeIndexName, lastIndexName, indexAliases });
   
-  // step logger
   if (resUseIndex) {
-    logger.info(`ElasticIndexer (1/5)[find-index] succeeded! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
+    logger.info(`ElasticIndexer (1/5)[determine-indice] succeeded! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
   } else {
-    logger.error(`ElasticIndexer (1/5)[find-index] failed! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
-    return { error: "FIND_INDEX_FAILED" };
+    logger.error(`ElasticIndexer (1/5)[determine-indice] failed! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
+    return { error: 'DETERMINE_INDICE_FAILED' };
   }
 
   /*
-   * Insert data (step 2)
+   * 2. Insert Data (Batch Loop)
    */
-  const insertData = async (offset = 0, response) => {
+  let offset = 0;
+  let batchSuccess = true;
+  let lastBulkResponse = null;
+  
+  while (true) {
     logger.debug(`ElasticIndexer (2/5)[insert-data] batch (index: ${activeIndexName}, offset: ${offset})`, { namespace: 'ElasticIndexer', index, mode, activeIndexName });
-    // run batch
-    const items = await batchCallback({ offset, index, mode, response }).catch((error) => ({ error }));
-    // callback error
+    // Fetch Batch
+    const items = await batchCallback({ offset, index, mode, response: lastBulkResponse }).catch((error) => ({ error }));
+    // Batch failed
     if (items?.error) {
       logger.error(`ElasticIndexer (2/5)[insert-data] callback - ${items?.error?.toString?.()} (index: ${activeIndexName}, offset: ${offset})`);
-      return false;
+      batchSuccess = false;
+      break;
     }
-    // end data
-    else if (!items?.length) {
-      return true;
+    // Stop if empty or null
+    if (!items?.length) {
+      break;
     }
-    // generate bulk data
+    // Prepare Bulk Operations
     const operations = items.flatMap(item => [
       { [item.delete ? 'delete' : 'index']: { _index: activeIndexName, _id: item[keyId], ...bulkOptions } },
       item
     ]);
-    // insert data
+    // Send to Elastic
     const adaptarIn = (obj) => (client?.name == 'opensearch-js') ? { body: obj } : { operations: obj };
-    const bulkResponse = await client.bulk({ index: activeIndexName, refresh: true, ...adaptarIn(operations) }).then(data => adaptarOut(data));
-    // bulk error
-    if (bulkResponse?.errors !== false) {
-      logger.error(`ElasticIndexer (2/5)[insert-data] bulk - ${bulkResponse?.errors} (index: ${activeIndexName}, offset: ${offset})`);
+    const lastBulkResponse = await client.bulk({ index: activeIndexName, refresh: true, ...adaptarIn(operations) }).then(data => adaptarOut(data));
+    // Log generic error, but usually we continue unless critical
+    if (lastBulkResponse?.errors !== false) {
+      logger.error(`ElasticIndexer (2/5)[insert-data] bulk - ${lastBulkResponse?.errors} (index: ${activeIndexName}, offset: ${offset})`);
     }
-    // run next batch
-    return await insertData(offset + items.length, bulkResponse);
-  };
- 
-  const resInsertData = await insertData();
+    offset += items.length;
+  }
 
-  // step logger
-  if (resInsertData) {
+  if (batchSuccess) {
     logger.info(`ElasticIndexer (2/5)[insert-data] succeeded! (index: ${activeIndexName})`);
   } else {
     logger.error(`ElasticIndexer (2/5)[insert-data] failed! (index: ${activeIndexName})`);
@@ -153,13 +174,12 @@ export async function ElasticIndexer(
   }
 
   /*
-   * Test callback (step 3)
+   * 3. Test Data
    */
   const resTestCallback = await testCallback?.({ index, activeIndexName })
     ?.catch(error => ({ error }));
-  
-  // step logger
-  if (resTestCallback?.error !== false) {
+  // Check: Must explicitly return true, or simply not return an error object
+  if (resTestCallback === true && resTestCallback?.error !== false) {
     logger.info(`ElasticIndexer (3/5)[test-data] succeeded! (index: ${activeIndexName})`);
   } else {
     logger.error(`ElasticIndexer (3/5)[test-data] failed! - ${resTestCallback?.error?.toString?.()} (index: ${activeIndexName})`);
@@ -167,14 +187,15 @@ export async function ElasticIndexer(
   }
 
   /*
-   * Update/Remove aliases (step 4)
+   * 4. Update Aliases
+   * Skip if in 'sync' mode (alias already points here).
    */
   let resUpdateAliases;
   if (lastIndexName && mode != 'sync') {
     logger.debug('ElasticIndexer (4/5)[update-aliases] start!', { namespace: 'ElasticIndexer', index, mode, activeIndexName });
-    // load index aliases
+    // Find existing indices pointing to this alias to remove them
     const removeAliases = await client.indices.getAlias({ name: index }).then(data => adaptarOut(data));
-    // add new alias & remove old alias
+    // Atomic Swap: Add New, Remove Old
     resUpdateAliases = await client.indices.updateAliases({
       body: {
         actions: [
@@ -186,7 +207,6 @@ export async function ElasticIndexer(
     logger.debug('ElasticIndexer (4/5)[update-aliases] end!', { namespace: 'ElasticIndexer', index, mode, res: resUpdateAliases, activeIndexName, removeAliases });
   }
   
-  // step logger
   if (resUpdateAliases?.error !== false) {
     logger.info(`ElasticIndexer (4/5)[update-aliases] succeeded! (alias: ${index}, index: ${activeIndexName})`);
   } else {
@@ -195,22 +215,23 @@ export async function ElasticIndexer(
   }
   
   /*
-   * Remove old indices (step 5)
+   * 5. Remove Old Indices
    */
   logger.debug('ElasticIndexer (5/5)[remove-indices] start!', { namespace: 'ElasticIndexer', index, mode, activeIndexName });
-  // load indices of the alias
+ 
+  // Fetch all indices matching pattern `alias---*`
   const indicesData = await client.indices.get({ index: `${index}---*` }).then(data => adaptarOut(data));
-  // ignore active index
+  // remove active index from the list
   delete indicesData[activeIndexName];
-  // sort by time & split the list of keep
+  // Sort Newest -> Oldest. Splice off the ones we want to keep. The rest are deleted.
   const removeIndices = sortByTime(indicesData).splice(keepAliasesCount);
-  // remove old indexes
+  // Remove old indexes
   const resRemoveIndices = await Promise.all(
     removeIndices?.map(index => client.indices.delete({ index, allow_no_indices: true }) )
   ).catch(error => ({ error }));
+  
   logger.debug('ElasticIndexer (5/5)[remove-old-indices] end!', { namespace: 'ElasticIndexer', index, mode, activeIndexName, indicesData, removeIndices });
  
-  // step logger
   if (resRemoveIndices?.error !== false) {
     logger.info(`ElasticIndexer (5/5)[remove-old-indices] succeeded! (alias: ${index}, index: ${activeIndexName})`);
   } else {

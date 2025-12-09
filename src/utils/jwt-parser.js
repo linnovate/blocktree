@@ -10,7 +10,7 @@
  *
  * @param {string} token - The JWT string to verify and parse.
  * @param {string} JWT_SECRET_KEY=process.env.JWT_SECRET_KEY - The secret key used to sign the token.
- * @param {Object|null} options - Configuration options for jwt.verify. {@link https://www.npmjs.com/package/jsonwebtoken}
+ * @param {Object|null} options - Configuration options for `jwt.verify`. {@link https://www.npmjs.com/package/jsonwebtoken}
  *
  * @returns {Promise<Object|null>} The decoded token payload if successful, or null if verification fails.
  *

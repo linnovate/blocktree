@@ -1,65 +1,61 @@
 /**
- * Redis Proxy
+ * Redis Proxy - A transparent caching wrapper for HTTP requests.
+ * - Includes comprehensive logging for request and response cycles.
+ * - To enable debug logs set env: `DEBUG=blocktree:RedisProxy` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function RedisProxy
- * @modules [redis@^5 pino@^10 pino-pretty@^13]
- * @envs [REDIS_URI, LOG_SERVICE_NAME]
- * @param {string} the fetch url
- * @param {null|object} the fetch options
- * @param {null|object} {
-     REDIS_URI,    // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
-     noCache,      // {null|bool} is skip cache
-     debug,        // {null|bool} is show logs
-     callback,     // {null|function} get remote data (default: FetchClient)
-     setOptions,   // {null|object} the redis client.set options (https://redis.io/commands/expire/)
-     redisOptions, // {null|object} the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
-   }
- * @return {promise} the data
+ * @requires module:redis@^5
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {string} url - The URL to which the request is made.
+ * @param {Object|null} fetchOptions - Additional options passed directly to the `FetchClient` factory.
+ * @param {Object|null} redisOptions - Additional options passed directly to the `RedisClient` factory.
+ *
+ * @returns {Promise<Object>} A Promise resolving to a standardized response object: `{ data, ok, status, statusText }`.
+ *
  * @example
- * --------
  * const data = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
- * @dockerCompose
-  # Redis service
-  redis:
-    image: redis:8-alpine
-    volumes:
-      - ./.redis:/data
-    ports:
-      - 6379:6379
  */
 export async function RedisProxy(url, fetchOptions, redisOptions) {
 
   /*
    * Imports
    */
-  const { RedisClient } = await import('../services/redis-client.js');
   const { FetchClient } = await import('../utils/fetch-client.js');
+  const { RedisClient } = await import('../services/redis-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`RedisProxy [request] ${url}`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
   
-  const client = await RedisClient(redisOptions);
+  const redisClient = await RedisClient(redisOptions);
  
   /*
-   * Load from redis
+   * 1. Attempt to load from Redis
    */
-  const resData = await client.json.get(url);
+  const resData = await redisClient.json.get(url);
   if (resData) {
     logger.debug(`RedisProxy [response] ${url} - from cache`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
     return resData;
   }
 
   /*
-   * Load from fetch
+   * 2. Load from Network (Fetch)
    */
-  const res = await FetchClient(url, fetchOptions);
+  const res = await FetchClient(url, { ...fetchOptions, namespace: 'RedisProxy' });
+
+  /*
+   * 3. Cache the result if successful
+   */
   if (res?.ok) {
-    await client.json.set(url, '$', {
+    await redisClient.json.set(url, '$', {
       data: res.data,
       ok: res.ok,
       status: res.status,
       statusText: res.statusText,
     });
   }
+  
   logger.debug(`RedisProxy [response] ${url} - from remote`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
  
   return res;

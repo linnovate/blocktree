@@ -25,9 +25,9 @@
  * @param {string|Array<string>|null} options.autoLoadDirs.typeDefs - Path(s) to typeDefs directories.
  * @param {string|Array<string>|null} options.autoLoadDirs.resolvers - Path(s) to resolvers directories.
  * @param {string|Array<string>|null} options.autoLoadDirs.directives - Path(s) to directives directories.
- * @param {Object|null} options.armorOptions - Options for `@escape.tech/graphql-armor`. {@link https://www.npmjs.com/package/@escape.tech/graphql-armor}
+ * @param {Object|null} options.armorOptions - Options for `module:@escape.tech/graphql-armor`. {@link https://www.npmjs.com/package/@escape.tech/graphql-armor}
  * @param {Array<Object>|null} options.plugins - Additional GraphQL Yoga plugins.
- * @param {...*|null} ...options - Additional options passed to `graphql-yoga`. {@link https://www.npmjs.com/package/graphql-yoga}
+ * @param {...*|null} ...options - Additional options passed to `module:graphql-yoga`. {@link https://www.npmjs.com/package/graphql-yoga}
  *
  * @returns {Promise<Object>} The initialized Yoga server instance.
  *

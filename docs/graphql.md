@@ -5,7 +5,7 @@
 <dd><p>Graphql Client - Executes a GraphQL operation (Query/Mutation) via HTTP POST.</p>
 <ul>
 <li>Includes comprehensive logging for request and response cycles.</li>
-<li>To enable debug logs set env: <code>DEBUG=blocktree:FetchClient</code> or <code>DEBUG=blocktree</code></li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:GraphqlClient</code> or <code>DEBUG=blocktree</code></li>
 </ul>
 </dd>
 <dt><a href="#GraphqlServer">GraphqlServer(app, schemas, options)</a> ⇒ <code>Promise.&lt;Object&gt;</code></dt>
@@ -23,7 +23,7 @@
 ## GraphqlClient(url, options) ⇒ <code>Promise.&lt;Object&gt;</code>
 Graphql Client - Executes a GraphQL operation (Query/Mutation) via HTTP POST.
 - Includes comprehensive logging for request and response cycles.
-- To enable debug logs set env: `DEBUG=blocktree:FetchClient` or `DEBUG=blocktree`
+- To enable debug logs set env: `DEBUG=blocktree:GraphqlClient` or `DEBUG=blocktree`
 
 **Kind**: global function  
 **Returns**: <code>Promise.&lt;Object&gt;</code> - The Fetch Response object (populated with a parsed `.data` property by FetchClient).  
@@ -70,9 +70,9 @@ Graphql Server - Sets up GraphQL middleware using GraphQL Yoga.
 | options.autoLoadDirs.typeDefs | <code>string</code> \| <code>Array.&lt;string&gt;</code> \| <code>null</code> |  | Path(s) to typeDefs directories. |
 | options.autoLoadDirs.resolvers | <code>string</code> \| <code>Array.&lt;string&gt;</code> \| <code>null</code> |  | Path(s) to resolvers directories. |
 | options.autoLoadDirs.directives | <code>string</code> \| <code>Array.&lt;string&gt;</code> \| <code>null</code> |  | Path(s) to directives directories. |
-| options.armorOptions | <code>Object</code> \| <code>null</code> |  | Options for `@escape.tech/graphql-armor`. [https://www.npmjs.com/package/@escape.tech/graphql-armor](https://www.npmjs.com/package/@escape.tech/graphql-armor) |
+| options.armorOptions | <code>Object</code> \| <code>null</code> |  | Options for `module:@escape.tech/graphql-armor`. [https://www.npmjs.com/package/@escape.tech/graphql-armor](https://www.npmjs.com/package/@escape.tech/graphql-armor) |
 | options.plugins | <code>Array.&lt;Object&gt;</code> \| <code>null</code> |  | Additional GraphQL Yoga plugins. |
-| ...options | <code>\*</code> \| <code>null</code> |  | Additional options passed to `graphql-yoga`. [https://www.npmjs.com/package/graphql-yoga](https://www.npmjs.com/package/graphql-yoga) |
+| ...options | <code>\*</code> \| <code>null</code> |  | Additional options passed to `module:graphql-yoga`. [https://www.npmjs.com/package/graphql-yoga](https://www.npmjs.com/package/graphql-yoga) |
 
 **Example**  
 ```js

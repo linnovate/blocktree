@@ -1,7 +1,7 @@
 /**
  * Graphql Client - Executes a GraphQL operation (Query/Mutation) via HTTP POST.
  * - Includes comprehensive logging for request and response cycles.
- * - To enable debug logs set env: `DEBUG=blocktree:FetchClient` or `DEBUG=blocktree`
+ * - To enable debug logs set env: `DEBUG=blocktree:GraphqlClient` or `DEBUG=blocktree`
  * 
  * @async
  * @function GraphqlClient
@@ -40,7 +40,7 @@ export async function GraphqlClient(url, { query = '', variables = {}, authToken
       ...(authToken ? { 'Authorization': authToken } :  {}),
     },
     body: JSON.stringify({ query, variables }),
-    logPrefix: 'GraphqlClient:',
+    namespace: 'GraphqlClient',
   });
 
 }

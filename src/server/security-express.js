@@ -11,9 +11,9 @@
  *
  * @param {Object} app - The express application instance.
  * @param {Object|null} options - Configuration options.
- * @param {String|null} options.corsOptions - Options to pass to the `cors`. {@link https://www.npmjs.com/package/cors#configuring-cors}
- * @param {String|null} options.helmetOptions - Options to pass to the `helmet`. {@link https://www.npmjs.com/package/helmet}
- * @param {String|null} options.rateLimitOptions - Options to pass to the `express-rate-limit`. {@link https://www.npmjs.com/package/express-rate-limit}
+ * @param {String|null} options.corsOptions - Options to pass to the `module:cors`. {@link https://www.npmjs.com/package/cors#configuring-cors}
+ * @param {String|null} options.helmetOptions - Options to pass to the `module:helmet`. {@link https://www.npmjs.com/package/helmet}
+ * @param {String|null} options.rateLimitOptions - Options to pass to the `module:express-rate-limit`. {@link https://www.npmjs.com/package/express-rate-limit}
  *
  * @returns {Promise<void>}
  *

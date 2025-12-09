@@ -34,7 +34,7 @@ Optimize Express - Sets up compression and other optimization middleware.
 | --- | --- | --- |
 | app | <code>Object</code> | The express application instance. |
 | options | <code>Object</code> \| <code>null</code> | Configuration options. |
-| options.compressionOptions | <code>Object</code> \| <code>null</code> | Options to pass to the `compression`. [https://www.npmjs.com/package/compression](https://www.npmjs.com/package/compression) |
+| options.compressionOptions | <code>Object</code> \| <code>null</code> | Options to pass to the `module:compression`. [https://www.npmjs.com/package/compression](https://www.npmjs.com/package/compression) |
 
 **Example**  
 ```js
@@ -53,9 +53,9 @@ Security Express - Configures essential security middleware for the application.
 | --- | --- | --- |
 | app | <code>Object</code> | The express application instance. |
 | options | <code>Object</code> \| <code>null</code> | Configuration options. |
-| options.corsOptions | <code>String</code> \| <code>null</code> | Options to pass to the `cors`. [https://www.npmjs.com/package/cors#configuring-cors](https://www.npmjs.com/package/cors#configuring-cors) |
-| options.helmetOptions | <code>String</code> \| <code>null</code> | Options to pass to the `helmet`. [https://www.npmjs.com/package/helmet](https://www.npmjs.com/package/helmet) |
-| options.rateLimitOptions | <code>String</code> \| <code>null</code> | Options to pass to the `express-rate-limit`. [https://www.npmjs.com/package/express-rate-limit](https://www.npmjs.com/package/express-rate-limit) |
+| options.corsOptions | <code>String</code> \| <code>null</code> | Options to pass to the `module:cors`. [https://www.npmjs.com/package/cors#configuring-cors](https://www.npmjs.com/package/cors#configuring-cors) |
+| options.helmetOptions | <code>String</code> \| <code>null</code> | Options to pass to the `module:helmet`. [https://www.npmjs.com/package/helmet](https://www.npmjs.com/package/helmet) |
+| options.rateLimitOptions | <code>String</code> \| <code>null</code> | Options to pass to the `module:express-rate-limit`. [https://www.npmjs.com/package/express-rate-limit](https://www.npmjs.com/package/express-rate-limit) |
 
 **Example**  
 ```js
@@ -75,8 +75,8 @@ Swagger Express - Auto-generate and serve Swagger UI for Express applications.
 | app | <code>Object</code> |  | The express application instance. |
 | options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
 | options.SWAGGER_PATH | <code>String</code> \| <code>null</code> | <code>/api-docs</code> | The URL route to serve the swagger UI. |
-| options.swaggerUIOptions | <code>Object</code> \| <code>null</code> |  | Options to pass to `swagger-ui-express`. [https://www.npmjs.com/package/swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express) |
-| options.swaggerJsdocOptions | <code>Object</code> \| <code>null</code> |  | Options to pass to `swagger-jsdoc`. [https://www.npmjs.com/package/swagger-jsdoc](https://www.npmjs.com/package/swagger-jsdoc) |
+| options.swaggerUIOptions | <code>Object</code> \| <code>null</code> |  | Options to pass to `module:swagger-ui-express`. [https://www.npmjs.com/package/swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express) |
+| options.swaggerJsdocOptions | <code>Object</code> \| <code>null</code> |  | Options to pass to `module:swagger-jsdoc`. [https://www.npmjs.com/package/swagger-jsdoc](https://www.npmjs.com/package/swagger-jsdoc) |
 
 **Example**  
 ```js

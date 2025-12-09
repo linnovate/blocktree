@@ -1,20 +1,30 @@
 /**
- * Rabbitmq Client singleton.
+ * Rabbitmq Client - Singleton Rabbitmq instance.
+ * - Uses default envs: `RABBITMQ_URI`.
+ * - To enable debug logs set env: `DEBUG=blocktree:RabbitmqClient` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function RabbitmqClient
- * @modules [amqplib@^0.10 pino@^10]
- * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
- * @param {object} { RABBITMQ_URI: 'amqp://[[username][:password]@][host][:port]' } // the rabbitmq service url 
- * @return {promise} the singleton instance
- * @docs https://github.com/amqp-node/amqplib | https://amqp-node.github.io/amqplib/channel_api.html
+ * @requires module:amqplib@^0.10
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {string} options.RABBITMQ_URI=process.env.RABBITMQ_URI - Connection string (amqp://[[username][:password]@][host][:port]).
+ * @param {string} options.logPrefix - Prefix for log messages.
+ * @param {Object|null} ...options - Additional standard `module:amqplib` options. {@link https://www.npmjs.com/package/amqplib}
+ *
+ * @returns {Promise<Object>} The initialized Rabbitmq Connection instance.
+ *
  * @example
- * --------
- * const rabbitmqClient = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
- * const channel = await rabbitmqClient?.createChannel(); 
+ * const connection = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
+ * const channel = await connection?.createChannel(); 
  * await channel?.assertQueue('queue', { durable: false });
  * channel?.consume('queue', (msg) => console.log(msg?.content.toString()));
  * channel?.sendToQueue('queue', Buffer.from('something to do'));
- * @dockerCompose
-  # Rabbitmq service
+ *
+ * @example
+# docker-compose.yaml for Rabbitmq
+services:
   rabbitmq:
     image: rabbitmq:4
     environment:
@@ -25,9 +35,7 @@
       - 15672:15672
     volumes:
       - ./rabbitmq:/var/lib/rabbitmq
-
- */
-
+  */
 const $instances = {};
 
 export async function RabbitmqClient({
@@ -36,11 +44,14 @@ export async function RabbitmqClient({
   ...options
 } = {}) {
 
+  // Create a unique key for the singleton based on RABBITMQ_URI
+  const instanceKey = `${RABBITMQ_URI}`;
+  
   /*
-   * Get instance
+   * Return Singleton if exists
    */
-  if ($instances[RABBITMQ_URI]) {
-    return $instances[RABBITMQ_URI];
+  if ($instances[instanceKey]) {
+    return $instances[instanceKey];
   }
 
   /*
@@ -51,7 +62,7 @@ export async function RabbitmqClient({
   const logger = await (await import('../utils/logger.js')).Logger();
 
   /*
-   * Options
+   * Validation
    */
   if (!RABBITMQ_URI) {
     logger.error(`${logPrefix}RabbitmqClient [missing env]: RABBITMQ_URI`);
@@ -60,9 +71,9 @@ export async function RabbitmqClient({
   logger.debug(`${logPrefix}RabbitmqClient [setup] options (path: ${RABBITMQ_URI})`, { namespace: 'RabbitmqClient', RABBITMQ_URI, logPrefix, ...options });
 
   /*
-   * Instance
+   * Create instance
    */
-  $instances[RABBITMQ_URI] = await amqplib.connect(RABBITMQ_URI, options)
+  $instances[instanceKey] = await amqplib.connect(RABBITMQ_URI, options)
     .then(client => {
       logger.info(`${logPrefix}RabbitmqClient [setup] starting!`);
       return client;
@@ -71,11 +82,14 @@ export async function RabbitmqClient({
       logger.error(`${logPrefix}RabbitmqClient [setup] ${error?.message}!`);
     });
 
-  $instances[RABBITMQ_URI]?.on('error', (error) => {
+  /*
+   * Create logger
+   */
+  $instances[instanceKey]?.on('error', (error) => {
     logger.error(`${logPrefix}RabbitmqClient [error] ${error?.message}!`);
   });
 
-  $instances[RABBITMQ_URI]?.on('close', (error) => {
+  $instances[instanceKey]?.on('close', (error) => {
     logger.debug(`${logPrefix}RabbitmqClient [close] ${RABBITMQ_URI} - ${error?.message || 'manual'}`, { namespace: 'RabbitmqClient', RABBITMQ_URI });
   });
 

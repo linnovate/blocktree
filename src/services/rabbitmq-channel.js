@@ -1,15 +1,27 @@
 /**
- * Rabbitmq Channel
+ * Rabbitmq Channel - Singleton Rabbitmq instance.
+ * - Uses default envs: `RABBITMQ_URI`.
+ * - To enable debug logs set env: `DEBUG=blocktree:RabbitmqChannel` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function RabbitmqChannel
- * @modules [amqplib@^0.10 pino@^10]
- * @envs [RABBITMQ_URI, LOG_SERVICE_NAME]
- * @param {object} options {
- *   RABBITMQ_URI, // the rabbitmq service url (amqp://[[username][:password]@][host][:port])
- * }
- * @return {object} channel
- * @example RabbitmqChannel();
- * @dockerCompose
-  # Rabbitmq service
+ * @requires module:amqplib@^0.10
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {string} options.RABBITMQ_URI=process.env.RABBITMQ_URI - Connection string (amqp://[[username][:password]@][host][:port]).
+ * @param {string} options.logPrefix - Prefix for log messages.
+ * @param {Object|null} ...options - Additional standard `module:amqplib` options. {@link https://www.npmjs.com/package/amqplib}
+ *
+ * @returns {Promise<Object>} The initialized MySQL connection or pool instance.
+ *
+ * @example
+ * const channel = await RabbitmqChannel();
+ * const [rows] = await client.query('SELECT * FROM users WHERE id = ?', [1]);
+ *
+ * @example
+# docker-compose.yaml for Rabbitmq
+services:
   rabbitmq:
     image: rabbitmq:4
     environment:
@@ -20,7 +32,7 @@
       - 15672:15672
     volumes:
       - ./rabbitmq:/var/lib/rabbitmq
- */
+  */
 let instance;
 
 export async function RabbitmqChannel({ logPrefix = '', ...options }) {

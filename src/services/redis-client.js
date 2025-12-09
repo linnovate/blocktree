@@ -1,28 +1,37 @@
 /**
- * Redis Client singleton.
+ * Redis Client - Singleton Redis Client instance.
+ * - Uses default envs: `REDIS_URI`.
+ * - To enable debug logs set env: `DEBUG=blocktree:RedisClient` or `DEBUG=blocktree`
+ * 
+ * @async
  * @function RedisClient
- * @modules [redis@^5 pino@^10]
- * @envs [REDIS_URI, LOG_SERVICE_NAME]
- * @param {object} {
- *   REDIS_URI,    // {string} the redis service uri (redis[s]://[[username][:password]@][host][:port][/db-number])
- *   ...options,   // {null|object} the redis options: https://github.com/redis/node-redis/blob/HEAD/docs/client-configuration.md
- * }
- * @return {promise} the singleton instance
- * @docs https://www.npmjs.com/package/redis
+ * @requires module:redis@^5
+ * @requires module:pino@^10 (Used internally for logging)
+ *
+ * @param {Object} options - Configuration options.
+ * @param {string} options.REDIS_URI=process.env.REDIS_URI - Connection string (redis[s]://[[username][:password]@][host][:port][/db-number]).
+ * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
+ * @param {Object|null} ...options - Additional standard `module:redis` options. {@link https://www.npmjs.com/package/redis}
+ *
+ * @returns {Promise<Object>} The initialized Redis Connection instance.
+ *
  * @example
- * --------
  * const redisClient = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
- * await redisClient.set('key', 'value');      
- * @dockerCompose
-  # Redis service
+ * await redisClient.set('key', 'value');  
+ *
+ * @example
+ * const storage = await RedisClient();
+ * await storage.bucket('my-bucket').upload('./file.txt');
+ * @example
+# docker-compose.yaml for Redis
+services:
   redis:
     image: redis:8-alpine
     volumes:
       - ./.redis:/data
     ports:
       - 6379:6379
- */
-
+  */
 const $instances = {};
 
 export async function RedisClient({
@@ -31,11 +40,14 @@ export async function RedisClient({
   ...options
 } = {}) {
 
+  // Create a unique key for the singleton based on REDIS_URI
+  const instanceKey = `${REDIS_URI}`;
+  
   /*
-   * Get instance
+   * Return Singleton if exists
    */
-  if ($instances[REDIS_URI]) {
-    return $instances[REDIS_URI];
+  if ($instances[instanceKey]) {
+    return $instances[instanceKey];
   }
 
   /*
@@ -46,7 +58,7 @@ export async function RedisClient({
   const logger = await (await import('../utils/logger.js')).Logger();
 
   /*
-   * Options
+   * Validation
    */
   if (!REDIS_URI) {
     logger.error(`${logPrefix}RedisClient [missing env]: REDIS_URI`);
@@ -55,22 +67,25 @@ export async function RedisClient({
   logger.debug(`${logPrefix}RedisClient [setup] options (path: ${REDIS_URI})`, { namespace: 'RedisClient', REDIS_URI, logPrefix, ...options });
 
   /*
-   * Create Instance
+   * Create instance
    */
-  $instances[REDIS_URI] = createClient({
+  $instances[instanceKey] = createClient({
     socket: { reconnectStrategy: () => 3000 },
     ...options,
     url: REDIS_URI,
   });
 
-  $instances[REDIS_URI].on('error', (error) => {
+  /*
+   * Create logger
+   */
+  $instances[instanceKey].on('error', (error) => {
     logger.error(`${logPrefix}RedisClient [error] ${error?.message}`);
   });
 
-  await $instances[REDIS_URI].connect().then(() => {
-    logger.info(`${logPrefix}RedisClient [setup] starting!`);
+  await $instances[instanceKey].connect().then(() => {
+    logger.info(`${logPrefix}RedisClient [setup] initialized!`);
   })
 
-  return $instances[REDIS_URI];
+  return $instances[instanceKey];
 
 }
