@@ -11,6 +11,8 @@
 <dt><a href="#GraphqlServer">GraphqlServer(app, schemas, options)</a> ⇒ <code>Promise.&lt;Object&gt;</code></dt>
 <dd><p>Graphql Server - Sets up GraphQL middleware using GraphQL Yoga.</p>
 <ul>
+<li>Mounts the GraphQL endpoint at <code>/graphql</code>.</li>
+<li>Includes default <code>health</code> Query/Mutation/Subscription and a <code>/graphql/health</code> endpoint.</li>
 <li>Uses default envs <code>NODE_ENV</code> to determine dev/prod mode.</li>
 <li>Includes comprehensive logging for request and response cycles.</li>
 <li>To enable debug logs set env: <code>DEBUG=blocktree:GraphqlServer</code> or <code>DEBUG=blocktree</code></li>
@@ -40,13 +42,16 @@ Graphql Client - Executes a GraphQL operation (Query/Mutation) via HTTP POST.
 
 **Example**  
 ```js
-const res = await GraphqlClient('http://localhost:5000/graphql', { query: 'query { health }' });
-console.log( res?.data ); 
+import { GraphqlClient } from '@linnovate/blocktree';
+const { ok, status, data } = await GraphqlClient('http://localhost:5000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
+console.log('GraphqlClient:', { ok, status, data });
 ```
 <a name="GraphqlServer"></a>
 
 ## GraphqlServer(app, schemas, options) ⇒ <code>Promise.&lt;Object&gt;</code>
 Graphql Server - Sets up GraphQL middleware using GraphQL Yoga.
+- Mounts the GraphQL endpoint at `/graphql`.
+- Includes default `health` Query/Mutation/Subscription and a `/graphql/health` endpoint.
 - Uses default envs `NODE_ENV` to determine dev/prod mode.
 - Includes comprehensive logging for request and response cycles.
 - To enable debug logs set env: `DEBUG=blocktree:GraphqlServer` or `DEBUG=blocktree`
@@ -76,5 +81,6 @@ Graphql Server - Sets up GraphQL middleware using GraphQL Yoga.
 
 **Example**  
 ```js
-await GraphqlServer(app);
+import { GraphqlServer } from '@linnovate/blocktree';
+GraphqlServer(app);
 ```

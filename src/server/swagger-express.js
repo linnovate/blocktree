@@ -17,7 +17,8 @@
  * @returns {Promise<void>}
  *
  * @example
- * await SwaggerExpress(app);
+ * import { SwaggerExpress } from '@linnovate/blocktree';
+ * SwaggerExpress(app);
  */
 export async function SwaggerExpress(app, {
   SWAGGER_PATH = '/api-docs',

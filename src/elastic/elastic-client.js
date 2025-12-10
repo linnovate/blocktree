@@ -19,18 +19,20 @@
  * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
  * @param {Object|null} ...options - Additional standard `module:@elastic/elasticsearch` or `module:@opensearch-project/opensearch` options. {@link https://www.npmjs.com/package/@elastic/elasticsearch} {@link https://www.npmjs.com/package/@opensearch-project/opensearch}
  *
- * @returns {Promise<Object>} The initialized client instance (a standard client object with an optional `mockServer` property).
+ * @returns {Promise<Object>} The initialized and connected Mongo client instance, or null on error (a standard client object with an optional `mockServer` property).
  *
  * @example
  * // Basic Usage
- * const client = await ElasticClient({ ELASTICSEARCH_URL: 'http://localhost:9200' });
- * console.log( await client.search({}) );
+ * import { ElasticClient } from '@linnovate/blocktree';
+ * const elastic = await ElasticClient({ ELASTICSEARCH_URL: 'http://localhost:9200' });
+ * console.log("ElasticClient:", await elastic.search({}) );
  *
  * @example
  * // Mocking a Response
- * const client = await ElasticClient({ mock: true });
- * client.mockServer.add({ method: 'GET', path: '/article/_search'] }, () => ({ hits: { total: { value: 1}, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text'}}]}}));
- * console.log( await client.search({ index: 'article' }) );
+ * import { ElasticClient } from '@linnovate/blocktree';
+ * const elastic = await ElasticClient({ mock: true });
+ * elastic.mockServer.add({ method: 'GET', path: '/article/_search' }, () => ({ hits: { total: { value: 1}, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text' }}] }}));
+ * console.log("ElasticClient Mocking:", await elastic.search({ index: 'article' }) );
  *
  * @example
 # docker-compose.yaml for Elasticsearch

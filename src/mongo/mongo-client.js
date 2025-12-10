@@ -16,17 +16,19 @@
  * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
  * @param {Object|null} ...options - Additional standard `module:mongodb` options. {@link https://www.npmjs.com/package/mongodb}
  *
- * @returns {Promise<Object>} The initialized Mongo client instance.
+ * @returns {Promise<Object>} The initialized and connected Mongo client instance, or null on error.
  *
  * @example
  * // Basic Usage
- * const client = await MongoClient({ MONGO_URI: 'mongodb://root:root@localhost:27017' });
- * console.log( await client.db('admin').command({ ping: 1 }) );
+ * import { MongoClient } from '@linnovate/blocktree';
+ * const mongo = await MongoClient({ MONGO_URI: 'mongodb://root:root@localhost:27017' });
+ * console.log("MongoClient:", await mongo?.db('admin').command({ ping: 1 }) );
  *
  * @example
  * // Mocking Usage
- * const client = await MongoClient({ mock: true });
- * console.log( await client.db('admin').command({ ping: 1 }) );
+ * import { MongoClient } from '@linnovate/blocktree';
+ * const mongo = await MongoClient({ mock: true });
+ * console.log("MongoClient Mocking:", await mongo?.db('admin').command({ ping: 1 }) );
  *
  * @example
 # docker-compose.yaml for Mongo
@@ -74,7 +76,7 @@ export async function MongoClient({
     logger.error(`${logPrefix}MongoClient [missing env]: MONGO_URI || mock`);
     return;
   }
-  logger.debug(`${logPrefix}MongoClient [setup] options (path: ${MONGO_URI})`, { namespace: 'MongoClient', MONGO_URI, mock, rejectOnError, logPrefix, ...options });
+  logger.debug(`${logPrefix}MongoClient [setup] options (path: ${MONGO_URI})`, { namespace: 'MongoClient', MONGO_URI, mock, logPrefix, ...options });
 
   /*
    * Mock Setup
@@ -144,19 +146,25 @@ export async function MongoClient({
   /*
    * Create instance
    */
-  $instances[instanceKey] = new MongoClient(MONGO_URI, {
+  const instance = new MongoClient(MONGO_URI, {
     ...options,
     ...mongodbLog,
   });
 
-  $instances[instanceKey].on('error', (error) => {
+  instance.on('error', (error) => {
     logger.error(`${logPrefix}MongoClient [error] ${error?.message}!`);
   });
 
-  await $instances[instanceKey].connect().then(() => {
-    logger.info(`${logPrefix}MongoClient [setup] initialized! (mock: ${!!mock})`);
-  })
-
+  $instances[instanceKey] = await instance.connect()
+    .then(() => {
+      logger.info(`${logPrefix}MongoClient [setup] initialized! (mock: ${!!mock})`);
+      return instance;
+    })
+    .catch(error => {
+      logger.error(`${logPrefix}MongoClient [setup] ${error?.message}!`);
+      return null;
+    });
+    
   return $instances[instanceKey];
   
 }

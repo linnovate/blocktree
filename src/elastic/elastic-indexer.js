@@ -64,7 +64,7 @@ export async function ElasticIndexer(
   /*
    * Imports
    */
-  const { ElasticClient } = await import('../services/elastic-client.js');
+  const { ElasticClient } = await import('./elastic-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`ElasticIndexer [setup] options`, { namespace: 'ElasticIndexer', index, mode, keyId, keepAliasesCount, mappings, settings, bulkOptions, ...options });
@@ -158,7 +158,7 @@ export async function ElasticIndexer(
     ]);
     // Send to Elastic
     const adaptarIn = (obj) => (client?.name == 'opensearch-js') ? { body: obj } : { operations: obj };
-    const lastBulkResponse = await client.bulk({ index: activeIndexName, refresh: true, ...adaptarIn(operations) }).then(data => adaptarOut(data));
+    lastBulkResponse = await client.bulk({ index: activeIndexName, refresh: true, ...adaptarIn(operations) }).then(data => adaptarOut(data));
     // Log generic error, but usually we continue unless critical
     if (lastBulkResponse?.errors !== false) {
       logger.error(`ElasticIndexer (2/5)[insert-data] bulk - ${lastBulkResponse?.errors} (index: ${activeIndexName}, offset: ${offset})`);

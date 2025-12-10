@@ -45,7 +45,7 @@ Mongo Client - Singleton Mongo Client instance by service URL.
 - To enable debug logs set env: `DEBUG=blocktree:MongoClient` or `DEBUG=blocktree`
 
 **Kind**: global function  
-**Returns**: <code>Promise.&lt;Object&gt;</code> - The initialized Mongo client instance.  
+**Returns**: <code>Promise.&lt;Object&gt;</code> - The initialized and connected Mongo client instance, or null on error.  
 **Requires**: <code>module:mongodb@^7</code>, <code>module:mongodb-memory-server@^10</code>, <code>module:pino@^10</code>  
 
 | Param | Type | Default | Description |
@@ -59,14 +59,16 @@ Mongo Client - Singleton Mongo Client instance by service URL.
 **Example**  
 ```js
 // Basic Usage
-const client = await MongoClient({ MONGO_URI: 'mongodb://root:root@localhost:27017' });
-console.log( await client.db('admin').command({ ping: 1 }) );
+import { MongoClient } from '@linnovate/blocktree';
+const mongo = await MongoClient({ MONGO_URI: 'mongodb://root:root@localhost:27017' });
+console.log("MongoClient:", await mongo?.db('admin').command({ ping: 1 }) );
 ```
 **Example**  
 ```js
 // Mocking Usage
-const client = await MongoClient({ mock: true });
-console.log( await client.db('admin').command({ ping: 1 }) );
+import { MongoClient } from '@linnovate/blocktree';
+const mongo = await MongoClient({ mock: true });
+console.log("MongoClient Mocking:", await mongo?.db('admin').command({ ping: 1 }) );
 ```
 **Example**  
 ```js

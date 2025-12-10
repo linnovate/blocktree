@@ -38,7 +38,8 @@ Optimize Express - Sets up compression and other optimization middleware.
 
 **Example**  
 ```js
-await OptimizeExpress(app);
+import { OptimizeExpress } from '@linnovate/blocktree';
+OptimizeExpress(app)
 ```
 <a name="SecurityExpress"></a>
 
@@ -59,7 +60,8 @@ Security Express - Configures essential security middleware for the application.
 
 **Example**  
 ```js
-await SecurityExpress(app);
+import { SecurityExpress } from '@linnovate/blocktree';
+SecurityExpress(app);
 ```
 <a name="SwaggerExpress"></a>
 
@@ -80,5 +82,6 @@ Swagger Express - Auto-generate and serve Swagger UI for Express applications.
 
 **Example**  
 ```js
-await SwaggerExpress(app);
+import { SwaggerExpress } from '@linnovate/blocktree';
+SwaggerExpress(app);
 ```

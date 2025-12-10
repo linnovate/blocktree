@@ -25,7 +25,7 @@ export async function ElasticIndexerBackups({ index, ...options }) {
   /*
    * Imports
    */
-  const { ElasticClient } = await import('../services/elastic-client.js');
+  const { ElasticClient } = await import('./elastic-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`ElasticIndexerBackups [setup] options`, { namespace: 'ElasticIndexerBackups', index, ...options });

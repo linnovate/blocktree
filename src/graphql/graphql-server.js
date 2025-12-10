@@ -1,5 +1,7 @@
 /**
  * Graphql Server - Sets up GraphQL middleware using GraphQL Yoga.
+ * - Mounts the GraphQL endpoint at `/graphql`.
+ * - Includes default `health` Query/Mutation/Subscription and a `/graphql/health` endpoint.
  * - Uses default envs `NODE_ENV` to determine dev/prod mode.
  * - Includes comprehensive logging for request and response cycles.
  * - To enable debug logs set env: `DEBUG=blocktree:GraphqlServer` or `DEBUG=blocktree`
@@ -32,7 +34,8 @@
  * @returns {Promise<Object>} The initialized Yoga server instance.
  *
  * @example
- * await GraphqlServer(app);
+ * import { GraphqlServer } from '@linnovate/blocktree';
+ * GraphqlServer(app);
  */
 export async function GraphqlServer(app, schemas = [], {
   isDev = process.env.NODE_ENV !== 'production',

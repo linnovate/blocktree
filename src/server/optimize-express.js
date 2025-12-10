@@ -14,7 +14,8 @@
  * @returns {Promise<void>}
  *
  * @example
- * await OptimizeExpress(app);
+ * import { OptimizeExpress } from '@linnovate/blocktree';
+ * OptimizeExpress(app)
  */
 export async function OptimizeExpress(app, { compressionOptions } = {}) {
 

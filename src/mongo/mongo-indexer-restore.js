@@ -24,7 +24,7 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
   /*
    * Imports
    */
-  const { MongoClient } = await import('../services/mongo-client.js');
+  const { MongoClient } = await import('./mongo-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`MongoIndexerRestore [setup] options`, { namespace: 'MongoIndexerRestore', index, backupIndex, lastIndexCount, ...options });
@@ -68,9 +68,9 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
     .replaceAll(', ', '_')
     .replaceAll(':', '-');
   // Rename 'index' to 'index---{timeFormat}' (Backup)
-  const res1 = await db.renameCollection(index, `${index}---${timeFormat}`);
+  const res1 = await db.renameCollection(index, `${index}---${timeFormat}`).catch((error) => ({ error }));
   // Rename 'backupIndex' to 'index' (Restore)
-  const res2 = await db.renameCollection(backupIndex, index);
+  const res2 = await db.renameCollection(backupIndex, index).catch((error) => ({ error }));
   const error = res1?.error?.toString() || res2?.error?.toString();
 
   if (!error) {
@@ -80,4 +80,5 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
     logger.error(`MongoIndexerRestore [restore] failed! - ${error} (alias: ${index}, index: ${backupIndex})`);
     return false;
   }
+  
 }

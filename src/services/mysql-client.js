@@ -20,8 +20,9 @@
  * @returns {Promise<Object>} The initialized MySQL connection or pool instance.
  *
  * @example
- * const client = await MySqlClient({ MYSQL_HOST: 'localhost', MYSQL_DB: 'my_app' });
- * const [rows] = await client.query('SELECT * FROM users WHERE id = ?', [1]);
+ * import { MySqlClient } from '@linnovate/blocktree';
+ * const mysql = await MySqlClient({ usePool: true, MYSQL_HOST: 'localhost', MYSQL_USER: 'root', MYSQL_PASS: 'root', MYSQL_DB: 'test' });
+ * console.log('MySqlClient:', await mysql.query('SELECT * FROM users WHERE id = ?', [1]).catch(error => error) );
  *
  * @example
 # docker-compose.yaml for Mysql

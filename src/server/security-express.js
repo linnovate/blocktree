@@ -18,7 +18,8 @@
  * @returns {Promise<void>}
  *
  * @example
- * await SecurityExpress(app);
+ * import { SecurityExpress } from '@linnovate/blocktree';
+ * SecurityExpress(app);
  */
 export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLimitOptions } = {}) {
 

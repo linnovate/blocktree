@@ -25,7 +25,7 @@ export async function MongoIndexerBackups({ index, ...options }) {
   /*
    * Imports
    */
-  const { MongoClient } = await import('../services/mongo-client.js');
+  const { MongoClient } = await import('./mongo-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`MongoIndexerBackups [setup] options`, { namespace: 'MongoIndexerBackups', index, ...options });

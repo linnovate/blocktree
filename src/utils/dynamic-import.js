@@ -9,7 +9,8 @@
  * @returns {Promise<Object|null>} A Promise that resolves to the module namespace object, or `null` if the import failed.
  *
  * @example
- * const { default: module } = await DynamicImport('moduleName@^10');
+ * import { DynamicImport } from '@linnovate/blocktree';
+ * const module = await DynamicImport('express@^5');
  */
 export async function DynamicImport(moduleName) {
 
@@ -33,7 +34,7 @@ export async function DynamicImport(moduleName) {
       return data;
     })
     .catch(error => {
-      console.error(`DynamicImport \x1b[31m[missing module] \x1b[36m${module}\x1b[0m`, { error });
+      console.error(`DynamicImport \x1b[31m[missing module] \x1b[36m${moduleName}\x1b[0m`, { error });
       return null;
     })
 }

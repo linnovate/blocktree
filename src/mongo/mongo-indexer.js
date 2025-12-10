@@ -58,7 +58,7 @@ export async function MongoIndexer(
   /*
    * Imports
    */
-  const { MongoClient } = await import('../services/mongo-client.js');
+  const { MongoClient } = await import('./mongo-client.js');
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`MongoIndexer [setup] options`, { namespace: 'MongoIndexer', index, mode, keyId, keepAliasesCount, ...options });
@@ -151,7 +151,7 @@ export async function MongoIndexer(
       }
     })
     // Send to Mongo
-    const lastBulkResponse = await client.db().collection(activeIndexName).bulkWrite(operations, { ordered: false })
+    lastBulkResponse = await client.db().collection(activeIndexName).bulkWrite(operations, { ordered: false })
       .catch(error => ({ error }));
     // Log generic error, but usually we continue unless critical
     if (lastBulkResponse?.error) {
@@ -229,5 +229,5 @@ export async function MongoIndexer(
   }
   
   return { error: false };
-
-};
+  
+}

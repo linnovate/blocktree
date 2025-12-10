@@ -16,8 +16,9 @@
  * @returns {Promise<Object>} The initialized Rabbitmq Connection instance.
  *
  * @example
- * const connection = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
- * const channel = await connection?.createChannel(); 
+ * import { RabbitmqClient } from '@linnovate/blocktree';
+ * const rabbitmq = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
+ * const channel = await rabbitmq?.createChannel(); 
  * await channel?.assertQueue('queue', { durable: false });
  * channel?.consume('queue', (msg) => console.log(msg?.content.toString()));
  * channel?.sendToQueue('queue', Buffer.from('something to do'));

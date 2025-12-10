@@ -234,8 +234,9 @@ Mailer Client - Singleton Mysql2 instance.
 
 **Example**  
 ```js
-const client = await MySqlClient({ MYSQL_HOST: 'localhost', MYSQL_DB: 'my_app' });
-const [rows] = await client.query('SELECT * FROM users WHERE id = ?', [1]);
+import { MySqlClient } from '@linnovate/blocktree';
+const mysql = await MySqlClient({ usePool: true, MYSQL_HOST: 'localhost', MYSQL_USER: 'root', MYSQL_PASS: 'root', MYSQL_DB: 'test' });
+console.log('MySqlClient:', await mysql.query('SELECT * FROM users WHERE id = ?', [1]).catch(error => error) );
 ```
 **Example**  
 ```js
@@ -347,8 +348,9 @@ Rabbitmq Client - Singleton Rabbitmq instance.
 
 **Example**  
 ```js
-const connection = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
-const channel = await connection?.createChannel(); 
+import { RabbitmqClient } from '@linnovate/blocktree';
+const rabbitmq = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
+const channel = await rabbitmq?.createChannel(); 
 await channel?.assertQueue('queue', { durable: false });
 channel?.consume('queue', (msg) => console.log(msg?.content.toString()));
 channel?.sendToQueue('queue', Buffer.from('something to do'));
@@ -388,13 +390,9 @@ Redis Client - Singleton Redis Client instance.
 
 **Example**  
 ```js
-const redisClient = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
-await redisClient.set('key', 'value');  
-```
-**Example**  
-```js
-const storage = await RedisClient();
-await storage.bucket('my-bucket').upload('./file.txt');
+import { RedisClient } from '@linnovate/blocktree';
+const redis = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
+console.log('RedisClient:', await redis.set('key', 'value')); 
 ```
 **Example**  
 ```js
@@ -426,7 +424,9 @@ Redis Proxy - A transparent caching wrapper for HTTP requests.
 
 **Example**  
 ```js
-const data = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
+import { RedisProxy } from '@linnovate/blocktree';
+const { ok, status, data } = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
+console.log('RedisProxy:', { ok, status, data });
 ```
 <a name="S3Storage"></a>
 

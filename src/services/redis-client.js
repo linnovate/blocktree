@@ -16,12 +16,10 @@
  * @returns {Promise<Object>} The initialized Redis Connection instance.
  *
  * @example
- * const redisClient = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
- * await redisClient.set('key', 'value');  
+ * import { RedisClient } from '@linnovate/blocktree';
+ * const redis = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
+ * console.log('RedisClient:', await redis.set('key', 'value')); 
  *
- * @example
- * const storage = await RedisClient();
- * await storage.bucket('my-bucket').upload('./file.txt');
  * @example
 # docker-compose.yaml for Redis
 services:

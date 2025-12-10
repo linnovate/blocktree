@@ -17,8 +17,9 @@
  * @returns {Promise<Object>} The Fetch Response object (populated with a parsed `.data` property by FetchClient).
  *
  * @example
- * const res = await GraphqlClient('http://localhost:5000/graphql', { query: 'query { health }' });
- * console.log( res?.data ); 
+ * import { GraphqlClient } from '@linnovate/blocktree';
+ * const { ok, status, data } = await GraphqlClient('http://localhost:5000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
+ * console.log('GraphqlClient:', { ok, status, data });
  */
 export async function GraphqlClient(url, { query = '', variables = {}, authToken, ...options } = {}) {
 

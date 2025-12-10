@@ -24,6 +24,7 @@
 <ul>
 <li>Uses default envs: <code>LOG_SERVICE_NAME</code>, <code>DEBUG</code>.</li>
 <li>Includes comprehensive logging for request <code>Server</code> cycles.</li>
+<li>Exports a bound <code>logger</code> variable which is populated after the <code>Logger()</code> promise resolves.</li>
 <li>To enable debug logs set env: <code>DEBUG=blocktree:Server</code> or <code>DEBUG=blocktree</code> or <code>DEBUG=blocktree:*</code> to ignore <code>DEBUG=-blocktree:Server</code></li>
 </ul>
 </dd>
@@ -43,7 +44,8 @@ DynamicImport - Dynamically imports a module and optionally validates the instal
 
 **Example**  
 ```js
-const { default: module } = await DynamicImport('moduleName@^10');
+import { DynamicImport } from '@linnovate/blocktree';
+const module = await DynamicImport('express@^5');
 ```
 <a name="FetchClient"></a>
 
@@ -67,7 +69,7 @@ Fetch Client - A robust wrapper around the global fetch API
 
 **Example**  
 ```js
-const { ok, status, data } = await FetchClient('[host]/api');
+const { ok, status, data } = await FetchClient('http://localhost:5000/health');
 console.log({ ok, status, data });
 ```
 <a name="JWTParser"></a>
@@ -89,8 +91,12 @@ JWT Parser - Verifies and decodes a JWT token.
 
 **Example**  
 ```js
-const jwtParsed = await JWTParser(token);
-console.log( jwtParsed );
+import { JWTParser } from '@linnovate/blocktree';
+const jwtParsed = await JWTParser(
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30',
+  'a-string-secret-at-least-256-bits-long'
+);
+console.log('jwtParsed:', jwtParsed);
 ```
 <a name="Logger"></a>
 
@@ -98,6 +104,7 @@ console.log( jwtParsed );
 Logger - Singleton logger instance.
 - Uses default envs: `LOG_SERVICE_NAME`, `DEBUG`.
 - Includes comprehensive logging for request `Server` cycles.
+- Exports a bound `logger` variable which is populated after the `Logger()` promise resolves.
 - To enable debug logs set env: `DEBUG=blocktree:Server` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
 
 **Kind**: global function  
@@ -114,6 +121,7 @@ Logger - Singleton logger instance.
 
 **Example**  
 ```js
-const logger = await Logger({ DEBUG: 'blocktree:Server' });
-logger.info('User logged in', { userId: 123 });
+import { Logger, logger } from '@linnovate/blocktree';
+await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
+logger.debug('User logged in', { userId: 123 });
 ```

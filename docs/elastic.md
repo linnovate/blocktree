@@ -47,7 +47,7 @@ Elastic Client - Singleton Elastic Client instance by service URL.
 - To enable debug logs set env: `DEBUG=blocktree:ElasticClient` or `DEBUG=blocktree`
 
 **Kind**: global function  
-**Returns**: <code>Promise.&lt;Object&gt;</code> - The initialized client instance (a standard client object with an optional `mockServer` property).  
+**Returns**: <code>Promise.&lt;Object&gt;</code> - The initialized and connected Mongo client instance, or null on error (a standard client object with an optional `mockServer` property).  
 **Requires**: <code>module:@elastic/elasticsearch@^9\|@opensearch-project/opensearch@^3</code>, <code>module:@elastic/elasticsearch-mock@^2</code>, <code>module:pino@^10</code>  
 
 | Param | Type | Default | Description |
@@ -63,15 +63,17 @@ Elastic Client - Singleton Elastic Client instance by service URL.
 **Example**  
 ```js
 // Basic Usage
-const client = await ElasticClient({ ELASTICSEARCH_URL: 'http://localhost:9200' });
-console.log( await client.search({}) );
+import { ElasticClient } from '@linnovate/blocktree';
+const elastic = await ElasticClient({ ELASTICSEARCH_URL: 'http://localhost:9200' });
+console.log("ElasticClient:", await elastic.search({}) );
 ```
 **Example**  
 ```js
 // Mocking a Response
-const client = await ElasticClient({ mock: true });
-client.mockServer.add({ method: 'GET', path: '/article/_search'] }, () => ({ hits: { total: { value: 1}, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text'}}]}}));
-console.log( await client.search({ index: 'article' }) );
+import { ElasticClient } from '@linnovate/blocktree';
+const elastic = await ElasticClient({ mock: true });
+elastic.mockServer.add({ method: 'GET', path: '/article/_search' }, () => ({ hits: { total: { value: 1}, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text' }}] }}));
+console.log("ElasticClient Mocking:", await elastic.search({ index: 'article' }) );
 ```
 **Example**  
 ```js

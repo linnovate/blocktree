@@ -2,6 +2,7 @@
  * Logger - Singleton logger instance.
  * - Uses default envs: `LOG_SERVICE_NAME`, `DEBUG`.
  * - Includes comprehensive logging for request `Server` cycles.
+ * - Exports a bound `logger` variable which is populated after the `Logger()` promise resolves.
  * - To enable debug logs set env: `DEBUG=blocktree:Server` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
  * 
  * @async
@@ -18,8 +19,9 @@
  * @returns {Promise<Object>} The initialized Pino instance.
  *
  * @example
- * const logger = await Logger({ DEBUG: 'blocktree:Server' });
- * logger.info('User logged in', { userId: 123 });
+ * import { Logger, logger } from '@linnovate/blocktree';
+ * await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
+ * logger.debug('User logged in', { userId: 123 });
  */
 
 let $instance;
