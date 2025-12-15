@@ -10,7 +10,9 @@
  *
  * @param {string} token - The JWT string to verify and parse.
  * @param {string} JWT_SECRET_KEY=process.env.JWT_SECRET_KEY - The secret key used to sign the token.
- * @param {Object|null} options - Configuration options for `jwt.verify`. {@link https://www.npmjs.com/package/jsonwebtoken}
+ * @param {Object|null} options - Configuration options.
+ * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
+ * @param {Object|null} ...options - Configuration options for `jwt.verify`. {@link https://www.npmjs.com/package/jsonwebtoken}
  *
  * @returns {Promise<Object|null>} The decoded token payload if successful, or null if verification fails.
  *
@@ -22,7 +24,10 @@
  * );
  * console.log('jwtParsed:', jwtParsed);
  */
-export async function JWTParser(token, JWT_SECRET_KEY = process.env.JWT_SECRET_KEY, options) {
+export async function JWTParser(token, JWT_SECRET_KEY = process.env.JWT_SECRET_KEY, {
+  logPrefix = '',
+  ...options
+} = {}) {
 
   /*
    * Imports
@@ -35,10 +40,10 @@ export async function JWTParser(token, JWT_SECRET_KEY = process.env.JWT_SECRET_K
    * Validation
    */
   if (!JWT_SECRET_KEY) {
-    logger.error('JWTParser [missing env]: JWT_SECRET_KEY is undefined');
+    logger.error(`${logPrefix}JWTParser [missing env]: JWT_SECRET_KEY is undefined`);
     return;
   }
-  logger.debug(`JWTParser [setup] options`, { namespace: 'JWTParser', token, JWT_SECRET_KEY, options });
+  logger.debug(`${logPrefix}JWTParser [setup] options`, { namespace: 'JWTParser', token, JWT_SECRET_KEY, options });
   
   /*
    * Decode base64 key if necessary
@@ -54,10 +59,10 @@ export async function JWTParser(token, JWT_SECRET_KEY = process.env.JWT_SECRET_K
    */
   try {
     const data = jwt.verify(token, key, options);
-    logger.debug(`JWTParser [verify] succeeded!`, { namespace: 'JWTParser', data });
+    logger.debug(`${logPrefix}JWTParser [verify] succeeded!`, { namespace: 'JWTParser', data });
     return data;
   } catch (error) {
-    logger.error(`JWTParser [verify] failed! - ${error?.message}`);
+    logger.error(`${logPrefix}JWTParser [verify] failed! - ${error?.message}`);
     return null;
   }
 

@@ -5,7 +5,7 @@
 <dd><p>Elastic Client - Singleton Elastic Client instance by service URL.</p>
 <ul>
 <li>This function initializes and returns a singleton instance of an <code>@elastic/elasticsearch</code> or <code>@opensearch-project/opensearch</code> client.</li>
-<li>Uses default envs: <code>ELASTICSEARCH_URL</code>.</li>
+<li>Uses default envs: <code>ELASTICSEARCH_URL</code>, <code>ELASTICSEARCH_USER</code>, <code>ELASTICSEARCH_PASSWORD</code>.</li>
 <li>Includes comprehensive logging for request and response cycles.</li>
 <li>To enable debug logs set env: <code>DEBUG=blocktree:ElasticClient</code> or <code>DEBUG=blocktree</code></li>
 </ul>
@@ -42,7 +42,7 @@
 ## ElasticClient(options) ⇒ <code>Promise.&lt;Object&gt;</code>
 Elastic Client - Singleton Elastic Client instance by service URL.
 - This function initializes and returns a singleton instance of an `@elastic/elasticsearch` or `@opensearch-project/opensearch` client.
-- Uses default envs: `ELASTICSEARCH_URL`.
+- Uses default envs: `ELASTICSEARCH_URL`, `ELASTICSEARCH_USER`, `ELASTICSEARCH_PASSWORD`.
 - Includes comprehensive logging for request and response cycles.
 - To enable debug logs set env: `DEBUG=blocktree:ElasticClient` or `DEBUG=blocktree`
 
@@ -54,6 +54,8 @@ Elastic Client - Singleton Elastic Client instance by service URL.
 | --- | --- | --- | --- |
 | options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
 | options.ELASTICSEARCH_URL | <code>string</code> \| <code>null</code> | <code>&quot;process.env.ELASTICSEARCH_URL&quot;</code> | The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set. |
+| options.ELASTICSEARCH_USER | <code>string</code> \| <code>null</code> | <code>&quot;process.env.ELASTICSEARCH_USER&quot;</code> | The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set. |
+| options.ELASTICSEARCH_PASSWORD | <code>string</code> \| <code>null</code> | <code>&quot;process.env.ELASTICSEARCH_PASSWORD&quot;</code> | The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set. |
 | options.useOpensearch | <code>boolean</code> | <code>false</code> | If `true`, requires and uses `module:@opensearch-project/opensearch` instead of Elasticsearch. |
 | options.rejectOnError | <code>boolean</code> | <code>false</code> | If `true`, the decorated client will throw an error on a failed request instead of returning `null`. |
 | options.mock | <code>boolean</code> | <code>false</code> | If `true`, requires and uses `module:@elastic/elasticsearch-mock`. [https://www.npmjs.com/package/@elastic/elasticsearch-mock](https://www.npmjs.com/package/@elastic/elasticsearch-mock) |

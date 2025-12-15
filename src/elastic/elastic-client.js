@@ -1,7 +1,7 @@
 /**
  * Elastic Client - Singleton Elastic Client instance by service URL.
  * - This function initializes and returns a singleton instance of an `@elastic/elasticsearch` or `@opensearch-project/opensearch` client.
- * - Uses default envs: `ELASTICSEARCH_URL`.
+ * - Uses default envs: `ELASTICSEARCH_URL`, `ELASTICSEARCH_USER`, `ELASTICSEARCH_PASSWORD`.
  * - Includes comprehensive logging for request and response cycles.
  * - To enable debug logs set env: `DEBUG=blocktree:ElasticClient` or `DEBUG=blocktree`
  * 
@@ -13,6 +13,8 @@
  *
  * @param {Object|null} options - Configuration options.
  * @param {string|null} options.ELASTICSEARCH_URL=process.env.ELASTICSEARCH_URL - The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set.
+ * @param {string|null} options.ELASTICSEARCH_USER=process.env.ELASTICSEARCH_USER - The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set.
+ * @param {string|null} options.ELASTICSEARCH_PASSWORD=process.env.ELASTICSEARCH_PASSWORD - The service URL (e.g., `http://localhost:9200`). **Required** if `options.mock` is not set.
  * @param {boolean} options.useOpensearch=false - If `true`, requires and uses `module:@opensearch-project/opensearch` instead of Elasticsearch.
  * @param {boolean} options.rejectOnError=false - If `true`, the decorated client will throw an error on a failed request instead of returning `null`.
  * @param {boolean} options.mock=false - If `true`, requires and uses `module:@elastic/elasticsearch-mock`. {@link https://www.npmjs.com/package/@elastic/elasticsearch-mock}
@@ -81,6 +83,8 @@ const $instances = {};
 
 export async function ElasticClient({
   ELASTICSEARCH_URL = process.env.ELASTICSEARCH_URL,
+  ELASTICSEARCH_USER = process.env.ELASTICSEARCH_USER,
+  ELASTICSEARCH_PASSWORD = process.env.ELASTICSEARCH_PASSWORD,
   useOpensearch = false,
   rejectOnError = false,
   mock = false,
@@ -113,7 +117,7 @@ export async function ElasticClient({
     logger.error(`${logPrefix}ElasticClient [missing env]: ELASTICSEARCH_URL or mock`);
     return false;
   }
-  logger.debug(`${logPrefix}ElasticClient [setup] options (path: ${ELASTICSEARCH_URL})`, { namespace: 'ElasticClient', ELASTICSEARCH_URL, useOpensearch, rejectOnError, mock, logPrefix, ...options });
+  logger.debug(`${logPrefix}ElasticClient [setup] options (path: ${ELASTICSEARCH_URL})`, { namespace: 'ElasticClient', ELASTICSEARCH_URL, ELASTICSEARCH_USER, ELASTICSEARCH_PASSWORD, useOpensearch, rejectOnError, mock, logPrefix, ...options });
   
   /*
    * Mock Setup
@@ -166,6 +170,10 @@ export async function ElasticClient({
   $instances[instanceKey] = new Client({
     node: ELASTICSEARCH_URL,
     Transport: LoggorTransport,
+    auth: {
+      username: ELASTICSEARCH_USER,
+      password: ELASTICSEARCH_PASSWORD,
+    },
     ...options,
   });
 

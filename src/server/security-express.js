@@ -19,7 +19,7 @@
  *
  * @example
  * import { SecurityExpress } from '@linnovate/blocktree';
- * SecurityExpress(app);
+ * await SecurityExpress(app);
  */
 export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLimitOptions } = {}) {
 
@@ -58,6 +58,8 @@ export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLim
     ...rateLimitOptions,
   }))
 
+  app.set('trust proxy', 1);
+  
   const reportOnly = helmetOptions?.contentSecurityPolicy?.reportOnly || true;
   logger.info(`SecurityExpress [setup] initialized! (cors: true, reportOnly: ${reportOnly}, rateLimit: true)`);
 

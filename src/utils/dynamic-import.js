@@ -24,7 +24,7 @@ export async function DynamicImport(moduleName) {
       // Optional: Check Version
       if (version) {
         const json = await import(`${name}/package.json`, { with: { type: 'json' } })
-          .catch(() => { })
+          .catch(error => ({ error }));
 
         if (json?.default && parseFloat(json.default.version) < parseFloat(version)) {
           console.warn(`DynamicImport \x1b[31m[module version] \x1b[36m${moduleName} is required.\x1b[0m`, { currentVersion: json.default.version });

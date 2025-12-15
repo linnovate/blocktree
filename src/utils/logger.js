@@ -71,15 +71,15 @@ export async function Logger({
     }
     return false;
   }
-  
+   
   /**
    * Helper: Format arguments and extract stack trace
    * @ignore
    */
   function logFormater(inputArgs, level) {
     const [msg, args] = inputArgs;
-    const argsValues = structuredClone(args || {});
-    Object.keys(argsValues || {}).forEach(key => argsValues[key] ??= null); // convert undefineds to nulls for print the var in log
+    const argsValues = {};
+    Object.keys(args || {}).forEach(key => argsValues[key] = args[key] ?? null); // convert undefineds to nulls for print the var in log
     const stack = Error().stack?.split('\n')[4]; // the stack line 4 typically points to the original call site outside the hook logic
     const codeLine = (level == 20) ? { // is debug level
       file: stack?.match(/(file:.*):(\d+:\d+)/)?.[1], // extract file path
@@ -136,7 +136,7 @@ export async function Logger({
     });
   }
 
-  console.info(`Logger [setup] initialized! (service: ${LOG_SERVICE_NAME})`);
+  console.info(`Logger [setup] initialized! (service name: ${LOG_SERVICE_NAME})`);
 
   return $instance;
 

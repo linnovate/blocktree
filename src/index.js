@@ -11,6 +11,7 @@ export { JWTParser } from './utils/jwt-parser.js';
  */
 export { SecurityExpress } from './server/security-express.js';
 export { OptimizeExpress } from './server/optimize-express.js';
+export { JwtSessionExpress } from './server/jwt-session-express.js';
 export { SwaggerExpress, AutoExpressPaths } from './server/swagger-express.js';
 
 /**

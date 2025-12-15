@@ -87,7 +87,9 @@ JWT Parser - Verifies and decodes a JWT token.
 | --- | --- | --- | --- |
 | token | <code>string</code> |  | The JWT string to verify and parse. |
 | JWT_SECRET_KEY | <code>string</code> | <code>&quot;process.env.JWT_SECRET_KEY&quot;</code> | The secret key used to sign the token. |
-| options | <code>Object</code> \| <code>null</code> |  | Configuration options for `jwt.verify`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
+| options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
+| options.logPrefix | <code>string</code> \| <code>null</code> |  | A string prefix to add to all internal log messages (e.g., `[my-service]`). |
+| ...options | <code>Object</code> \| <code>null</code> |  | Configuration options for `jwt.verify`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
 
 **Example**  
 ```js

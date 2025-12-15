@@ -1,6 +1,15 @@
 ## Functions
 
 <dl>
+<dt><a href="#JwtSessionExpress">JwtSessionExpress(app, options)</a> ⇒ <code>Promise.&lt;void&gt;</code></dt>
+<dd><p>Jwt Session Express - Creates the Express middleware logic for handling JWT sessions.</p>
+<ul>
+<li>Uses default envs: <code>JWT_SECRET_KEY</code>, <code>DEBUG</code>.</li>
+<li>Decodes the secret key if base64 encoded.</li>
+<li>Includes comprehensive logging cycles.</li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:JwtSessionExpress</code> or <code>DEBUG=blocktree</code> or <code>DEBUG=blocktree:*</code> to ignore <code>DEBUG=-blocktree:Server</code></li>
+</ul>
+</dd>
 <dt><a href="#OptimizeExpress">OptimizeExpress(app, options)</a> ⇒ <code>Promise.&lt;void&gt;</code></dt>
 <dd><p>Optimize Express - Sets up compression and other optimization middleware.</p>
 <ul>
@@ -21,6 +30,35 @@
 </dd>
 </dl>
 
+<a name="JwtSessionExpress"></a>
+
+## JwtSessionExpress(app, options) ⇒ <code>Promise.&lt;void&gt;</code>
+Jwt Session Express - Creates the Express middleware logic for handling JWT sessions.
+- Uses default envs: `JWT_SECRET_KEY`, `DEBUG`.
+- Decodes the secret key if base64 encoded.
+- Includes comprehensive logging cycles.
+- To enable debug logs set env: `DEBUG=blocktree:JwtSessionExpress` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
+
+**Kind**: global function  
+**Requires**: <code>module:jsonwebtoken@^9</code>, <code>module:pino@^10</code>  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| app | <code>Object</code> |  | The express application instance. |
+| options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
+| [options.JWT_SECRET_KEY] | <code>string</code> | <code>&quot;process.env.JWT_SECRET_KEY&quot;</code> | The secret key used to sign the token. |
+| [options.headerKey] | <code>string</code> | <code>&quot;&#x27;Authorization&#x27;&quot;</code> | The header key to look for the token (e.g., 'Authorization'). |
+| [options.cookieKey] | <code>string</code> | <code>&quot;&#x27;token&#x27;&quot;</code> | The name of the cookie used to store the token. |
+| [options.reqKey] | <code>string</code> | <code>&quot;&#x27;jwtSession&#x27;&quot;</code> | The key on the request object where the session data will be attached. |
+| [options.verifyOptions] | <code>Object</code> |  | Options passed to `jwt.verify`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
+| [options.signOptions] | <code>Object</code> |  | Options passed to `jwt.sign`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
+| [options.cookieOptions] | <code>Object</code> |  | Additional options passed to `res.cookie`. |
+
+**Example**  
+```js
+import { JwtSessionExpress } from '@linnovate/blocktree';
+await JwtSessionExpress(app, { JWT_SECRET_KEY: 'secret cat' });
+```
 <a name="OptimizeExpress"></a>
 
 ## OptimizeExpress(app, options) ⇒ <code>Promise.&lt;void&gt;</code>
@@ -39,7 +77,7 @@ Optimize Express - Sets up compression and other optimization middleware.
 **Example**  
 ```js
 import { OptimizeExpress } from '@linnovate/blocktree';
-OptimizeExpress(app)
+await OptimizeExpress(app)
 ```
 <a name="SecurityExpress"></a>
 
@@ -61,7 +99,7 @@ Security Express - Configures essential security middleware for the application.
 **Example**  
 ```js
 import { SecurityExpress } from '@linnovate/blocktree';
-SecurityExpress(app);
+await SecurityExpress(app);
 ```
 <a name="SwaggerExpress"></a>
 
@@ -83,5 +121,5 @@ Swagger Express - Auto-generate and serve Swagger UI for Express applications.
 **Example**  
 ```js
 import { SwaggerExpress } from '@linnovate/blocktree';
-SwaggerExpress(app);
+await SwaggerExpress(app);
 ```
