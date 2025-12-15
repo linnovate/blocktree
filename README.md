@@ -11,7 +11,7 @@ npm install @linnovate/blocktree
 
 ## Documentation
 Detailed documentation for each module can be found in the `docs/` folder:
-- [General Utilities](https://github.com/linnovate/blocktree/blob/v2-dev/docs/utils.md): Structured Logger (Pino), Fetch Client, JWT Parsing, and Dynamic Imports.
+- [General Utilities](https://github.com/linnovate/blocktree/blob/v2-dev/docs/utils.md): Structured Logger (Pino), Fetch Client, JWT Parsing, and Dynamic Imports, and PromiseOnce.
 - [Server Utilities](https://github.com/linnovate/blocktree/blob/v2-dev/docs/server.md): Express middlewares for security (Helmet/CORS), optimization, and Swagger auto-generation, and JwtSession session-handler.
 - [GraphQL](https://github.com/linnovate/blocktree/blob/v2-dev/docs/graphql.md): Yoga Server setup, Clients, and Security (Armor).
 - [MongoDB](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md): Client connection and Zero-Downtime Indexing (Blue/Green deployment).

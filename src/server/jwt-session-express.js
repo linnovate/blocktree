@@ -3,7 +3,7 @@
  * - Uses default envs: `JWT_SECRET_KEY`, `DEBUG`.
  * - Decodes the secret key if base64 encoded.
  * - Includes comprehensive logging cycles.
- * - To enable debug logs set env: `DEBUG=blocktree:JwtSessionExpress` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
+ * - To enable debug logs set env: `DEBUG=blocktree:JwtSession` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
  * 
  * @async
  * @function JwtSessionExpress
@@ -12,13 +12,13 @@
  *
  * @param {Object} app - The express application instance.
  * @param {Object|null} options - Configuration options.
- * @param {string} [options.JWT_SECRET_KEY=process.env.JWT_SECRET_KEY] - The secret key used to sign the token.
- * @param {string} [options.headerKey='Authorization'] - The header key to look for the token (e.g., 'Authorization').
- * @param {string} [options.cookieKey='token'] - The name of the cookie used to store the token.
- * @param {string} [options.reqKey='jwtSession'] - The key on the request object where the session data will be attached.
- * @param {Object} [options.verifyOptions] - Options passed to `jwt.verify`. {@link https://www.npmjs.com/package/jsonwebtoken}
- * @param {Object} [options.signOptions] - Options passed to `jwt.sign`. {@link https://www.npmjs.com/package/jsonwebtoken}
- * @param {Object} [options.cookieOptions] - Additional options passed to `res.cookie`.
+ * @param {string} options.JWT_SECRET_KEY=process.env.JWT_SECRET_KEY - The secret key used to sign the token.
+ * @param {string} options.headerKey='Authorization' - The header key to look for the token (e.g., 'Authorization').
+ * @param {string} options.cookieKey='token' - The name of the cookie used to store the token.
+ * @param {string} options.reqKey='jwtSession' - The key on the request object where the session data will be attached.
+ * @param {Object} options.verifyOptions - Options passed to `jwt.verify`. {@link https://www.npmjs.com/package/jsonwebtoken}
+ * @param {Object} options.signOptions - Options passed to `jwt.sign`. {@link https://www.npmjs.com/package/jsonwebtoken}
+ * @param {Object} options.cookieOptions - Additional options passed to `res.cookie`.
  *
  * @returns {Promise<void>}
  *
@@ -90,9 +90,9 @@ export async function JwtSessionExpress(app, {
         try {
           const token = jwt.sign(target, JWT_SECRET_KEY, signOptions);
           setCookie(cookieKey, token, { httpOnly: true,  secure: true, sameSite: 'None', ...cookieOptions });
-          logger.debug(`JwtSessionExpress [set value]`, { namespace: 'JwtSessionExpress', data: target, token });
+          logger.debug(`JwtSession [set value]`, { namespace: 'JwtSession', data: target, token });
         } catch (error) {
-          logger.error(`JwtSessionExpress [set value] ${error?.message}!`);
+          logger.error(`JwtSession [set value] ${error?.message}!`);
         }
         return true;
       }
@@ -104,7 +104,7 @@ export async function JwtSessionExpress(app, {
       set: (value) => dataProxy[value],
     });
     
-    logger.debug(`JwtSessionExpress [end] ${!!data ? 'find data' : 'no data'}! (path: ${path})`, { namespace: 'JwtSessionExpress', data, token });
+    logger.debug(`JwtSession [end] ${!!data ? 'find data' : 'no data'}! (path: ${path})`, { namespace: 'JwtSession', data, token });
 
     return true;
   }
@@ -122,6 +122,6 @@ export async function JwtSessionExpress(app, {
     return next();
   })
 
-  logger.info(`JwtSessionExpress [setup] initialized!`);
+  logger.info(`JwtSession [setup] initialized!`);
   
 }

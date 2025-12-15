@@ -28,6 +28,13 @@
 <li>To enable debug logs set env: <code>DEBUG=blocktree:Server</code> or <code>DEBUG=blocktree</code> or <code>DEBUG=blocktree:*</code> to ignore <code>DEBUG=-blocktree:Server</code></li>
 </ul>
 </dd>
+<dt><a href="#PromiseOnce">PromiseOnce(id, callback)</a> ⇒ <code>Promise.&lt;any&gt;</code></dt>
+<dd><p>Promise Once - Prevents multiple concurrent executions of the same asynchronous operation.</p>
+<ul>
+<li>Includes comprehensive logging for request and response cycles.</li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:PromiseOnce</code> or <code>DEBUG=blocktree</code></li>
+</ul>
+</dd>
 </dl>
 
 <a name="DynamicImport"></a>
@@ -126,4 +133,24 @@ Logger - Singleton logger instance.
 import { Logger, logger } from '@linnovate/blocktree';
 await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
 logger.debug('User logged in', { userId: 123 });
+```
+<a name="PromiseOnce"></a>
+
+## PromiseOnce(id, callback) ⇒ <code>Promise.&lt;any&gt;</code>
+Promise Once - Prevents multiple concurrent executions of the same asynchronous operation.
+- Includes comprehensive logging for request and response cycles.
+- To enable debug logs set env: `DEBUG=blocktree:PromiseOnce` or `DEBUG=blocktree`
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;any&gt;</code> - The result of the callback's promise (or the currently pending one).  
+**Requires**: <code>module:pino@^10</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | A unique identifier for the operation (e.g., 'fetch-user-123'). |
+| callback | <code>function</code> | A function that returns the Promise to be executed if no request is currently pending. |
+
+**Example**  
+```js
+const data = await PromiseOnce('unique-key', async () => {});
 ```
