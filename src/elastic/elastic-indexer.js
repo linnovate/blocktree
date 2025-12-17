@@ -43,7 +43,8 @@
  *     index: 'users',
  *     ELASTICSEARCH_URL: 'http://localhost:9200'
  *   },
- *   async ({ offset }) => offset == 0 && [{ time: Date.now() }],
+ *   async ({ offset, index, mode, response }) => offset == 0 && [{ time: Date.now() }],
+ *   async ({ index, activeIndexName }) => true,
  * );
  */
 export async function ElasticIndexer(
