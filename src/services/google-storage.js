@@ -48,7 +48,7 @@ export async function GoogleStorage({
    * Validation
    */
   if (!GOOGLE_STORAGE_CLIENT_EMAIL || !GOOGLE_STORAGE_PRIVATE_KEY) {
-    logger.error('GoogleStorage [missing env]: GOOGLE_STORAGE_CLIENT_EMAIL or GOOGLE_STORAGE_PRIVATE_KEY');
+    logger.error('GoogleStorage [missing option]: GOOGLE_STORAGE_CLIENT_EMAIL or GOOGLE_STORAGE_PRIVATE_KEY');
   }
 
   logger.debug(`GoogleStorage [setup] options (client_email: ${GOOGLE_STORAGE_CLIENT_EMAIL})`, { namespace: 'GoogleStorage', GOOGLE_STORAGE_CLIENT_EMAIL, GOOGLE_STORAGE_PRIVATE_KEY, ...options });

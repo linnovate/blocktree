@@ -37,7 +37,7 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
     return;
   }
   if (!backupIndex && !lastIndexCount) {
-    logger.error('ElasticIndexerRestore [missing option]: backupIndex || lastIndexCount');
+    logger.error('ElasticIndexerRestore [missing option]: backupIndex or lastIndexCount');
     return;
   }
 

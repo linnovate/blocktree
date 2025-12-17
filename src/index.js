@@ -12,7 +12,7 @@ export { PromiseOnce } from './utils/promise-once.js';
  */
 export { SecurityExpress } from './server/security-express.js';
 export { OptimizeExpress } from './server/optimize-express.js';
-export { JwtSessionExpress } from './server/jwt-session-express.js';
+export { JwtSession, JwtSessionExpress } from './server/jwt-session-express.js';
 export { SwaggerExpress, AutoExpressPaths } from './server/swagger-express.js';
 
 /**

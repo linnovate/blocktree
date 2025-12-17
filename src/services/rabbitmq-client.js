@@ -66,7 +66,7 @@ export async function RabbitmqClient({
    * Validation
    */
   if (!RABBITMQ_URI) {
-    logger.error(`${logPrefix}RabbitmqClient [missing env]: RABBITMQ_URI`);
+    logger.error(`${logPrefix}RabbitmqClient [missing option]: RABBITMQ_URI`);
     return;
   }
   logger.debug(`${logPrefix}RabbitmqClient [setup] options (path: ${RABBITMQ_URI})`, { namespace: 'RabbitmqClient', RABBITMQ_URI, logPrefix, ...options });

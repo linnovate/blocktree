@@ -36,7 +36,7 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
     return logger.error('MongoIndexerRestore [missing option]: index');
   }
   if (!backupIndex && !lastIndexCount) {
-    return logger.error('MongoIndexerRestore [missing option]: backupIndex || lastIndexCount');
+    return logger.error('MongoIndexerRestore [missing option]: backupIndex or lastIndexCount');
   }
 
   /*

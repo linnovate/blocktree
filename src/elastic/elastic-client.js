@@ -114,7 +114,7 @@ export async function ElasticClient({
    * Validation
    */
   if (!ELASTICSEARCH_URL && !mock) {
-    logger.error(`${logPrefix}ElasticClient [missing env]: ELASTICSEARCH_URL or mock`);
+    logger.error(`${logPrefix}ElasticClient [missing option]: ELASTICSEARCH_URL or mock`);
     return false;
   }
   logger.debug(`${logPrefix}ElasticClient [setup] options (path: ${ELASTICSEARCH_URL})`, { namespace: 'ElasticClient', ELASTICSEARCH_URL, ELASTICSEARCH_USER, ELASTICSEARCH_PASSWORD, useOpensearch, rejectOnError, mock, logPrefix, ...options });

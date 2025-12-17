@@ -70,7 +70,7 @@ export async function MySqlClient({
    * Validation
    */
   if (!MYSQL_HOST || !MYSQL_DB) {
-    logger.error(`${logPrefix}MySqlClient [missing env]: MYSQL_HOST, MYSQL_DB`);
+    logger.error(`${logPrefix}MySqlClient [missing option]: MYSQL_HOST, MYSQL_DB`);
     return;
   }
   logger.debug(`${logPrefix}MySqlClient [setup] options (path: ${MYSQL_HOST})`, { namespace: 'MySqlClient', MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB, usePool, ...options });

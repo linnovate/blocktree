@@ -48,7 +48,7 @@ export async function S3Storage({
    * Validation
    */
   if (!S3_BUCKET || !S3_REGION || !S3_ACCESS_KEY || !S3_SECRET_KEY) {
-    logger.error(`${logPrefix}S3Storage [missing env]: S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY`);
+    logger.error(`${logPrefix}S3Storage [missing option]: S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY`);
     return;
   }
   logger.debug(`${logPrefix}S3Storage [setup] options (path: ${S3_BUCKET})`, { namespace: 'S3Storage', S3_BUCKET, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY });

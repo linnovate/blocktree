@@ -73,7 +73,7 @@ export async function MongoClient({
    * Validation
    */
   if (!MONGO_URI && !mock) {
-    logger.error(`${logPrefix}MongoClient [missing env]: MONGO_URI || mock`);
+    logger.error(`${logPrefix}MongoClient [missing option]: MONGO_URI or mock`);
     return;
   }
   logger.debug(`${logPrefix}MongoClient [setup] options (path: ${MONGO_URI})`, { namespace: 'MongoClient', MONGO_URI, mock, logPrefix, ...options });

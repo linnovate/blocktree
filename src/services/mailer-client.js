@@ -43,7 +43,7 @@ export async function MailerClient({
    * Validation
    */
   if (!MAILER_HOST || !MAILER_USER || !MAILER_PESS) {
-    logger.error('MailerClient [missing env]: MAILER_HOST, MAILER_USER, MAILER_PESS');
+    logger.error('MailerClient [missing option]: MAILER_HOST, MAILER_USER, MAILER_PESS');
   }
 
   /*

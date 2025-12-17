@@ -59,7 +59,7 @@ export async function RedisClient({
    * Validation
    */
   if (!REDIS_URI) {
-    logger.error(`${logPrefix}RedisClient [missing env]: REDIS_URI`);
+    logger.error(`${logPrefix}RedisClient [missing option]: REDIS_URI`);
     return;
   }
   logger.debug(`${logPrefix}RedisClient [setup] options (path: ${REDIS_URI})`, { namespace: 'RedisClient', REDIS_URI, logPrefix, ...options });

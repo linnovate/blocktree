@@ -53,7 +53,7 @@ export async function Logger({
    * Validation
    */
   if (!LOG_SERVICE_NAME) {
-    console.warn('Logger \x1b[31m[missing env] \x1b[36m LOG_SERVICE_NAME \x1b[0m');
+    console.warn('Logger \x1b[31m[missing option] \x1b[36m LOG_SERVICE_NAME \x1b[0m');
   }
   console.debug(`Logger [setup] options`, { LOG_SERVICE_NAME, DEBUG, server: server ? '[Server Instance]' : undefined, ...options });
 

@@ -40,7 +40,7 @@ export async function JWTParser(token, JWT_SECRET_KEY = process.env.JWT_SECRET_K
    * Validation
    */
   if (!JWT_SECRET_KEY) {
-    logger.error(`${logPrefix}JWTParser [missing env]: JWT_SECRET_KEY is undefined`);
+    logger.error(`${logPrefix}JWTParser [missing option]: JWT_SECRET_KEY`);
     return;
   }
   logger.debug(`${logPrefix}JWTParser [setup] options`, { namespace: 'JWTParser', token, JWT_SECRET_KEY, options });
