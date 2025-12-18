@@ -129,7 +129,7 @@ JsonApi client - Fetches data from a JSON:API compliant endpoint (GET request).
 
 **Example**  
 ```js
-const data = await JsonApiClient('http://localhost:5000/jsonapi/node/article', {
+const data = await JsonApiClient('http://localhost:3000/jsonapi/node/article', {
   filters: { title: 'my title' },
   includes: ['field_image']
 });
@@ -425,7 +425,7 @@ Redis Proxy - A transparent caching wrapper for HTTP requests.
 **Example**  
 ```js
 import { RedisProxy } from '@linnovate/blocktree';
-const { ok, status, data } = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
+const { ok, status, data } = await RedisProxy('http://localhost:3000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
 console.log('RedisProxy:', { ok, status, data });
 ```
 <a name="S3Storage"></a>

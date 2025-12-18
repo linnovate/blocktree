@@ -43,7 +43,7 @@ Graphql Client - Executes a GraphQL operation (Query/Mutation) via HTTP POST.
 **Example**  
 ```js
 import { GraphqlClient } from '@linnovate/blocktree';
-const { ok, status, data } = await GraphqlClient('http://localhost:5000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
+const { ok, status, data } = await GraphqlClient('http://localhost:3000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
 console.log('GraphqlClient:', { ok, status, data });
 ```
 <a name="GraphqlServer"></a>

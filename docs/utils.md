@@ -86,7 +86,7 @@ Fetch Client - A robust wrapper around the global fetch API
 
 **Example**  
 ```js
-const { ok, status, data } = await FetchClient('http://localhost:5000/health');
+const { ok, status, data } = await FetchClient('http://localhost:3000/health');
 console.log({ ok, status, data });
 ```
 <a name="JWTParser"></a>

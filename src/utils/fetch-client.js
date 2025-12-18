@@ -17,7 +17,7 @@
  * @returns {Promise<any>} A Promise that resolves to a standard `Response` object decorated with a `data` property containing the parsed body (JSON or text), or a custom error object on network/CORS failure.
  *
  * @example
- * const { ok, status, data } = await FetchClient('http://localhost:5000/health');
+ * const { ok, status, data } = await FetchClient('http://localhost:3000/health');
  * console.log({ ok, status, data });
  */
 export async function FetchClient(url, {

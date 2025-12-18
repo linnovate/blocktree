@@ -3,7 +3,7 @@
  */
 import express from 'express';
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));  
 
 
@@ -30,7 +30,7 @@ logger.debug('User logged in', { userId: 123 });
  */
 import { FetchClient } from '#linnovate/blocktree';
 {
- const { ok, status, data } = await FetchClient('http://localhost:5000/health');
+ const { ok, status, data } = await FetchClient('http://localhost:3000/health');
  console.log('FetchClient:', { ok, status, data });
 }
 
@@ -108,7 +108,7 @@ GraphqlServer(app);
  */
 import { GraphqlClient } from '#linnovate/blocktree';
 {
-  const { ok, status, data } = await GraphqlClient('http://localhost:5000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
+  const { ok, status, data } = await GraphqlClient('http://localhost:3000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
   console.log('GraphqlClient:', { ok, status, data });
 }
 
@@ -197,7 +197,7 @@ import { GraphqlClient } from '#linnovate/blocktree';
 //  */
 // import { RedisProxy } from '#linnovate/blocktree';
 // {
-//   const { ok, status, data } = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
+//   const { ok, status, data } = await RedisProxy('http://localhost:3000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
 //   console.log('RedisProxy:', { ok, status, data });
 // }
 

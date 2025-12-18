@@ -71,6 +71,7 @@ Version 2.0.0 represents a significant architectural overhaul of the Blocktree c
   - `OpenIdExpress`: This module has been removed from the core package.
   - `AutoLoad`: The standalone tool has been removed; auto-loading logic is now built directly into specific services like `GraphqlServer`.
 - **Renamed/Replaced Functions:**
+  - `OpenSearchClient` is replaced by `ElasticClient`. Use `ElasticClient({ useOpensearch: true })` to connect to OpenSearch.
   - `GraphqlExpress` is replaced by `GraphqlServer`.
   - `ElasticIndexerExpress` and `MongoIndexerExpress` are removed in favor of using `ElasticIndexer` and `MongoIndexer` tools directly or creating custom routes.
 - **Logging Configuration:** The `Logger` no longer relies on `LOG_LEVEL`. It now uses the standard `DEBUG` environment variable (e.g., `DEBUG=blocktree:*`) to control verbosity and namespaces.

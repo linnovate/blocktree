@@ -18,7 +18,7 @@
  *
  * @example
  * import { GraphqlClient } from '@linnovate/blocktree';
- * const { ok, status, data } = await GraphqlClient('http://localhost:5000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
+ * const { ok, status, data } = await GraphqlClient('http://localhost:3000/graphql', { query: '{health}', variables: {}, authToken: 'MY_TOKEN' })
  * console.log('GraphqlClient:', { ok, status, data });
  */
 export async function GraphqlClient(url, { query = '', variables = {}, authToken, ...options } = {}) {

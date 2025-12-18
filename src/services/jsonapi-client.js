@@ -17,7 +17,7 @@
  * @returns {Promise<Object>} A promise resolving to the flattened data object with relationships injected.
  *
  * @example
- * const data = await JsonApiClient('http://localhost:5000/jsonapi/node/article', {
+ * const data = await JsonApiClient('http://localhost:3000/jsonapi/node/article', {
  *   filters: { title: 'my title' },
  *   includes: ['field_image']
  * });

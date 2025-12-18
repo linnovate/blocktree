@@ -16,7 +16,7 @@
  *
  * @example
  * import { RedisProxy } from '@linnovate/blocktree';
- * const { ok, status, data } = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
+ * const { ok, status, data } = await RedisProxy('http://localhost:3000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
  * console.log('RedisProxy:', { ok, status, data });
  */
 export async function RedisProxy(url, fetchOptions, redisOptions) {
