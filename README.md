@@ -4,9 +4,9 @@ Blocktree Core is a suite of robust, standardized tools for Node.js developers. 
 
 ## Installation
 ```bash
-yarn add @linnovate/blocktree
+yarn add @linnovate/blocktree@dev
 # or
-npm install @linnovate/blocktree
+npm install @linnovate/blocktree@dev
 ```
 
 ## Documentation
