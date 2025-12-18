@@ -419,8 +419,8 @@ Redis Proxy - A transparent caching wrapper for HTTP requests.
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>string</code> | The URL to which the request is made. |
-| fetchOptions | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `FetchClient` factory. |
-| redisOptions | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `RedisClient` factory. |
+| fetchOptions | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `FetchClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/utils.md#FetchClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/utils.md#FetchClient) |
+| redisOptions | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `RedisClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/services.md#RedisClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/services.md#RedisClient) |
 
 **Example**  
 ```js

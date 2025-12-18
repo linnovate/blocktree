@@ -139,7 +139,7 @@ Elastic Indexer Backups - Retrieves all indices matching a specific backup patte
 | --- | --- | --- |
 | options | <code>Object</code> | Configuration options. |
 | options.index | <code>string</code> | The public alias name (e.g., 'users'). |
-| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. |
+| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient) |
 
 **Example**  
 ```js
@@ -163,7 +163,7 @@ Elastic Indexer Restore - Switches the public alias (e.g., 'users') to point to 
 | options.index | <code>string</code> | The public alias name (e.g., 'users'). |
 | options.backupIndex | <code>string</code> | The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided. |
 | options.lastIndexCount | <code>string</code> | The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing. |
-| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. |
+| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient) |
 
 **Example**  
 ```js
@@ -194,7 +194,7 @@ Elastic Indexer - A utility to manage Zero-Downtime indexing (Blue/Green deploym
 | options.mappings | <code>Object</code> \| <code>null</code> |  | Elastic index mappings. [https://www.elastic.co/docs/manage-data/data-store/mapping](https://www.elastic.co/docs/manage-data/data-store/mapping) |
 | options.settings | <code>Object</code> \| <code>null</code> |  | Elastic index settings. [https://www.elastic.co/docs/reference/elasticsearch/index-settings](https://www.elastic.co/docs/reference/elasticsearch/index-settings) |
 | options.bulkOptions | <code>Object</code> \| <code>null</code> |  | Options for bulk operations (e.g., routing, pipeline). [https://www.elastic.co/docs/reference/elasticsearch/clients/javascript/api-reference#_bulk](https://www.elastic.co/docs/reference/elasticsearch/clients/javascript/api-reference#_bulk) |
-| ...options | <code>Object</code> \| <code>null</code> |  | Additional options passed directly to the `ElasticClient` factory. |
+| ...options | <code>Object</code> \| <code>null</code> |  | Additional options passed directly to the `ElasticClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient) |
 | batchCallback | <code>function</code> |  | Async function `({ offset, index, mode, response })`. Should return an Array of objects to index. - Return `[]` or `null` to stop processing. - To delete a doc, include property `{ delete: true }` in the object. - `response` contains the result of the *previous* bulkWrite operation. |
 | testCallback | <code>function</code> |  | Async function `({ index, activeIndexName })`. - Runs after indexing but before alias swapping. - Return `true` to proceed, or throw/return error to abort. |
 
@@ -204,6 +204,7 @@ const result = await ElasticIndexer({
     index: 'users',
     ELASTICSEARCH_URL: 'http://localhost:9200'
   },
-  async ({ offset }) => offset == 0 && [{ time: Date.now() }],
+  async ({ offset, index, mode, response }) => offset == 0 && [{ time: Date.now() }],
+  async ({ index, activeIndexName }) => true,
 );
 ```

@@ -4,16 +4,8 @@
 <dt><a href="#JwtSessionExpress">JwtSessionExpress(app, options)</a> ⇒ <code>Promise.&lt;void&gt;</code></dt>
 <dd><p>Jwt Session Express - Initializes a reactive session object on the request.</p>
 <ul>
-<li>Sets up middleware that hydrates the session from a JWT and saves changes automatically via a Proxy.</li>
-</ul>
-</dd>
-<dt><a href="#JwtSession">JwtSession(app, options)</a> ⇒ <code>Promise.&lt;(Object|boolean)&gt;</code></dt>
-<dd><p>Jwt Session - Creates a Proxy object wrapping the JWT data, automatically triggers a JWT re-sign and updates the response cookie on property modification.</p>
-<ul>
-<li>Uses default envs: <code>JWT_SECRET_KEY</code>, <code>DEBUG</code>.</li>
-<li>Decodes the secret key if base64 encoded.</li>
-<li>Includes comprehensive logging cycles.</li>
-<li>To enable debug logs set env: <code>DEBUG=blocktree:JwtSession</code> or <code>DEBUG=blocktree</code> or <code>DEBUG=blocktree:*</code> to ignore <code>DEBUG=-blocktree:Server</code></li>
+<li>Sets up middleware that hydrates the session from a JWT (found in headers or cookies) and saves changes automatically via a Proxy.</li>
+<li>Attaches a reactive Proxy object to <code>req.jwtSession</code>.</li>
 </ul>
 </dd>
 <dt><a href="#OptimizeExpress">OptimizeExpress(app, options)</a> ⇒ <code>Promise.&lt;void&gt;</code></dt>
@@ -40,7 +32,8 @@
 
 ## JwtSessionExpress(app, options) ⇒ <code>Promise.&lt;void&gt;</code>
 Jwt Session Express - Initializes a reactive session object on the request.
-- Sets up middleware that hydrates the session from a JWT and saves changes automatically via a Proxy.
+- Sets up middleware that hydrates the session from a JWT (found in headers or cookies) and saves changes automatically via a Proxy.
+- Attaches a reactive Proxy object to `req.jwtSession`.
 
 **Kind**: global function  
 **Requires**: <code>module:jsonwebtoken@^9</code>, <code>module:pino@^10</code>  
@@ -48,43 +41,17 @@ Jwt Session Express - Initializes a reactive session object on the request.
 | Param | Type | Description |
 | --- | --- | --- |
 | app | <code>Object</code> | The express application instance. |
-| options | <code>Object</code> | Additional options passed to `JwtSession` function. |
+| options | <code>Object</code> | Additional options passed to `JwtSession` function. [JwtSession Options Documentation](https://github.com/linnovate/blocktree/blob/v2-dev/docs/utils.md#JwtSession) |
 
 **Example**  
 ```js
 import { JwtSessionExpress } from '@linnovate/blocktree';
 await JwtSessionExpress(app, { JWT_SECRET_KEY: 'secret cat' });
-```
-<a name="JwtSession"></a>
-
-## JwtSession(app, options) ⇒ <code>Promise.&lt;(Object\|boolean)&gt;</code>
-Jwt Session - Creates a Proxy object wrapping the JWT data, automatically triggers a JWT re-sign and updates the response cookie on property modification.
-- Uses default envs: `JWT_SECRET_KEY`, `DEBUG`.
-- Decodes the secret key if base64 encoded.
-- Includes comprehensive logging cycles.
-- To enable debug logs set env: `DEBUG=blocktree:JwtSession` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
-
-**Kind**: global function  
-**Returns**: <code>Promise.&lt;(Object\|boolean)&gt;</code> - Returns the Session Proxy object or false on failure.  
-**Requires**: <code>module:jsonwebtoken@^9</code>, <code>module:pino@^10</code>  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| app | <code>Object</code> |  | The express application instance. |
-| options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
-| options.headers | <code>Object</code> |  | The request headers object (used for token extraction and CSRF). |
-| options.setCookie | <code>function</code> |  | Function to set cookies (usually `res.cookie`). |
-| options.JWT_SECRET_KEY | <code>string</code> | <code>&quot;process.env.JWT_SECRET_KEY&quot;</code> | The secret key used to sign the token. |
-| options.headerKey | <code>string</code> | <code>&quot;&#x27;authorization&#x27;&quot;</code> | The header key to look for the token. |
-| options.cookieKey | <code>string</code> | <code>&quot;&#x27;token&#x27;&quot;</code> | The name of the cookie used to store the token. |
-| options.verifyOptions | <code>Object</code> |  | Options passed to `jwt.verify`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
-| options.signOptions | <code>Object</code> |  | Options passed to `jwt.sign`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
-| options.cookieOptions | <code>Object</code> |  | Additional options passed to `setCookie` (e.g., maxAge, domain). |
-
-**Example**  
-```js
-import { JwtSession } from '@linnovate/blocktree';
-const jwtSession = JwtSession({ headers: req.headers, setCookie: req.cookie, JWT_SECRET_KEY: 'secret cat' })
+app.get('/profile', (req, res) => {
+  console.log(req.jwtSession.last_visit);
+  req.jwtSession.last_visit = new Date();
+  res.send('Session updated');
+});
 ```
 <a name="OptimizeExpress"></a>
 

@@ -19,6 +19,16 @@
 <li>To enable debug logs set env: <code>DEBUG=blocktree:JWTParser</code> or <code>DEBUG=blocktree</code></li>
 </ul>
 </dd>
+<dt><a href="#JwtSession">JwtSession(app, options)</a> ⇒ <code>Promise.&lt;(Object|boolean)&gt;</code></dt>
+<dd><p>Jwt Session - Creates a reactive Proxy object wrapping the JWT data.</p>
+<ul>
+<li>Handles token extraction, verification, and creates a proxy that automatically re-signs the JWT and updates the response cookie whenever a property is modified.</li>
+<li>Decodes the secret key if base64 encoded.</li>
+<li>Selects the token from the Header (<code>Bearer ...</code>) or Cookie.</li>
+<li>Includes comprehensive logging cycles.</li>
+<li>To enable debug logs set env: <code>DEBUG=blocktree:JwtSession</code> or <code>DEBUG=blocktree</code> or <code>DEBUG=blocktree:*</code> to ignore <code>DEBUG=-blocktree:Server</code></li>
+</ul>
+</dd>
 <dt><a href="#Logger">Logger(options)</a> ⇒ <code>Promise.&lt;Object&gt;</code></dt>
 <dd><p>Logger - Singleton logger instance.</p>
 <ul>
@@ -106,6 +116,44 @@ const jwtParsed = await JWTParser(
   'a-string-secret-at-least-256-bits-long'
 );
 console.log('jwtParsed:', jwtParsed);
+```
+<a name="JwtSession"></a>
+
+## JwtSession(app, options) ⇒ <code>Promise.&lt;(Object\|boolean)&gt;</code>
+Jwt Session - Creates a reactive Proxy object wrapping the JWT data.
+- Handles token extraction, verification, and creates a proxy that automatically re-signs the JWT and updates the response cookie whenever a property is modified.
+- Decodes the secret key if base64 encoded.
+- Selects the token from the Header (`Bearer ...`) or Cookie.
+- Includes comprehensive logging cycles.
+- To enable debug logs set env: `DEBUG=blocktree:JwtSession` or `DEBUG=blocktree` or `DEBUG=blocktree:*` to ignore `DEBUG=-blocktree:Server`
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;(Object\|boolean)&gt;</code> - Returns the Session Proxy object or false on failure.  
+**Requires**: <code>module:jsonwebtoken@^9</code>, <code>module:pino@^10</code>  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| app | <code>Object</code> |  | The express application instance. |
+| options | <code>Object</code> \| <code>null</code> |  | Configuration options. |
+| options.headers | <code>Object</code> |  | The request headers object (used for token extraction). |
+| options.setCookie | <code>function</code> |  | Function to set cookies (usually `res.cookie`). |
+| options.JWT_SECRET_KEY | <code>string</code> | <code>&quot;process.env.JWT_SECRET_KEY&quot;</code> | The secret key used to sign the token. |
+| options.targetLog | <code>string</code> \| <code>null</code> |  | A context identifier for logs (e.g., request URL or function name) to trace execution. |
+| options.headerKey | <code>string</code> | <code>&quot;&#x27;authorization&#x27;&quot;</code> | The header key to look for the token. |
+| options.cookieKey | <code>string</code> | <code>&quot;&#x27;token&#x27;&quot;</code> | The name of the cookie used to store the token. |
+| options.verifyOptions | <code>Object</code> \| <code>null</code> |  | Options passed to `jwt.verify`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
+| options.signOptions | <code>Object</code> \| <code>null</code> |  | Options passed to `jwt.sign`. [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) |
+| options.cookieOptions | <code>Object</code> \| <code>null</code> |  | Additional options passed to `setCookie` (e.g., maxAge, domain). |
+
+**Example**  
+```js
+import { JwtSession } from '@linnovate/blocktree';
+const jwtSession = await JwtSession({
+  headers: {},
+  setCookie: (...args) => { console.log('setCookie', args) },
+  JWT_SECRET_KEY: 'secret cat',
+})
+jwtSession.time = Date.now();
 ```
 <a name="Logger"></a>
 
