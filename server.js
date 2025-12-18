@@ -17,6 +17,14 @@ import { DynamicImport } from '#linnovate/blocktree';
 const module = await DynamicImport('express@^5');
 
 
+/** 
+ * Logger
+ */
+import { Logger, logger } from '#linnovate/blocktree';
+await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
+logger.debug('User logged in', { userId: 123 });
+
+
 /**
  * FetchClient
  */
@@ -37,12 +45,16 @@ const jwtParsed = await JWTParser(
 console.log('JWTParser:', jwtParsed);
 
 
-/** 
- * Logger
+/**
+ * JwtSession
  */
-import { Logger, logger } from '#linnovate/blocktree';
-await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
-logger.debug('User logged in', { userId: 123 });
+import { JwtSession } from '#linnovate/blocktree';
+const jwtSession = await JwtSession({
+  headers: {},
+  setCookie: (...args) => { console.log('setCookie', args) },
+  JWT_SECRET_KEY: 'secret cat',
+})
+jwtSession.time = Date.now();
 
 
 /* ========================  Server ======================== */
@@ -69,7 +81,19 @@ import { SwaggerExpress } from '#linnovate/blocktree';
 SwaggerExpress(app);
 
 
-/* ========================  Graphql ======================== */
+/**
+ * JwtSession Express
+ */
+import { JwtSessionExpress } from '#linnovate/blocktree';
+await JwtSessionExpress(app, { JWT_SECRET_KEY: 'secret cat' });
+app.get('/profile', (req, res) => {
+  console.log(req.jwtSession.last_visit);
+  req.jwtSession.last_visit = new Date();
+  res.send('Session updated');
+});
+
+
+// /* ========================  Graphql ======================== */
 
 
 /**
@@ -161,40 +185,40 @@ import { GraphqlClient } from '#linnovate/blocktree';
 /* ========================  Services ======================== */
 
 
-/**
- * Redis Client
- */
-import { RedisClient } from '#linnovate/blocktree';
-const redis = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
-console.log('RedisClient:', await redis.set('key', 'value'));  
+// /**
+//  * Redis Client
+//  */
+// import { RedisClient } from '#linnovate/blocktree';
+// const redis = await RedisClient({ REDIS_URI: 'redis://localhost:6379/1' });
+// console.log('RedisClient:', await redis.set('key', 'value'));  
 
-/**
- * Redis Proxy
- */
-import { RedisProxy } from '#linnovate/blocktree';
-{
-  const { ok, status, data } = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
-  console.log('RedisProxy:', { ok, status, data });
-}
-
-
-/**
- * MySql Client
- */
-import { MySqlClient } from '#linnovate/blocktree';
-const mysql = await MySqlClient({ usePool: true, MYSQL_HOST: 'localhost', MYSQL_USER: 'root', MYSQL_PASS: 'root', MYSQL_DB: 'test' });
-console.log('MySqlClient:', await mysql.query('SELECT * FROM users WHERE id = ?', [1]).catch(error => error) );
+// /**
+//  * Redis Proxy
+//  */
+// import { RedisProxy } from '#linnovate/blocktree';
+// {
+//   const { ok, status, data } = await RedisProxy('http://localhost:5000/123', {}, { REDIS_URI: 'redis://localhost:6379/1' });
+//   console.log('RedisProxy:', { ok, status, data });
+// }
 
 
-/**
- * Rabbitmq Client
- */
-import { RabbitmqClient } from '#linnovate/blocktree';
-const rabbitmq = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
-const channel = await rabbitmq?.createChannel(); 
-await channel?.assertQueue('queue', { durable: false });
-channel?.consume('queue', (msg) => console.log(msg?.content.toString()));
-channel?.sendToQueue('queue', Buffer.from('something to do'));
+// /**
+//  * MySql Client
+//  */
+// import { MySqlClient } from '#linnovate/blocktree';
+// const mysql = await MySqlClient({ usePool: true, MYSQL_HOST: 'localhost', MYSQL_USER: 'root', MYSQL_PASS: 'root', MYSQL_DB: 'test' });
+// console.log('MySqlClient:', await mysql.query('SELECT * FROM users WHERE id = ?', [1]).catch(error => error) );
+
+
+// /**
+//  * Rabbitmq Client
+//  */
+// import { RabbitmqClient } from '#linnovate/blocktree';
+// const rabbitmq = await RabbitmqClient({ RABBITMQ_URI: 'amqp://localhost:5672' });
+// const channel = await rabbitmq?.createChannel(); 
+// await channel?.assertQueue('queue', { durable: false });
+// channel?.consume('queue', (msg) => console.log(msg?.content.toString()));
+// channel?.sendToQueue('queue', Buffer.from('something to do'));
 
 
 // /**

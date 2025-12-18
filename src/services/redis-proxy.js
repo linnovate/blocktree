@@ -9,8 +9,8 @@
  * @requires module:pino@^10 (Used internally for logging)
  *
  * @param {string} url - The URL to which the request is made.
- * @param {Object|null} fetchOptions - Additional options passed directly to the `FetchClient` factory.
- * @param {Object|null} redisOptions - Additional options passed directly to the `RedisClient` factory.
+ * @param {Object|null} fetchOptions - Additional options passed directly to the `FetchClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/utils.md#FetchClient}
+ * @param {Object|null} redisOptions - Additional options passed directly to the `RedisClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/services.md#RedisClient}
  *
  * @returns {Promise<Object>} A Promise resolving to a standardized response object: `{ data, ok, status, statusText }`.
  *

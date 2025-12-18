@@ -12,7 +12,7 @@
  * @param {string} options.index - The public alias name (e.g., 'users').
  * @param {string} options.backupIndex - The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided.
  * @param {string} options.lastIndexCount - The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing.
- * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory.
+ * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient}
  *
  * @returns {Promise<boolean>} Returns `true` if the restore operation was successful, otherwise `false`.
  *

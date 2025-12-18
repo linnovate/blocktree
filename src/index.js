@@ -6,13 +6,14 @@ export { Logger, logger } from './utils/logger.js';
 export { FetchClient } from './utils/fetch-client.js';
 export { JWTParser } from './utils/jwt-parser.js';
 export { PromiseOnce } from './utils/promise-once.js';
+export { JwtSession } from './utils/jwt-session.js';
 
 /**
  * Server
  */
 export { SecurityExpress } from './server/security-express.js';
 export { OptimizeExpress } from './server/optimize-express.js';
-export { JwtSession, JwtSessionExpress } from './server/jwt-session-express.js';
+export { JwtSessionExpress } from './server/jwt-session-express.js';
 export { SwaggerExpress, AutoExpressPaths } from './server/swagger-express.js';
 
 /**
