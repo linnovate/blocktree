@@ -101,7 +101,7 @@ Mongo Indexer Backups - Retrieves all indices matching a specific backup pattern
 | --- | --- | --- |
 | options | <code>Object</code> | Configuration options. |
 | options.index | <code>string</code> | The public alias name (e.g., 'users'). |
-| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `MongoClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient) |
+| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `MongoClient` factory. [MongoClient Options Documentation](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient) |
 
 **Example**  
 ```js
@@ -125,7 +125,7 @@ Mongo Indexer Restore - Switches the public alias (e.g., 'users') to point to a 
 | options.index | <code>string</code> | The public alias name (e.g., 'users'). |
 | options.backupIndex | <code>string</code> | The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided. |
 | options.lastIndexCount | <code>string</code> | The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing. |
-| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `MongoClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient) |
+| ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `MongoClient` factory. [MongoClient Options Documentation](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient) |
 
 **Example**  
 ```js
@@ -153,7 +153,7 @@ Mongo Indexer - A utility to manage Zero-Downtime indexing (Blue/Green deploymen
 | options.mode | <code>&#x27;new&#x27;</code> \| <code>&#x27;clone&#x27;</code> \| <code>&#x27;sync&#x27;</code> | <code>&#x27;new&#x27;</code> | - 'new': Creates a fresh, empty index. - 'clone': Clones the currently active index (fast copy). - 'sync': Updates the currently active index directly (no rotation). |
 | options.keyId | <code>string</code> \| <code>null</code> | <code>&quot;&#x27;id&#x27;&quot;</code> | The field name to use as the unique identifier for updates/upserts. |
 | options.keepAliasesCount | <code>number</code> | <code>1</code> | Number of past indices to keep before deletion. |
-| ...options | <code>Object</code> \| <code>null</code> |  | Additional options passed directly to the `MongoClient` factory. [https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient) |
+| ...options | <code>Object</code> \| <code>null</code> |  | Additional options passed directly to the `MongoClient` factory. [MongoClient Options Documentation](https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient) |
 | batchCallback | <code>function</code> |  | Async function `({ offset, index, mode, response })`. Should return an Array of objects to index. - Return `[]` or `null` to stop processing. - To delete a doc, include property `{ delete: true }` in the object. - `response` contains the result of the *previous* bulkWrite operation. |
 | testCallback | <code>function</code> |  | Async function `({ index, activeIndexName })`. - Runs after indexing but *before* alias swapping. - Return `true` to proceed, or throw/return error to abort |
 

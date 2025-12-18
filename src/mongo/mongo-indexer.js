@@ -20,7 +20,7 @@
  * - 'sync': Updates the currently active index directly (no rotation).
  * @param {string|null} options.keyId='id' - The field name to use as the unique identifier for updates/upserts.
  * @param {number} options.keepAliasesCount=1 - Number of past indices to keep before deletion.
- * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient}
+ * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient|MongoClient Options Documentation}
  *
  * @param {Function} batchCallback
  * Async function `({ offset, index, mode, response })`. Should return an Array of objects to index.

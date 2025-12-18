@@ -10,7 +10,7 @@
  *
  * @param {Object} options - Configuration options.
  * @param {string} options.index - The public alias name (e.g., 'users').
- * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient}
+ * @param {Object|null} ...options - Additional options passed directly to the `MongoClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/mongo.md#MongoClient|MongoClient Options Documentation}
  *
  * @returns {Promise<{indices: string[], actives: string[]}>} Returns an object containing:
  * - `indices`: Array of all backup index names sorted by date (descending).

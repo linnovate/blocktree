@@ -23,7 +23,7 @@
  * @param {Object|null} options.mappings - Elastic index mappings. {@link https://www.elastic.co/docs/manage-data/data-store/mapping}
  * @param {Object|null} options.settings - Elastic index settings. {@link https://www.elastic.co/docs/reference/elasticsearch/index-settings}
  * @param {Object|null} options.bulkOptions - Options for bulk operations (e.g., routing, pipeline). {@link https://www.elastic.co/docs/reference/elasticsearch/clients/javascript/api-reference#_bulk}
- * @param {Object|null} ...options - Additional options passed directly to the `ElasticClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient}
+ * @param {Object|null} ...options - Additional options passed directly to the `ElasticClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient|ElasticClient Options Documentation}
  *
  * @param {Function} batchCallback
  * Async function `({ offset, index, mode, response })`. Should return an Array of objects to index.
