@@ -145,7 +145,7 @@ const reports = await (ElasticIndexer||MongoIndexer)(
 
 // v2.0.0:
 const status = await (ElasticIndexer||MongoIndexer)(
-   { ... },
+  { ... },
   async ({ offset, index, mode, response }) => [],
   async ({ index, activeIndexName }) => true,
 );

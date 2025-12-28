@@ -34,7 +34,8 @@ export async function ElasticIndexerBackups({ index, ...options }) {
    * Validation
    */
   if (!index) {
-    return logger.error('ElasticIndexerBackups [missing option]: index');
+    logger.error('ElasticIndexerBackups [missing option]: index');
+    return
   }
 
   /*

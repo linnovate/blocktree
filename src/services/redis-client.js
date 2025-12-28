@@ -77,7 +77,7 @@ export async function RedisClient({
    * Create logger
    */
   $instances[instanceKey].on('error', (error) => {
-    logger.error(`${logPrefix}RedisClient [error] ${error?.message}`);
+    logger.error(`${logPrefix}RedisClient [setup] ${error?.message}`);
   });
 
   await $instances[instanceKey].connect().then(() => {

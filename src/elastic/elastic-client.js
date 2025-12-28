@@ -129,7 +129,7 @@ export async function ElasticClient({
     
     // Add default mock response for search endpoints
     $mockServer.add(
-      { method: 'GET', path: ['/_search', '/:index/_search'] },
+      { method: 'GET', path: ['/_search', '/article/_search'] },
       () => ({ hits: { total: { value: 1 }, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text' } }] } })
     );
    

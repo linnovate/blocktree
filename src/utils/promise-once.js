@@ -31,7 +31,7 @@ export async function PromiseOnce(id, callback) {
   }
 
   // 2. Execute the callback
-  const promise = Promise.resolve(callback());
+  const promise = Promise.try(callback);
   logger.debug(`PromiseOnce [new] (id: ${id})`);
 
   // 3. Store the promise in the cache

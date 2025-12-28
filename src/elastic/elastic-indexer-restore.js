@@ -11,7 +11,7 @@
  * @param {Object} options - Configuration options.
  * @param {string} options.index - The public alias name (e.g., 'users').
  * @param {string} options.backupIndex - The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided.
- * @param {string} options.lastIndexCount - The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing.
+ * @param {string} options.lastIndexCount - The offset for the backup to restore. Required if `backupIndex` is missing.
  * @param {Object|null} ...options - Additional options passed directly to the `ElasticClient` factory. {@link https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient|ElasticClient Options Documentation}
  *
  * @returns {Promise<boolean>} Returns `true` if the restore operation was successful, otherwise `false`.
@@ -59,7 +59,7 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
    */
   if (lastIndexCount && !backupIndex) {
     const indicesData = await client.indices.get({ index: `${index}---*` }).then(data => adaptarOut(data));
-    backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount)];
+    backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount)-1];
     logger.debug(`ElasticIndexerRestore [lastIndexCount] backupIndex - ${backupIndex} (lastIndexCount: ${lastIndexCount})`, { namespace: 'ElasticIndexer', index, lastIndexCount, backupIndex, indicesData });
   }
 

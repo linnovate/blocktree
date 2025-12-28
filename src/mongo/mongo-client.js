@@ -102,46 +102,6 @@ export async function MongoClient({
       }
     }
   }
-
-  /*
-   * Logger Transport (via Events)
-   */
-  // client.on('commandStarted', (event) => {
-  //   if (event.commandName === 'ping' || event.commandName === 'hello') return; // Reduce noise
-  //   logger.debug(`${logPrefix}MongoClient [request] ${event.databaseName} {${event.commandName}}`, {
-  //       namespace: 'MongoClient',
-  //       type: 'request',
-  //       database: event.databaseName,
-  //       command: event.commandName,
-  //       requestId: event.requestId,
-  //       payload: event.command
-  //   });
-  // });
-
-  // client.on('commandSucceeded', (event) => {
-  //   if (event.commandName === 'ping' || event.commandName === 'hello') return; 
-  //   logger.debug(`${logPrefix}MongoClient [response] ${event.databaseName} {${event.commandName}} ${event.duration}ms`, {
-  //       namespace: 'MongoClient',
-  //       type: 'response',
-  //       database: event.databaseName,
-  //       command: event.commandName,
-  //       requestId: event.requestId,
-  //       duration: event.duration,
-  //       reply: event.reply
-  //   });
-  // });
-
-  // client.on('commandFailed', (event) => {
-  //   logger.error(`${logPrefix}MongoClient [error] ${event.databaseName} {${event.commandName}} ${event.duration}ms - ${event.failure}`, {
-  //       namespace: 'MongoClient',
-  //       type: 'error',
-  //       database: event.databaseName,
-  //       command: event.commandName,
-  //       requestId: event.requestId,
-  //       duration: event.duration,
-  //       error: event.failure
-  //   });
-  // });
   
   /*
    * Create instance
