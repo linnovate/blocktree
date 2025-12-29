@@ -16,20 +16,23 @@
  * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
  * @param {Object|null} ...options - Additional standard `module:mongodb` options. {@link https://www.npmjs.com/package/mongodb}
  *
- * @returns {Promise<Object>} The initialized and connected Mongo client instance, or null on error.
+ * @returns {Promise<Object>} The initialized and connected Mongo client instance, or null on error (a standard client object with an optional `mockServer` property).
  *
  * @example
  * // Basic Usage
  * import { MongoClient } from '@linnovate/blocktree';
  * const mongo = await MongoClient({ MONGO_URI: 'mongodb://root:root@localhost:27017' });
  * console.log("MongoClient:", await mongo?.db('admin').command({ ping: 1 }) );
+ * mongo.close();
  *
  * @example
  * // Mocking Usage
  * import { MongoClient } from '@linnovate/blocktree';
  * const mongo = await MongoClient({ mock: true });
  * console.log("MongoClient Mocking:", await mongo?.db('admin').command({ ping: 1 }) );
- *
+ * await mongo.close();
+ * await mongo.mockServer.stop();
+ * 
  * @example
 # docker-compose.yaml for Mongo
 services:
@@ -81,10 +84,11 @@ export async function MongoClient({
   /*
    * Mock Setup
    */
+  let $mockServer;
   if (mock) {
     const { MongoMemoryServer } = await DynamicImport('mongodb-memory-server@^10');
-    const mongoServer = await MongoMemoryServer.create();
-    MONGO_URI = mongoServer.getUri();
+    $mockServer = await MongoMemoryServer.create();
+    MONGO_URI = $mockServer.getUri();
   }
 
   /*
@@ -111,6 +115,10 @@ export async function MongoClient({
     ...mongodbLog,
   });
 
+  if ($mockServer) {
+    instance.mockServer = $mockServer;
+  }
+  
   instance.on('error', (error) => {
     logger.error(`${logPrefix}MongoClient [error] ${error?.message}!`);
   });

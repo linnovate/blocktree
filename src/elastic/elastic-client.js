@@ -21,7 +21,7 @@
  * @param {string|null} options.logPrefix - A string prefix to add to all internal log messages (e.g., `[my-service]`).
  * @param {Object|null} ...options - Additional standard `module:@elastic/elasticsearch` or `module:@opensearch-project/opensearch` options. {@link https://www.npmjs.com/package/@elastic/elasticsearch} {@link https://www.npmjs.com/package/@opensearch-project/opensearch}
  *
- * @returns {Promise<Object>} The initialized and connected Mongo client instance, or null on error (a standard client object with an optional `mockServer` property).
+ * @returns {Promise<Object>} The initialized and connected Elastic client instance, or null on error (a standard client object with an optional `mockServer` property).
  *
  * @example
  * // Basic Usage

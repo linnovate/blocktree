@@ -105,7 +105,7 @@ export async function MongoIndexer(
     resUseIndex = true;
   }
   else if (mode == 'clone' && lastIndexName) {
-    resUseIndex = await client.db().collection(index).aggregate([{ $out: activeIndexName }]);
+    resUseIndex = await client.db().collection(lastIndexName).aggregate([{ $out: activeIndexName }]).toArray();
   }
   else {
     // Mode 'new' or first run
@@ -115,9 +115,9 @@ export async function MongoIndexer(
   logger.debug(`MongoIndexer (1/5)[determine-indice] end! (${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`, { namespace: 'MongoIndexer', index, mode, activeIndexName, lastIndexName, indexAliases });
   
   if (resUseIndex) {
-    logger.info(`MongoIndexer (1/5)[determine-indice] succeeded! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
+    logger.info(`MongoIndexer (1/5)[determine-indice] succeeded! (alias: ${index}, mode: ${mode}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
   } else {
-    logger.error(`MongoIndexer (1/5)[determine-indice] failed! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
+    logger.error(`MongoIndexer (1/5)[determine-indice] failed! (alias: ${index}, mode: ${mode}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
     return { error: "DETERMINE_INDICE_FAILED" };
   }
   
@@ -162,9 +162,9 @@ export async function MongoIndexer(
   }
 
   if (batchSuccess) {
-    logger.info(`MongoIndexer (2/5)[insert-data] succeeded! (index: ${activeIndexName})`);
+    logger.info(`MongoIndexer (2/5)[insert-data] succeeded! (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
   } else {
-    logger.error(`MongoIndexer (2/5)[insert-data] failed! (index: ${activeIndexName})`);
+    logger.error(`MongoIndexer (2/5)[insert-data] failed! (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
     return { error: "INSERT_DATA_FAILED" };
   }
   
@@ -175,9 +175,9 @@ export async function MongoIndexer(
     ?.catch(error => ({ error }));
   // Check: Must explicitly return true, or simply not return an error object
   if (resTestCallback === true && resTestCallback?.error !== false) {
-    logger.info(`MongoIndexer (3/5)[test-data] succeeded! (index: ${activeIndexName})`);
+    logger.info(`MongoIndexer (3/5)[test-data] succeeded! (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
   } else {
-    logger.error(`MongoIndexer (3/5)[test-data] failed! - ${resTestCallback?.error?.toString?.()} (index: ${activeIndexName})`);
+    logger.error(`MongoIndexer (3/5)[test-data] failed! - ${resTestCallback?.error?.toString?.()} (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
     return { error: "TEST_DATA_FAILED" };
   }
 
@@ -198,9 +198,9 @@ export async function MongoIndexer(
   logger.debug('MongoIndexer (4/5)[update-aliases] end!', { namespace: 'MongoIndexer', index, mode, activeIndexName, error });
   
   if (!error) {
-    logger.info(`MongoIndexer (4/5)[update-aliases] succeeded! (alias: ${index}, index: ${activeIndexName})`);
+    logger.info(`MongoIndexer (4/5)[update-aliases] succeeded! (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
   } else {
-    logger.error(`MongoIndexer (4/5)[update-aliases] failed! - ${error} (alias: ${index}, index: ${activeIndexName})`);
+    logger.error(`MongoIndexer (4/5)[update-aliases] failed! - ${error} (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
     return { error: "UPDATE_ALIASES_FAILED" };
   }
   
@@ -223,9 +223,9 @@ export async function MongoIndexer(
   logger.debug('MongoIndexer (5/5)[remove-old-indices] end!', { namespace: 'MongoIndexer', index, mode, activeIndexName, indicesData, removeIndices });
 
   if (!resRemoveIndices?.error) {
-    logger.info(`MongoIndexer (5/5)[remove-old-indices] succeeded! (alias: ${index}, index: ${activeIndexName})`);
+    logger.info(`MongoIndexer (5/5)[remove-old-indices] succeeded! (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
   } else {
-    logger.error(`MongoIndexer (5/5)[remove-old-indices] failed! - ${resRemoveIndices?.error?.toString?.()} (alias: ${index}, index: ${activeIndexName})`);
+    logger.error(`MongoIndexer (5/5)[remove-old-indices] failed! - ${resRemoveIndices?.error?.toString?.()} (alias: ${index}, mode: ${mode}, index: ${activeIndexName})`);
     return { error: "REMOVE_OLD_INDICES_FAILED" };
   }
   

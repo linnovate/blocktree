@@ -127,6 +127,8 @@ import { GraphqlClient } from '#linnovate/blocktree';
 // {
 //   const mongo = await MongoClient({ mock: true });
 //   console.log("MongoClient Mocking:", await mongo?.db('admin').command({ ping: 1 }) );
+//   await mongo.close();
+//   await mongo.mockServer.stop();
 // }
 
 // /**
