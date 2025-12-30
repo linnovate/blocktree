@@ -1,4 +1,4 @@
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before } from 'node:test';
 import assert from 'node:assert';
 // We import both Client (to setup mocks) and Restore (to test logic)
 import { ElasticClient, ElasticIndexerRestore } from '#linnovate/blocktree';
@@ -12,7 +12,7 @@ describe('ElasticIndexerRestore Integration Tests', () => {
     // 1. Initialize the Singleton Client with mock: true
     // This creates the instance that ElasticIndexerRestore will later retrieve.
     client = await ElasticClient({ mock: true });
-    
+
     // Clear any previous mock definitions to ensure a clean state
     client.mockServer.clearAll();
   });
@@ -23,7 +23,7 @@ describe('ElasticIndexerRestore Integration Tests', () => {
     const olderBackup = 'users---2023.01.01_12-00-00';
 
     // 2. Setup Mocks via client.mockServer
-    
+
     // MOCK 1: indices.get(`${index}---*`)
     // Used by logic to find the available backup indices
     client.mockServer.add({
@@ -60,10 +60,10 @@ describe('ElasticIndexerRestore Integration Tests', () => {
 
     // 3. Execute the function under test
     // We pass mock: true so it grabs the singleton we just configured
-    const success = await ElasticIndexerRestore({ 
-      index: aliasName, 
+    const success = await ElasticIndexerRestore({
+      index: aliasName,
       lastIndexCount: 1, // Should pick the newest one (targetBackup)
-      mock: true 
+      mock: true
     });
 
     // 4. Assertions
@@ -76,10 +76,10 @@ describe('ElasticIndexerRestore Integration Tests', () => {
 
   it('should fail gracefully if backupIndex is missing/invalid', async () => {
     // Test a case where no input is provided
-    const success = await ElasticIndexerRestore({ 
+    const success = await ElasticIndexerRestore({
       index: 'users',
       // Missing lastIndexCount AND backupIndex
-      mock: true 
+      mock: true
     });
 
     assert.strictEqual(success, undefined, 'Should return undefined (or false) when options are missing');

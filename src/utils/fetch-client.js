@@ -61,7 +61,7 @@ export async function FetchClient(url, {
     // Failure: network error (e.g., CORS, offline)
     .catch(error => {
       logger.error(`${logPrefix}FetchClient [response]: ${url} - ${error?.message}, cors or network/server is offline.`, { url, options, message: error?.message });
-      
+
       // Return a custom error object consistent with the primary return structure
       return {
         ok: false,

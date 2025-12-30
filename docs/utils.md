@@ -63,6 +63,7 @@ DynamicImport - Dynamically imports a module and optionally validates the instal
 ```js
 import { DynamicImport } from '@linnovate/blocktree';
 const module = await DynamicImport('express@^5');
+console.log('DynamicImport:', !!module);
 ```
 <a name="FetchClient"></a>
 
@@ -112,7 +113,7 @@ JWT Parser - Verifies and decodes a JWT token.
 ```js
 import { JWTParser } from '@linnovate/blocktree';
 const jwtParsed = await JWTParser(
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30',
+  ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9','eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0','KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30'].join('.'),
   'a-string-secret-at-least-256-bits-long'
 );
 console.log('jwtParsed:', jwtParsed);

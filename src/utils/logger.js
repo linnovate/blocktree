@@ -71,7 +71,7 @@ export async function Logger({
     }
     return false;
   }
-   
+
   /**
    * Helper: Format arguments and extract stack trace
    * @ignore
@@ -89,7 +89,7 @@ export async function Logger({
     } : undefined
     return [{ ...argsValues, msg, codeLine }];
   }
-  
+
   /**
    * Create Pino Instance
    * @ignore
@@ -121,7 +121,7 @@ export async function Logger({
 
   // Assign to exported variable
   logger = $instance;
-  
+
   /**
    * Attach Server Logger
    */

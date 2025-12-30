@@ -59,7 +59,7 @@ export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLim
   }))
 
   app.set('trust proxy', 1);
-  
+
   const reportOnly = helmetOptions?.contentSecurityPolicy?.reportOnly || true;
   logger.info(`SecurityExpress [setup] initialized! (cors: true, reportOnly: ${reportOnly}, rateLimit: true)`);
 

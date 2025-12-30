@@ -40,7 +40,7 @@ export async function RedisClient({
 
   // Create a unique key for the singleton based on REDIS_URI
   const instanceKey = `${REDIS_URI}`;
-  
+
   /*
    * Return Singleton if exists
    */

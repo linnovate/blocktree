@@ -57,7 +57,7 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
     const indicesData = (await db.listCollections({}, { nameOnly: true }).toArray())
       ?.map(i => i.name)
       ?.filter(name => name.startsWith(`${index}---`));
-    backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount)-1];
+    backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount) - 1];
   }
 
   /*
@@ -80,5 +80,5 @@ export async function MongoIndexerRestore({ index, backupIndex, lastIndexCount, 
     logger.error(`MongoIndexerRestore [restore] failed! - ${error} (alias: ${index}, index: ${backupIndex})`);
     return false;
   }
-  
+
 }

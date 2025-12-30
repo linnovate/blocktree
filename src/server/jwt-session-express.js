@@ -31,11 +31,11 @@ export async function JwtSessionExpress(app, options) {
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`JwtSession [setup] options`, { namespace: 'JwtSession', ...options });
-  
+
   /*
    * Use Middleware
    */
-  app.use(async(req, res, next) => {
+  app.use(async (req, res, next) => {
 
     // Pass headers and cookie setter to the core logic
     const dataProxy = await JwtSession({
@@ -50,15 +50,15 @@ export async function JwtSessionExpress(app, options) {
       get: () => dataProxy,
       set: (value) => {
         if (typeof value === 'object') {
-          return Object.assign(dataProxy, value);
+          Object.assign(dataProxy, value);
         }
-        return dataProxy[value];
+        dataProxy[value];
       },
     });
-    
+
     return next();
   })
 
   logger.info(`JwtSession [setup] initialized!`);
-  
+
 }

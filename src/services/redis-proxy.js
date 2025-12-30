@@ -29,9 +29,9 @@ export async function RedisProxy(url, fetchOptions, redisOptions) {
   const logger = await (await import('../utils/logger.js')).Logger();
 
   logger.debug(`RedisProxy [request] ${url}`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
-  
+
   const redisClient = await RedisClient(redisOptions);
- 
+
   /*
    * 1. Attempt to load from Redis
    */
@@ -57,9 +57,9 @@ export async function RedisProxy(url, fetchOptions, redisOptions) {
       statusText: res.statusText,
     });
   }
-  
+
   logger.debug(`RedisProxy [response] ${url} - from remote`, { namespace: 'RedisProxy', url, fetchOptions, redisOptions });
- 
+
   return res;
-  
+
 }

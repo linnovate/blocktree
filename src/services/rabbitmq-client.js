@@ -47,7 +47,7 @@ export async function RabbitmqClient({
 
   // Create a unique key for the singleton based on RABBITMQ_URI
   const instanceKey = `${RABBITMQ_URI}`;
-  
+
   /*
    * Return Singleton if exists
    */

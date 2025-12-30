@@ -1,4 +1,4 @@
-import { test, mock } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert';
 
 // Mocking the dependencies might be necessary if they aren't installed in the test environment.
@@ -24,7 +24,7 @@ test('SecurityExpress Integration Test', async (t) => {
   // Note: Ensure the path to your source file is correct
   try {
     const { SecurityExpress } = await import('#linnovate/blocktree');
-    
+
     await SecurityExpress(mockApp, {
       corsOptions: { origin: 'http://example.com' },
       helmetOptions: { referrerPolicy: { policy: 'no-referrer' } }

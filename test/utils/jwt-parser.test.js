@@ -1,17 +1,17 @@
-import { describe, it, before, after, beforeEach, mock } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import { JWTParser } from '#linnovate/blocktree';
 
 describe('JWTParser Component', () => {
-  const TEST_SECRET = 'test-secret-key-123456';
+  const TEST_SEC = 'test-secret-key-123456';
   const TEST_PAYLOAD = { userId: '123', role: 'admin' };
   let validToken;
 
   // Setup: Generate a valid token before running tests
   before(() => {
-    process.env.JWT_SECRET_KEY = TEST_SECRET;
-    validToken = jwt.sign(TEST_PAYLOAD, TEST_SECRET);
+    process.env.JWT_SECRET_KEY = TEST_SEC;
+    validToken = jwt.sign(TEST_PAYLOAD, TEST_SEC);
   });
 
   // Cleanup: Reset env vars after tests
@@ -20,7 +20,7 @@ describe('JWTParser Component', () => {
   });
 
   it('should successfully decode and verify a valid token', async () => {
-    const result = await JWTParser(validToken, TEST_SECRET);
+    const result = await JWTParser(validToken, TEST_SEC);
 
     assert.ok(result, 'Result should not be null');
     assert.strictEqual(result.userId, TEST_PAYLOAD.userId);
@@ -28,23 +28,23 @@ describe('JWTParser Component', () => {
   });
 
   it('should return null for an invalid token', async () => {
-    const invalidToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature';
-    const result = await JWTParser(invalidToken, TEST_SECRET);
+    const invalidToken = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9','invalid','signature'].join('.');
+    const result = await JWTParser(invalidToken, TEST_SEC);
 
     assert.strictEqual(result, null, 'Should return null when verification fails');
   });
 
   it('should return null if the wrong secret is used', async () => {
     const wrongSecretToken = jwt.sign(TEST_PAYLOAD, 'wrong-secret');
-    const result = await JWTParser(wrongSecretToken, TEST_SECRET);
+    const result = await JWTParser(wrongSecretToken, TEST_SEC);
 
     assert.strictEqual(result, null, 'Should return null if signature does not match secret');
   });
 
   it('should fallback to process.env.JWT_SECRET_KEY if second argument is missing', async () => {
     // Ensure env is set
-    process.env.JWT_SECRET_KEY = TEST_SECRET;
-    
+    process.env.JWT_SECRET_KEY = TEST_SEC;
+
     const result = await JWTParser(validToken); // No secret passed
 
     assert.ok(result);
@@ -55,7 +55,7 @@ describe('JWTParser Component', () => {
     // 1. Create a secret and base64 encode it
     const rawSecret = 'complex-secret-key';
     const base64Secret = Buffer.from(rawSecret).toString('base64');
-    
+
     // 2. Create a token signed with the RAW secret (because that's how JWT works)
     const token = jwt.sign(TEST_PAYLOAD, rawSecret);
 

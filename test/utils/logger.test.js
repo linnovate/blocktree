@@ -1,11 +1,11 @@
-import { test, describe, before, after } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { EventEmitter } from 'node:events';
 
 // Pre-set environment variables before importing the logger
 // to ensure they are picked up during the first cycle if needed.
 process.env.LOG_SERVICE_NAME = 'test-service';
-process.env.DEBUG = 'blocktree:Server, blocktree:User'; 
+process.env.DEBUG = 'blocktree:Server, blocktree:User';
 
 // Import the module to test
 import { Logger, logger as exportedLogger } from '#linnovate/blocktree';
@@ -35,7 +35,7 @@ describe('Logger Component', () => {
     loggerInstance = await Logger({
       server: mockServer,
       // Overriding options to ensure specific test behavior
-      DEBUG: 'blocktree:Server', 
+      DEBUG: 'blocktree:Server',
       LOG_SERVICE_NAME: 'test-logger'
     });
 
@@ -51,7 +51,7 @@ describe('Logger Component', () => {
 
   test('should return the same instance (Singleton) on second call', async () => {
     const secondInstance = await Logger({ LOG_SERVICE_NAME: 'changed-name' });
-    
+
     assert.strictEqual(secondInstance, loggerInstance, 'Should return the exact same instance object');
     // Verify that the name didn't change (proving the first config stuck)
     // Note: Accessing internal options of pino might differ by version, 
@@ -61,19 +61,19 @@ describe('Logger Component', () => {
   test('should attach request logger to server when "Server" namespace is in DEBUG', () => {
     // We initialized with DEBUG: 'blocktree:Server' and passed a server.
     // The logger logic checks `debugByNamespace`.
-    
+
     // Check if the 'request' listener was added to the server
     const requestListeners = mockServer.listeners('request');
-    
+
     // Our spy count should be > 0 or we check the listener count
     assert.ok(serverOnSpy > 0, 'Server.on should have been called');
     assert.ok(requestListeners.length > 0, 'Server should have a request listener attached');
   });
 
-  test('should format logs correctly (Log Hook Logic)', async (t) => {
+  test('should format logs correctly (Log Hook Logic)', async () => {
     // Since we cannot easily intercept stdout without piping, 
     // we test that the logging methods run without throwing errors.
-    
+
     assert.doesNotThrow(() => {
       loggerInstance.info('Test info message');
     });
@@ -83,33 +83,33 @@ describe('Logger Component', () => {
     });
   });
 
-  test('Server request listener should log when event is emitted', (t) => {
-     // Mock a request object
-     const mockReq = {
-        method: 'GET',
-        url: '/api/test',
-        socket: { remoteAddress: '127.0.0.1' }
-     };
+  test('Server request listener should log when event is emitted', () => {
+    // Mock a request object
+    const mockReq = {
+      method: 'GET',
+      url: '/api/test',
+      socket: { remoteAddress: '127.0.0.1' }
+    };
 
-     // We mock the debug method of the instance to verify it's called
-     // Note: This is invasive but necessary to verify the callback logic
-     let debugCalled = false;
-     const originalDebug = loggerInstance.debug;
-     
-     loggerInstance.debug = (msg, data) => {
-        if (msg.includes('Server [request]')) {
-            debugCalled = true;
-            assert.match(msg, /Server \[request\] \[GET\]\/api\/test/);
-            assert.strictEqual(data.namespace, 'Server');
-        }
-     };
+    // We mock the debug method of the instance to verify it's called
+    // Note: This is invasive but necessary to verify the callback logic
+    let debugCalled = false;
+    const originalDebug = loggerInstance.debug;
 
-     // Emit the request event on the server
-     mockServer.emit('request', mockReq);
+    loggerInstance.debug = (msg, data) => {
+      if (msg.includes('Server [request]')) {
+        debugCalled = true;
+        assert.match(msg, /Server \[request\] \[GET\]\/api\/test/);
+        assert.strictEqual(data.namespace, 'Server');
+      }
+    };
 
-     // Restore original method
-     loggerInstance.debug = originalDebug;
+    // Emit the request event on the server
+    mockServer.emit('request', mockReq);
 
-     assert.ok(debugCalled, 'The server request listener should trigger the logger.debug method');
+    // Restore original method
+    loggerInstance.debug = originalDebug;
+
+    assert.ok(debugCalled, 'The server request listener should trigger the logger.debug method');
   });
 });

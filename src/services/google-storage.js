@@ -25,7 +25,7 @@
 let $instance;
 
 export async function GoogleStorage({
-  GOOGLE_STORAGE_CLIENT_EMAIL = process.env.GOOGLE_STORAGE_CLIENT_EMAIL, 
+  GOOGLE_STORAGE_CLIENT_EMAIL = process.env.GOOGLE_STORAGE_CLIENT_EMAIL,
   GOOGLE_STORAGE_PRIVATE_KEY = process.env.GOOGLE_STORAGE_PRIVATE_KEY,
   ...options
 } = {}) {
@@ -74,7 +74,7 @@ export async function GoogleStorage({
   });
 
   logger.info(`GoogleStorage [setup] initialized!`);
-  
+
   return $instance;
 
 }

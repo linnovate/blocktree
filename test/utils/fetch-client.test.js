@@ -29,7 +29,7 @@ describe('FetchClient (Integration with Real Server)', () => {
       fs.mkdirSync(utilsDir, { recursive: true });
       createdUtilsDir = true;
     }
-    
+
     // Create a dummy logger.js if it doesn't exist so the dynamic import works
     if (!fs.existsSync(loggerPath)) {
       const dummyLoggerContent = `
@@ -85,7 +85,7 @@ describe('FetchClient (Integration with Real Server)', () => {
     }
     if (createdUtilsDir && fs.existsSync(utilsDir)) {
       // Only remove directory if it is empty
-      try { fs.rmdirSync(utilsDir); } catch (e) {}
+      try { fs.rmdirSync(utilsDir); } catch { /* empty */ }
     }
   });
 
@@ -116,7 +116,7 @@ describe('FetchClient (Integration with Real Server)', () => {
 
   test('should handle network connection failures (Offline/Refused)', async () => {
     // Attempt to connect to a port where no server is listening
-    const unusedPort = 59999; 
+    const unusedPort = 59999;
     const response = await FetchClient(`http://localhost:${unusedPort}`);
 
     // Verify the custom error object structure defined in your catch block

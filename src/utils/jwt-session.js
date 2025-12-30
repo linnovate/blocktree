@@ -45,7 +45,7 @@ export async function JwtSession({
   signOptions,
   cookieOptions,
 } = {}) {
- 
+
   /*
    * Imports
    */
@@ -60,7 +60,7 @@ export async function JwtSession({
     logger.error(`jwtSession [missing option]: JWT_SECRET_KEY or headers or setCookie`);
     return false;
   }
-  
+
   // Handle Base64 encoded secret
   if ((Buffer.from(JWT_SECRET_KEY, 'base64').toString('base64') === JWT_SECRET_KEY)) {
     JWT_SECRET_KEY = Buffer.from(JWT_SECRET_KEY, 'base64').toString('utf8')
@@ -75,7 +75,7 @@ export async function JwtSession({
   } else {
     token = headers.cookie?.match(`(^| )${cookieKey}=([^;]+)`)?.[2];
   }
-  
+
   /*
    * 2. Verify Token
    */
@@ -88,13 +88,13 @@ export async function JwtSession({
 
   const status = !token ? 'no token' : (Object.keys(data).length > 0 ? 'success' : 'failed/empty');
   logger.debug(`jwtSession [verify] ${status}! (target: ${targetLog})`, { namespace: 'jwtSession', data, token, header: headers[headerKey], cookie: headers.cookie });
-  
+
   /*
    * 3. Reactive Proxy
    */
   // This proxy intercepts property setting to auto-sign the JWT
   const dataProxy = new Proxy(data || {}, {
-    set: function(target, property, value) {
+    set: function (target, property, value) {
       target[property] = value;
       try {
         const token = jwt.sign({ ...target }, JWT_SECRET_KEY, signOptions);
@@ -111,5 +111,5 @@ export async function JwtSession({
    * Return Proxy obj
    */
   return dataProxy;
-  
+
 }

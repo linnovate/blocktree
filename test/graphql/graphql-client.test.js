@@ -15,7 +15,7 @@ describe('GraphqlClient Integration Tests (Native Node)', async () => {
   before(async () => {
     server = http.createServer((req, res) => {
       let body = '';
-      
+
       req.on('data', chunk => {
         body += chunk.toString();
       });
@@ -41,9 +41,9 @@ describe('GraphqlClient Integration Tests (Native Node)', async () => {
 
         // Logic to test Authorization header reception
         if (req.headers['authorization'] === 'Bearer test-token') {
-            res.writeHead(200);
-            res.end(JSON.stringify({ data: { auth: 'granted' } }));
-            return;
+          res.writeHead(200);
+          res.end(JSON.stringify({ data: { auth: 'granted' } }));
+          return;
         }
 
         // Default Fallback
@@ -101,7 +101,7 @@ describe('GraphqlClient Integration Tests (Native Node)', async () => {
   it('should handle errors cleanly (400 Bad Request)', async () => {
     // Sending empty query to trigger the server's 400 response
     const result = await GraphqlClient(baseUrl, {
-      query: '' 
+      query: ''
     });
 
     // Depending on how your FetchClient handles errors, expect ok: false

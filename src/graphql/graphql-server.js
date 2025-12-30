@@ -67,7 +67,7 @@ export async function GraphqlServer(app, schemas = [], {
   if (autoLoadDirs) {
     const fs = await import('node:fs');
     const path = await import('node:path');
-  
+
     // Create an array of promises for every file in every directory
     const loadDirs = (dirs) => Promise.all(
       (Array.isArray(dirs) ? dirs : [dirs])?.map(dir => {
@@ -77,7 +77,7 @@ export async function GraphqlServer(app, schemas = [], {
         })
       }).flat()
     ).then(modules => modules.filter(Boolean));
-    
+
     // Merge to schemas
     schemas || (schemas = []);
     schemas.push({

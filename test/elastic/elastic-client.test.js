@@ -25,7 +25,7 @@ describe('ElasticClient Unit Test (With Mock)', async () => {
     if (client) {
       // Clear all mock rules to prevent test pollution
       client.mockServer.clearAll();
-      
+
       // Close client if necessary (mocks usually don't need closing, but good practice)
       if (client.close) await client.close();
     }
@@ -34,7 +34,7 @@ describe('ElasticClient Unit Test (With Mock)', async () => {
   it('should return the default mock response configured in ElasticClient', async () => {
     // Your ElasticClient code sets a default mock for GET /_search
     // We expect the default: { hits: { total: { value: 1 }, hits: [...] } }
-    
+
     const response = await client.search({
       index: 'article',
       // query: { match_all: {} } // using body implies POST usually, or client defaults
@@ -100,5 +100,5 @@ describe('ElasticClient Unit Test (With Mock)', async () => {
       'Should throw the simulated error'
     );
   });
-  
+
 });

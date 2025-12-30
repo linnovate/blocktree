@@ -51,7 +51,7 @@ export async function MySqlClient({
 
   // Create a unique key for the singleton based on Host + DB name
   const instanceKey = `${MYSQL_HOST}:${MYSQL_DB}`;
-  
+
   /**
    * Return Singleton if exists
    */
@@ -79,12 +79,12 @@ export async function MySqlClient({
    * Create DATABASE IF NOT EXISTS
    * We connect without selecting a DB first to perform this check.
    */
-  const client = await createConnection({ host: MYSQL_HOST, user: MYSQL_USER, password: MYSQL_PASS, ...options }).catch(() => null); 
+  const client = await createConnection({ host: MYSQL_HOST, user: MYSQL_USER, password: MYSQL_PASS, ...options }).catch(() => null);
   await client?.query(`CREATE DATABASE\`${MYSQL_DB}\`;`)
     .then(() => logger.info(`${logPrefix}MySqlClient [setup] create database - ${MYSQL_DB}`))
-    .catch(() => null); 
+    .catch(() => null);
   client?.end()
- 
+
   /*
    * Create instance
    */
@@ -114,7 +114,7 @@ export async function MySqlClient({
         logger.error(`${logPrefix}MySqlClient [setup] ${error?.message}!`);
       });
   }
-   
+
   return $instances[instanceKey];
 
 }

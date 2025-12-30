@@ -47,7 +47,7 @@ Elastic Client - Singleton Elastic Client instance by service URL.
 - To enable debug logs set env: `DEBUG=blocktree:ElasticClient` or `DEBUG=blocktree`
 
 **Kind**: global function  
-**Returns**: <code>Promise.&lt;Object&gt;</code> - The initialized and connected Mongo client instance, or null on error (a standard client object with an optional `mockServer` property).  
+**Returns**: <code>Promise.&lt;Object&gt;</code> - The initialized and connected Elastic client instance, or null on error (a standard client object with an optional `mockServer` property).  
 **Requires**: <code>module:@elastic/elasticsearch@^9\|@opensearch-project/opensearch@^3</code>, <code>module:@elastic/elasticsearch-mock@^2</code>, <code>module:pino@^10</code>  
 
 | Param | Type | Default | Description |
@@ -162,7 +162,7 @@ Elastic Indexer Restore - Switches the public alias (e.g., 'users') to point to 
 | options | <code>Object</code> | Configuration options. |
 | options.index | <code>string</code> | The public alias name (e.g., 'users'). |
 | options.backupIndex | <code>string</code> | The specific index name to restore to (e.g., 'users---2023.01.01...'). Optional if `lastIndexCount` is provided. |
-| options.lastIndexCount | <code>string</code> | The offset for the backup to restore (0 = latest, 1 = previous, etc.). Required if `backupIndex` is missing. |
+| options.lastIndexCount | <code>string</code> | The offset for the backup to restore. Required if `backupIndex` is missing. |
 | ...options | <code>Object</code> \| <code>null</code> | Additional options passed directly to the `ElasticClient` factory. [ElasticClient Options Documentation](https://github.com/linnovate/blocktree/blob/v2-dev/docs/elastic.md#ElasticClient) |
 
 **Example**  

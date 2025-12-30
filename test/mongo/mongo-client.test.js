@@ -1,7 +1,7 @@
 import { describe, it, after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { MongoClient } from '#linnovate/blocktree';
-import { Logger, logger } from '#linnovate/blocktree';
+import { Logger } from '#linnovate/blocktree';
 await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
 
 describe('MongoClient (Native Node Test)', () => {
@@ -30,7 +30,7 @@ describe('MongoClient (Native Node Test)', () => {
       await client.mockServer?.stop();
     }
   });
-  
+
   it('should initialize a valid MongoDB client instance', () => {
     assert.ok(client, 'Client instance should be truthy');
     assert.equal(typeof client.db, 'function', 'Client should have a .db() method');

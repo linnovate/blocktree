@@ -14,16 +14,16 @@ describe('MongoIndexer (Integrated Mock)', () => {
     // We get a handle to the DB to run assertions
     client = await MongoClient({ mock: true });
     db = client.db();
-    
+
     // Clean slate: Drop the specific database or collections before each test
     // (Assuming the mock supports dropDatabase, otherwise we list and drop collections)
     try {
-        const collections = await db.listCollections().toArray();
-        for (const col of collections) {
-            await db.dropCollection(col.name);
-        }
+      const collections = await db.listCollections().toArray();
+      for (const col of collections) {
+        await db.dropCollection(col.name);
+      }
     } catch (e) {
-        console.warn('Cleanup warning:', e.message);
+      console.warn('Cleanup warning:', e.message);
     }
   });
 
@@ -38,12 +38,12 @@ describe('MongoIndexer (Integrated Mock)', () => {
 
   it('should successfully index data in "new" mode', async () => {
     const alias = 'users';
-    
+
     // Act: Run Indexer with mock: true
     const result = await MongoIndexer(
-      { 
-        index: alias, 
-        mode: 'new', 
+      {
+        index: alias,
+        mode: 'new',
         mock: true,        // Activates the internal mock
         logPrefix: 'TEST:' // Optional: distinct logging
       },
@@ -67,8 +67,8 @@ describe('MongoIndexer (Integrated Mock)', () => {
 
     // Setup: Pre-populate the "Live" index via direct DB access
     await db.collection(alias).insertMany([
-        { id: 'p1', price: 100 }, 
-        { id: 'p2', price: 200 }
+      { id: 'p1', price: 100 },
+      { id: 'p2', price: 200 }
     ]);
 
     // Act: Run Indexer in CLONE mode
@@ -123,8 +123,8 @@ describe('MongoIndexer (Integrated Mock)', () => {
       async ({ index: targetAlias, activeIndexName }) => {
         callbackExecuted = true;
         // Verify that at this moment (before swap), the active index is NOT the alias name
-        assert.notStrictEqual(activeIndexName, targetAlias); 
-        return true; 
+        assert.notStrictEqual(activeIndexName, targetAlias);
+        return true;
       }
     );
 

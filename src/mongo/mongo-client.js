@@ -57,7 +57,7 @@ export async function MongoClient({
 
   // Create a unique key for the singleton based on MONGO_URI or mock
   const instanceKey = mock ? 'mock' : MONGO_URI;
-  
+
   /**
    * Return Singleton if exists
    */
@@ -106,7 +106,7 @@ export async function MongoClient({
       }
     }
   }
-  
+
   /*
    * Create instance
    */
@@ -118,7 +118,7 @@ export async function MongoClient({
   if ($mockServer) {
     instance.mockServer = $mockServer;
   }
-  
+
   instance.on('error', (error) => {
     logger.error(`${logPrefix}MongoClient [error] ${error?.message}!`);
   });
@@ -132,7 +132,7 @@ export async function MongoClient({
       logger.error(`${logPrefix}MongoClient [setup] ${error?.message}!`);
       return null;
     });
-    
+
   return $instances[instanceKey];
-  
+
 }

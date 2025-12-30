@@ -21,7 +21,7 @@ describe('JwtSessionExpress Integration Test', async () => {
       JWT_SECRET_KEY: SECRET_KEY,
       // Optional: Set a specific cookie name if your implementation supports it,
       // otherwise relies on defaults in JwtSession
-      cookieName: 'access_token' 
+      cookieName: 'access_token'
     });
 
     // 2. Define a test route to manipulate the session
@@ -64,10 +64,10 @@ describe('JwtSessionExpress Integration Test', async () => {
   it('should create a session, set a cookie, and persist data across requests', async () => {
     // --- Request 1: Initialize Session ---
     const response1 = await fetch(`${baseUrl}/test-session`);
-    
+
     assert.strictEqual(response1.status, 200);
     const data1 = await response1.json();
-    
+
     // Assert initial values
     assert.strictEqual(data1.count, 1);
     assert.strictEqual(data1.user, 'test-user');

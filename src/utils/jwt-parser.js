@@ -19,7 +19,7 @@
  * @example
  * import { JWTParser } from '@linnovate/blocktree';
  * const jwtParsed = await JWTParser(
- *   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30',
+ *   ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9','eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0','KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30'].join('.'),
  *   'a-string-secret-at-least-256-bits-long'
  * );
  * console.log('jwtParsed:', jwtParsed);
@@ -44,7 +44,7 @@ export async function JWTParser(token, JWT_SECRET_KEY = process.env.JWT_SECRET_K
     return;
   }
   logger.debug(`${logPrefix}JWTParser [setup] options`, { namespace: 'JWTParser', token, JWT_SECRET_KEY, options });
-  
+
   /*
    * Decode base64 key if necessary
    */

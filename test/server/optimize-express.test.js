@@ -2,7 +2,6 @@ import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import express from 'express'; // Requires: npm install express
 
 // We will dynamically import the function under test to allow setup of prerequisites first
@@ -68,13 +67,13 @@ describe('OptimizeExpress (Integration)', () => {
     try {
       // 4. Make a real HTTP request
       const response = await fetch(`http://localhost:${port}/test`);
-      
+
       // 5. Verify the headers
       const encoding = response.headers.get('content-encoding');
-      
+
       assert.strictEqual(response.status, 200);
       assert.strictEqual(encoding, 'gzip', 'Response should have content-encoding: gzip');
-      
+
       // Verify we can still read the data
       const data = await response.json();
       assert.ok(data.message, 'Response body should remain valid JSON');

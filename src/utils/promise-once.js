@@ -26,13 +26,13 @@ export async function PromiseOnce(id, callback) {
 
   // 1. Check if request is already in flight
   if (requests.has(id)) {
-    logger.debug(`PromiseOnce [duplicate] (id: ${id})`);
+    logger.debug(`PromiseOnce [duplicate] (id: ${id})`, { namespace: 'PromiseOnce' });
     return requests.get(id);
   }
 
   // 2. Execute the callback
   const promise = Promise.try(callback);
-  logger.debug(`PromiseOnce [new] (id: ${id})`);
+  logger.debug(`PromiseOnce [new] (id: ${id})`, { namespace: 'PromiseOnce' });
 
   // 3. Store the promise in the cache
   requests.set(id, promise);
@@ -40,9 +40,9 @@ export async function PromiseOnce(id, callback) {
   // 4. Cleanup: Remove from cache when settled (success or failure)
   promise.finally(() => {
     requests.delete(id);
-    logger.debug(`PromiseOnce [clean] (id: ${id})`);
+    logger.debug(`PromiseOnce [clean] (id: ${id})`, { namespace: 'PromiseOnce' });
   });
 
   return promise;
-  
+
 }

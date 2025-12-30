@@ -1,7 +1,6 @@
-import { describe, it, before, after } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { GraphqlServer } from '#linnovate/blocktree';
-import { mapSchema, getDirective, MapperKind } from '@graphql-tools/utils';
 
 // Helper to interact with the Yoga instance using standard Fetch API
 async function executeQuery(server, query, variables = {}) {
@@ -25,9 +24,9 @@ describe('GraphqlServer Integration Tests', () => {
   };
 
   it('should initialize and mount the health check endpoint', async () => {
-    const server = await GraphqlServer(mockApp, [], { 
+    const server = await GraphqlServer(mockApp, [], {
       // Disable autoload to focus on core logic
-      autoLoadDirs: null 
+      autoLoadDirs: null
     });
 
     // 1. Assert the server was mounted to the app
@@ -55,8 +54,8 @@ describe('GraphqlServer Integration Tests', () => {
       },
     };
 
-    const server = await GraphqlServer(mockApp, [customSchema], { 
-      autoLoadDirs: null 
+    const server = await GraphqlServer(mockApp, [customSchema], {
+      autoLoadDirs: null
     });
 
     const result = await executeQuery(server, `query { hello }`);
@@ -75,7 +74,7 @@ describe('GraphqlServer Integration Tests', () => {
     const directiveTransformer = (schema) => {
       // Note: Since we are in "native" mode, simpler to just return schema unmodified 
       // if we don't want to import heavy tools, but here is how we assert the transformer is called.
-      
+
       // For this test, we just want to prove the transformer hook runs.
       schema._testDirectiveApplied = true;
       return schema;
@@ -88,8 +87,8 @@ describe('GraphqlServer Integration Tests', () => {
       }]
     };
 
-    const server = await GraphqlServer(mockApp, [customDirective], { 
-      autoLoadDirs: null 
+    const server = await GraphqlServer(mockApp, [customDirective], {
+      autoLoadDirs: null
     });
 
     // Access the internal schema to verify transformation
@@ -99,7 +98,7 @@ describe('GraphqlServer Integration Tests', () => {
 
   it('should disable introspection in production mode', async () => {
     // Initialize with isDev: false
-    const server = await GraphqlServer(mockApp, [], { 
+    const server = await GraphqlServer(mockApp, [], {
       isDev: false,
       autoLoadDirs: null
     });
@@ -121,14 +120,14 @@ describe('GraphqlServer Integration Tests', () => {
     // The standard behavior for disable-introspection plugin is to throw a validation error
     assert.ok(result.errors, 'Introspection should return errors in production');
     assert.match(
-      result.errors[0].message, 
-      /GraphQL introspection has been disabled/i, 
+      result.errors[0].message,
+      /GraphQL introspection has been disabled/i,
     );
   });
 
   it('should enable introspection in dev mode', async () => {
     // Initialize with isDev: true
-    const server = await GraphqlServer(mockApp, [], { 
+    const server = await GraphqlServer(mockApp, [], {
       isDev: true,
       autoLoadDirs: null
     });
@@ -144,7 +143,7 @@ describe('GraphqlServer Integration Tests', () => {
     `;
 
     const result = await executeQuery(server, introspectionQuery);
-    
+
     assert.strictEqual(result.errors, undefined, 'Introspection should not have errors in dev mode');
     assert.strictEqual(result.data.__schema.queryType.name, 'Query');
   });

@@ -83,11 +83,11 @@ export async function ElasticIndexer(
    */
   // Initialize Client
   const client = await ElasticClient({ logPrefix: 'ElasticIndexer:', ...options });
-  
+
   // Helper: Normalize Client Differences (Elastic vs OpenSearch)
   const adaptarIn = (obj) => (client?.name == 'opensearch-js') ? { body: obj } : obj;
   const adaptarOut = (obj) => (client?.name == 'opensearch-js') ? obj?.body || {} : obj || {};
-  
+
   // Helper: Sort indices by timestamp suffix (newest first)
   const sortByTime = (obj) => {
     // Expected format: alias---2023.01.01_12-00-00
@@ -99,7 +99,7 @@ export async function ElasticIndexer(
    * 1. Determine Indices
    */
   logger.debug(`ElasticIndexer (1/5)[determine-indice] start! (alias: ${index})`, { namespace: 'ElasticIndexer', index, mode });
- 
+
   // Get existing alias info
   const indexAliases = await client.indices.getAlias({ name: index }).then(data => adaptarOut(data));
   const lastIndexName = sortByTime(indexAliases).reverse()[0];
@@ -121,9 +121,9 @@ export async function ElasticIndexer(
     // Mode 'new' or first run
     resUseIndex = await client.indices.create({ index: activeIndexName, ...adaptarIn({ mappings, settings }) });
   }
-  
+
   logger.debug(`ElasticIndexer (1/5)[determine-indice] end! (${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`, { namespace: 'ElasticIndexer', index, mode, activeIndexName, lastIndexName, indexAliases });
-  
+
   if (resUseIndex) {
     logger.info(`ElasticIndexer (1/5)[determine-indice] succeeded! (alias: ${index}, ${activeIndexName != lastIndexName ? 'create:' : 'using:'} ${activeIndexName})`);
   } else {
@@ -137,7 +137,7 @@ export async function ElasticIndexer(
   let offset = 0;
   let batchSuccess = true;
   let lastBulkResponse = null;
-  
+
   while (true) {
     logger.debug(`ElasticIndexer (2/5)[insert-data] batch (index: ${activeIndexName}, offset: ${offset})`, { namespace: 'ElasticIndexer', index, mode, activeIndexName });
     // Fetch Batch
@@ -207,19 +207,19 @@ export async function ElasticIndexer(
     });
     logger.debug('ElasticIndexer (4/5)[update-aliases] end!', { namespace: 'ElasticIndexer', index, mode, res: resUpdateAliases, activeIndexName, removeAliases });
   }
-  
+
   if (resUpdateAliases?.error !== false) {
     logger.info(`ElasticIndexer (4/5)[update-aliases] succeeded! (alias: ${index}, index: ${activeIndexName})`);
   } else {
     logger.error(`ElasticIndexer (4/5)[update-aliases] failed! - ${resUpdateAliases?.error?.toString?.()} (alias: ${index}, index: ${activeIndexName})`);
     return { error: "UPDATE_ALIASES_FAILED" };
   }
-  
+
   /*
    * 5. Remove Old Indices
    */
   logger.debug('ElasticIndexer (5/5)[remove-indices] start!', { namespace: 'ElasticIndexer', index, mode, activeIndexName });
- 
+
   // Fetch all indices matching pattern `alias---*`
   const indicesData = await client.indices.get({ index: `${index}---*` }).then(data => adaptarOut(data));
   // remove active index from the list
@@ -228,18 +228,18 @@ export async function ElasticIndexer(
   const removeIndices = sortByTime(indicesData).splice(keepAliasesCount);
   // Remove old indexes
   const resRemoveIndices = await Promise.all(
-    removeIndices?.map(index => client.indices.delete({ index, allow_no_indices: true }) )
+    removeIndices?.map(index => client.indices.delete({ index, allow_no_indices: true }))
   ).catch(error => ({ error }));
-  
+
   logger.debug('ElasticIndexer (5/5)[remove-old-indices] end!', { namespace: 'ElasticIndexer', index, mode, activeIndexName, indicesData, removeIndices });
- 
+
   if (resRemoveIndices?.error !== false) {
     logger.info(`ElasticIndexer (5/5)[remove-old-indices] succeeded! (alias: ${index}, index: ${activeIndexName})`);
   } else {
     logger.error(`ElasticIndexer (5/5)[remove-old-indices] failed! - ${resRemoveIndices?.error?.toString?.()} (alias: ${index}, index: ${activeIndexName})`);
     return { error: "REMOVE_OLD_INDICES_FAILED" };
   }
-   
+
   return { error: false };
 
 }

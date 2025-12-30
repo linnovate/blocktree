@@ -28,12 +28,12 @@ describe('ElasticIndexer Modes', async () => {
   // 2. Reset Mocks and State before each test
   beforeEach(() => {
     client.mockServer.clearAll();
-    
+
     // Reset trackers
     apiCalls = { create: false, reindex: false, bulk: false, aliasSwap: false };
 
     // --- Common Mocks (Base) ---
-    
+
     // 1. Get Alias (Simulate existing index)
     client.mockServer.add(
       { method: 'GET', path: `/_alias/${INDEX_ALIAS}` },
@@ -60,7 +60,7 @@ describe('ElasticIndexer Modes', async () => {
   // Test Case 1: Mode 'new' (Default Blue/Green)
   // ======================================================
   it('Mode "new": Should CREATE new index, bulk insert, and SWAP alias', async () => {
-    
+
     // Mock: Create Index
     client.mockServer.add(
       { method: 'PUT', path: `/${INDEX_ALIAS}---*` },
@@ -195,7 +195,7 @@ describe('ElasticIndexer Cleanup (keepAliasesCount)', async () => {
   });
 
   it('Should keep 1 old index and delete the rest when keepAliasesCount = 1', async () => {
-    
+
     // --- Mocking the Cleanup Phase ---
 
     // 1. Return the list of ALL indices currently in Elastic
@@ -206,20 +206,20 @@ describe('ElasticIndexer Cleanup (keepAliasesCount)', async () => {
         // Note: The code generates a timestamp, so we simulate *some* active one. 
         // Ideally, the code filters `activeIndexName`, so we won't mock the exact new name here 
         // to simplify, assuming the code handles the active index filtering safely.
-        
+
         // The Historical Indices:
-        [OLD_2_MEDIUM]: {}, 
-        [OLD_1_RECENT]: {}, 
-        [OLD_3_ANCIENT]: {}, 
+        [OLD_2_MEDIUM]: {},
+        [OLD_1_RECENT]: {},
+        [OLD_3_ANCIENT]: {},
       })
     );
 
     // 2. Capture DELETE requests
     client.mockServer.add(
-      { method: 'DELETE', path: '*' }, 
+      { method: 'DELETE', path: '*' },
       ({ path }) => {
         // Path comes in as /index-name
-        const indexName = path.substring(1); 
+        const indexName = path.substring(1);
         deletedIndices.push(indexName);
         return { acknowledged: true };
       }
@@ -239,7 +239,7 @@ describe('ElasticIndexer Cleanup (keepAliasesCount)', async () => {
     // List: [Recent, Medium, Ancient]
     // keepAliasesCount: 1
     // Result: Keep [Recent]. Delete [Medium, Ancient].
-    
+
     assert.strictEqual(deletedIndices.length, 2, 'Should have deleted exactly 2 indices');
     assert.ok(deletedIndices.includes(OLD_2_MEDIUM), 'Should delete the medium index');
     assert.ok(deletedIndices.includes(OLD_3_ANCIENT), 'Should delete the ancient index');
@@ -247,14 +247,14 @@ describe('ElasticIndexer Cleanup (keepAliasesCount)', async () => {
   });
 
   it('Should delete ALL old indices when keepAliasesCount = 0', async () => {
-    
+
     client.mockServer.add(
       { method: 'GET', path: `/${INDEX_ALIAS}---*` },
       () => ({ [OLD_1_RECENT]: {}, [OLD_2_MEDIUM]: {} })
     );
 
     client.mockServer.add(
-      { method: 'DELETE', path: '*' }, 
+      { method: 'DELETE', path: '*' },
       ({ path }) => { deletedIndices.push(path.substring(1)); return { acknowledged: true }; }
     );
 

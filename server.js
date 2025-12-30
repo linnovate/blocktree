@@ -15,13 +15,14 @@ const server = app.listen(PORT, () => console.log(`Example app listening on port
  */
 import { DynamicImport } from '#linnovate/blocktree';
 const module = await DynamicImport('express@^5');
+console.log('DynamicImport:', !!module);
 
 
 /** 
  * Logger
  */
 import { Logger, logger } from '#linnovate/blocktree';
-await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree' });
+await Logger({ DEBUG: 'blocktree', LOG_SERVICE_NAME: 'blocktree', server });
 logger.debug('User logged in', { userId: 123 });
 
 
@@ -39,7 +40,7 @@ import { FetchClient } from '#linnovate/blocktree';
  */
 import { JWTParser } from '#linnovate/blocktree';
 const jwtParsed = await JWTParser(
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30',
+  ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9','eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0','KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30'].join('.'),
   'a-string-secret-at-least-256-bits-long'
 );
 console.log('JWTParser:', jwtParsed);

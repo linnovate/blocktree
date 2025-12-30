@@ -38,7 +38,7 @@ export async function GraphqlClient(url, { query = '', variables = {}, authToken
       'Accept': 'application/json',
       'Content-type': 'application/json',
       ...(options?.headers || {}),
-      ...(authToken ? { 'Authorization': authToken } :  {}),
+      ...(authToken ? { 'Authorization': authToken } : {}),
     },
     body: JSON.stringify({ query, variables }),
     namespace: 'GraphqlClient',

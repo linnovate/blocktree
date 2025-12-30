@@ -1,16 +1,16 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 // Adjust the import path to point to your actual file location
-import { PromiseOnce } from '#linnovate/blocktree'; 
+import { PromiseOnce } from '#linnovate/blocktree';
 
 describe('PromiseOnce (Native Node Test)', () => {
 
   it('should resolve with the result of the callback', async () => {
     const id = 'basic-test-' + Date.now();
     const expected = 'success';
-    
+
     const result = await PromiseOnce(id, async () => expected);
-    
+
     assert.strictEqual(result, expected);
   });
 
@@ -34,7 +34,7 @@ describe('PromiseOnce (Native Node Test)', () => {
     // Both promises should resolve to the same value
     assert.strictEqual(r1, 'done');
     assert.strictEqual(r2, 'done');
-    
+
     // The actual logic should have only run once
     assert.strictEqual(executionCount, 1, 'Callback executed more than once for concurrent requests');
   });
@@ -67,10 +67,7 @@ describe('PromiseOnce (Native Node Test)', () => {
     };
 
     // 1. Expect failure
-    await assert.rejects(
-      async () => PromiseOnce(id, failingTask),
-      { message: 'Boom' }
-    );
+    await assert.rejects(PromiseOnce(id, failingTask), { message: 'Boom' });
 
     // 2. Ensure it ran
     assert.strictEqual(executionCount, 1);
@@ -78,31 +75,31 @@ describe('PromiseOnce (Native Node Test)', () => {
     // 3. Retry with a success task - should run again if cache was cleaned
     const successTask = async () => 'recovery';
     const result = await PromiseOnce(id, successTask);
-    
+
     assert.strictEqual(result, 'recovery');
   });
 
   it('should treat different IDs as independent operations', async () => {
     const id1 = 'distinct-A-' + Date.now();
     const id2 = 'distinct-B-' + Date.now();
-    
+
     const results = [];
-    
+
     const task1 = async () => {
-        await new Promise(r => setTimeout(r, 10));
-        results.push('A');
-        return 'A-Done';
+      await new Promise(r => setTimeout(r, 10));
+      results.push('A');
+      return 'A-Done';
     };
-    
+
     const task2 = async () => {
-        results.push('B');
-        return 'B-Done';
+      results.push('B');
+      return 'B-Done';
     };
 
     // Run both
     await Promise.all([
-        PromiseOnce(id1, task1),
-        PromiseOnce(id2, task2)
+      PromiseOnce(id1, task1),
+      PromiseOnce(id2, task2)
     ]);
 
     // Both should have executed

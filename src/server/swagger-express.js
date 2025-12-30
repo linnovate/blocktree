@@ -55,7 +55,7 @@ export async function SwaggerExpress(app, {
    * Defer execution to allow all routes to be registered first
    */
   setTimeout(() => {
-    
+
     /*
      * Auto-detect Express paths
      */
@@ -97,7 +97,7 @@ export function AutoExpressPaths(app) {
 
   // Express 4.x stores routes in `_router.stack`. Fallback to `router.stack` for older versions.
   const stack = app._router?.stack || app.router?.stack || [];
-  
+
   stack.forEach(layer => {
     if (layer.route?.path) {
 

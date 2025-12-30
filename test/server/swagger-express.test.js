@@ -4,15 +4,15 @@ import { SwaggerExpress, AutoExpressPaths } from '#linnovate/blocktree';
 
 describe('SwaggerExpress Setup', () => {
 
-  test('should register swagger-ui and json routes on the app', async (t) => {
+  test('should register swagger-ui and json routes on the app', async () => {
     // Mocking the Express App
     const registeredRoutes = [];
     const appMock = {
       _router: { stack: [] },
-      use: (path, ...handlers) => {
+      use: (path) => {
         registeredRoutes.push({ path, type: 'middleware' });
       },
-      get: (path, handler) => {
+      get: (path) => {
         registeredRoutes.push({ path, type: 'get' });
       }
     };
@@ -47,7 +47,7 @@ describe('SwaggerExpress Setup', () => {
     };
 
     const paths = AutoExpressPaths(mockApp);
-    
+
     // Check if :id was converted to {id}
     assert.ok(paths['/user/{id}'], 'Path parameter was not converted correctly');
     assert.strictEqual(paths['/user/{id}'].get.parameters[0].name, 'id');

@@ -17,18 +17,18 @@ describe('MongoIndexerBackups', () => {
 
     // 2. Create collections to simulate backups
     // Expected format: alias---YYYY.MM.DD_HH-mm-ss
-    
+
     // An old backup
     await db.createCollection(`${indexAlias}---2023.01.01_10-00-00`);
-    
+
     // A newer backup (Should be first in the result)
     await db.createCollection(`${indexAlias}---2023.06.15_14-30-00`);
-    
+
     // An irrelevant collection (different alias)
     await db.createCollection('orders---2023.01.01_10-00-00');
-    
+
     // A standard collection (no timestamp)
-    await db.createCollection('users'); 
+    await db.createCollection('users');
   });
 
   after(async () => {
@@ -58,7 +58,7 @@ describe('MongoIndexerBackups', () => {
       'users---2023.06.15_14-30-00',
       'users---2023.01.01_10-00-00'
     ];
-    
+
     assert.deepEqual(result.indices, expectedIndices);
   });
 

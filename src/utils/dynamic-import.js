@@ -11,6 +11,7 @@
  * @example
  * import { DynamicImport } from '@linnovate/blocktree';
  * const module = await DynamicImport('express@^5');
+ * console.log('DynamicImport:', !!module);
  */
 export async function DynamicImport(moduleName) {
 

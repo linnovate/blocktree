@@ -13,7 +13,7 @@ describe('MongoIndexerRestore', () => {
   // Configuration
   const indexAlias = 'users';
   const mockOptions = { mock: true };
-  
+
   before(async () => {
     // 1. Initialize the Mock Client to seed data
     client = await MongoClient(mockOptions);
@@ -21,20 +21,20 @@ describe('MongoIndexerRestore', () => {
 
     // 2. Create collections to simulate backups
     // Expected format: alias---YYYY.MM.DD_HH-mm-ss
-    
+
     // An old backup
     await db.createCollection(`${indexAlias}---2023.01.01_10-00-00`);
-    
+
     // A newer backup (Should be first in the result)
     await db.createCollection(`${indexAlias}---2023.06.15_14-30-00`);
-    
+
     // An irrelevant collection (different alias)
     await db.createCollection('orders---2023.01.01_10-00-00');
-    
+
     // A standard collection (no timestamp)
-    await db.createCollection('users'); 
+    await db.createCollection('users');
   });
-  
+
   after(async () => {
     // Cleanup: Close the client connection after tests
     if (client) {
@@ -42,7 +42,7 @@ describe('MongoIndexerRestore', () => {
       await client.mockServer?.stop();
     }
   });
-  
+
   it('should successfully restore an index using lastIndexCount and mock data', async () => {
     // Clean start (optional, depending on mock implementation)
     const existingColls = await db.listCollections().toArray();
@@ -79,17 +79,17 @@ describe('MongoIndexerRestore', () => {
     // The backup (backupNameNew) should now be the public index ('users')
     // Note: In a real mock, we might verify UUIDs or content, but checking names is standard for rename logic.
     assert.ok(names.includes(indexName), 'The public index alias should exist after restore');
-    
+
     // The previous 'users' index should have been renamed to a new backup timestamp
     // We check for a collection that starts with 'users---' and is NOT the old static backups
-    const newBackup = names.find(n => 
-      n.startsWith(`${indexName}---`) && 
-      n !== backupNameOld && 
+    const newBackup = names.find(n =>
+      n.startsWith(`${indexName}---`) &&
+      n !== backupNameOld &&
       n !== backupNameNew
     );
 
     assert.ok(newBackup, 'The original public index should have been renamed to a new backup timestamp');
-    
+
     // Log for verification
     console.log('Test successful. New backup created:', newBackup);
   });

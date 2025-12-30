@@ -94,7 +94,7 @@ export async function ElasticClient({
 
   // Create a unique key for the singleton based on ELASTICSEARCH_URL or mock
   const instanceKey = mock ? 'mock' : ELASTICSEARCH_URL;
-  
+
   /**
    * Return Singleton if exists
    */
@@ -118,7 +118,7 @@ export async function ElasticClient({
     return false;
   }
   logger.debug(`${logPrefix}ElasticClient [setup] options (path: ${ELASTICSEARCH_URL})`, { namespace: 'ElasticClient', ELASTICSEARCH_URL, ELASTICSEARCH_USER, ELASTICSEARCH_PASSWORD, useOpensearch, rejectOnError, mock, logPrefix, ...options });
-  
+
   /*
    * Mock Setup
    */
@@ -126,13 +126,13 @@ export async function ElasticClient({
   if (mock) {
     const { default: Mock } = await DynamicImport('@elastic/elasticsearch-mock@^2');
     $mockServer = new Mock();
-    
+
     // Add default mock response for search endpoints
     $mockServer.add(
       { method: 'GET', path: ['/_search', '/article/_search'] },
       () => ({ hits: { total: { value: 1 }, hits: [{ _index: 'article', _id: '1', _source: { text: 'some text' } }] } })
     );
-   
+
     // Set mock-specific options for the Client constructor
     options || (options = {});
     options.Connection = $mockServer.getConnection();

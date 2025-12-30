@@ -59,7 +59,7 @@ export async function ElasticIndexerRestore({ index, backupIndex, lastIndexCount
    */
   if (lastIndexCount && !backupIndex) {
     const indicesData = await client.indices.get({ index: `${index}---*` }).then(data => adaptarOut(data));
-    backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount)-1];
+    backupIndex = sortByTime(indicesData)[Math.hypot(lastIndexCount) - 1];
     logger.debug(`ElasticIndexerRestore [lastIndexCount] backupIndex - ${backupIndex} (lastIndexCount: ${lastIndexCount})`, { namespace: 'ElasticIndexer', index, lastIndexCount, backupIndex, indicesData });
   }
 

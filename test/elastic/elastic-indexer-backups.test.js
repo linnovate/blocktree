@@ -41,9 +41,9 @@ describe('ElasticIndexerBackups Unit Test (Using Elastic Mock)', async () => {
 
   it('should return indices sorted by date descending', async () => {
     // Run the function
-    const { indices } = await ElasticIndexerBackups({ 
-      index: testAlias, 
-      mock: true 
+    const { indices } = await ElasticIndexerBackups({
+      index: testAlias,
+      mock: true
     });
 
     assert.equal(indices.length, 3, 'Should return all 3 mocked indices');
@@ -58,9 +58,9 @@ describe('ElasticIndexerBackups Unit Test (Using Elastic Mock)', async () => {
 
   it('should identify the currently active index correctly', async () => {
     // Run the function
-    const { actives } = await ElasticIndexerBackups({ 
-      index: testAlias, 
-      mock: true 
+    const { actives } = await ElasticIndexerBackups({
+      index: testAlias,
+      mock: true
     });
 
     const expectedActive = `${testAlias}---2024.01.01_10-00-00`;
