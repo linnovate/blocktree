@@ -13,7 +13,7 @@
  * @param {Object|null} options - Configuration options.
  * @param {String|null} options.corsOptions - Options to pass to the `module:cors`. {@link https://www.npmjs.com/package/cors#configuring-cors}
  * @param {String|null} options.helmetOptions - Options to pass to the `module:helmet`. {@link https://www.npmjs.com/package/helmet}
- * @param {String|null} options.rateLimitOptions - Options to pass to the `module:express-rate-limit`. {@link https://www.npmjs.com/package/express-rate-limit}
+ * @param {String|null} options.rateLimitOptions={ windowMs: 60000, limit: 200 } - Options to pass to the `module:express-rate-limit`. {@link https://www.npmjs.com/package/express-rate-limit}
  *
  * @returns {Promise<void>}
  *
@@ -21,7 +21,7 @@
  * import { SecurityExpress } from '@linnovate/blocktree';
  * await SecurityExpress(app);
  */
-export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLimitOptions } = {}) {
+export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLimitOptions } = { rateLimitOptions: { windowMs: 60000, limit: 200 } }) {
 
   /*
    * Imports
@@ -52,9 +52,9 @@ export async function SecurityExpress(app, { corsOptions, helmetOptions, rateLim
 
   // Rate Limiter
   app.use(rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-    message: 'Too many requests from this IP, please try again after 15 minutes',
+    windowMs: 1 * 60 * 1000, // 1 minutes
+    limit: 200, // Limit each IP to 200 requests per `window` (here, per 1 minutes).
+    message: 'Too many requests from this IP, please try again after 1 minutes',
     ...rateLimitOptions,
   }))
 
