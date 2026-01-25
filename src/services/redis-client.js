@@ -68,7 +68,10 @@ export async function RedisClient({
    * Create instance
    */
   $instances[instanceKey] = createClient({
-    socket: { reconnectStrategy: () => 3000 },
+    socket: {
+      reconnectStrategy: (retries) => Math.min(retries * 2000, 3000),
+    },
+    disableOfflineQueue: true,
     ...options,
     url: REDIS_URI,
   });
@@ -80,9 +83,23 @@ export async function RedisClient({
     logger.error(`${logPrefix}RedisClient [setup] ${error?.message}`);
   });
 
-  await $instances[instanceKey].connect().then(() => {
+  const originalSet = $instances[instanceKey].set;
+  $instances[instanceKey].set = (...args) => {
+    return originalSet.apply($instances[instanceKey], args).catch((error) => {
+      logger.error(`${logPrefix}RedisClient [set] ${error?.message}`);
+    });
+  };
+  
+  const originalGet = $instances[instanceKey].get;
+  $instances[instanceKey].get = (...args) => {
+    return originalGet.apply($instances[instanceKey], args).catch((error) => {
+      logger.error(`${logPrefix}RedisClient [get] ${error?.message}`);
+    });
+  };
+  
+  $instances[instanceKey].connect().then(() => {
     logger.info(`${logPrefix}RedisClient [setup] initialized!`);
-  })
+  });
 
   return $instances[instanceKey];
 
