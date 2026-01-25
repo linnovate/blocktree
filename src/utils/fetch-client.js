@@ -48,11 +48,10 @@ export async function FetchClient(url, {
       }
 
       // Log based on response status
-      if (res.ok) {
-        logger.debug(`${logPrefix}FetchClient [response] ${url} - ${res.statusText}`, { namespace, url, options, status: res.status, statusText: res.statusText });
-      } else {
+      if (!res.ok) {
         logger.error(`${logPrefix}FetchClient [response] ${url} - ${res.statusText}`);
       }
+      logger.debug(`${logPrefix}FetchClient [response] ${url} - ${res.statusText}`, { namespace, url, options, status: res.status, statusText: res.statusText });
 
 
       // Return decorated Response object
@@ -60,7 +59,8 @@ export async function FetchClient(url, {
     })
     // Failure: network error (e.g., CORS, offline)
     .catch(error => {
-      logger.error(`${logPrefix}FetchClient [response]: ${url} - ${error?.message}, cors or network/server is offline.`, { url, options, message: error?.message });
+      logger.error(`${logPrefix}FetchClient [response] ${url} - ${error?.message}, cors or network/server is offline.`);
+      logger.debug(`${logPrefix}FetchClient [response] ${url} - ${error?.message}, cors or network/server is offline.`, { namespace, url, options, message: error?.message });
 
       // Return a custom error object consistent with the primary return structure
       return {
