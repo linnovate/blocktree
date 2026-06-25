@@ -48,6 +48,7 @@ export async function Logger({
   const { DynamicImport } = await import('./dynamic-import.js');
   const { default: pino } = await DynamicImport('pino@^10');
   const { default: pinoPretty } = await DynamicImport('pino-pretty@^13');
+  const { executionAsyncId } = await import('node:async_hooks');
 
   /**
    * Validation
@@ -78,6 +79,7 @@ export async function Logger({
    */
   function logFormater(inputArgs, level) {
     const [msg, args] = inputArgs;
+    const trace_id = executionAsyncId();
     const argsValues = {};
     Object.keys(args || {}).forEach(key => argsValues[key] = args[key] ?? null); // convert undefineds to nulls for print the var in log
     const stack = Error().stack?.split('\n')[4]; // the stack line 4 typically points to the original call site outside the hook logic
@@ -87,7 +89,7 @@ export async function Logger({
       line: stack?.match(/(\d+:\d+)/)?.[1], // extract line and column number
       trace: level >= 50 ? Error().stack?.split('\n')?.slice(4)?.map(i => i.trim()) : undefined, // include full trace for error logs in debug mode
     } : undefined
-    return [{ ...argsValues, msg, codeLine }];
+    return [{ ...argsValues, msg, trace_id, codeLine }];
   }
 
   /**
