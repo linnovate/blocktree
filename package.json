@@ -1,12 +1,12 @@
 {
   "name": "@linnovate/blocktree",
-  "version": "2.0.0-dev.1",
+  "version": "2.0.1",
   "description": "Tools for developers, to build services with a uniform standard (node_modules/envs/logs).",
   "main": "src/index.js",
   "type": "module",
   "author": "Aron Stein",
   "license": "MIT",
-  "homepage": "https://github.com/linnovate/blocktree",
+  "homepage": "https://github.com/linnovate/blocktree/tree/v2",
   "bugs": "https://github.com/linnovate/blocktree/issues",
   "imports": {
     "#linnovate/blocktree": "./src/index.js"
