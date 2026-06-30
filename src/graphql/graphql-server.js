@@ -148,8 +148,9 @@ export async function GraphqlServer(app, schemas = [], {
    * Create instance
    */
   const graphqlServer = createYoga({
-    schema,
     landingPage: false,
+    ...options,
+    schema,
     healthCheckEndpoint: '/health',
     graphiql: isDev,
     maskedErrors: {
@@ -158,7 +159,6 @@ export async function GraphqlServer(app, schemas = [], {
       },
       isDev,
     },
-    ...options,
     plugins: [
       loggerPlugin,
       isDev ? null : useDisableIntrospection(),
@@ -172,7 +172,7 @@ export async function GraphqlServer(app, schemas = [], {
    */
   app?.use?.('/graphql', graphqlServer);
 
-  logger.info(`GraphqlServer [setup] initialized! (mode: ${isDev ? 'dev' : 'prod'})`);
+  logger.info(`GraphqlServer [setup] initialized! (mode: ${isDev ? 'dev' : 'prod'}, path: /graphql, health: /graphql/health)`);
 
   return graphqlServer;
 
