@@ -83,6 +83,9 @@ export async function RedisClient({
     logger.error(`${logPrefix}RedisClient [setup] ${error?.message}`);
   });
 
+  /*
+   * Wrapper Set - catches errors and returns null to prevent crashing
+   */
   const originalSet = $instances[instanceKey].set;
   $instances[instanceKey].set = (...args) => {
     return originalSet.apply($instances[instanceKey], args).catch((error) => {
@@ -90,6 +93,9 @@ export async function RedisClient({
     });
   };
   
+  /*
+   * Wrapper Get - catches errors and returns null to prevent crashing
+   */
   const originalGet = $instances[instanceKey].get;
   $instances[instanceKey].get = (...args) => {
     return originalGet.apply($instances[instanceKey], args).catch((error) => {
@@ -97,6 +103,9 @@ export async function RedisClient({
     });
   };
   
+  /*
+   * Connection
+   */
   $instances[instanceKey].connect().then(() => {
     logger.info(`${logPrefix}RedisClient [setup] initialized!`);
   });
